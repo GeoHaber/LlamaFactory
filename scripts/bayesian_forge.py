@@ -135,7 +135,16 @@ def main() -> int:
         print("ERROR: optuna not installed. Run: pip install optuna", file=sys.stderr)
         return 1
 
-    parser = argparse.ArgumentParser(description="Bayesian hyperparameter search for Student Forge.")
+    parser = argparse.ArgumentParser(
+        description="Bayesian hyperparameter search for Student Forge.",
+        epilog="""\
+examples:
+  %(prog)s --base-matrix data/forge_matrix/zena007_matrix.yaml --n-trials 20
+  %(prog)s --base-matrix data/forge_matrix/zena007_matrix.yaml --n-trials 50 --lr-min 1e-5 --lr-max 5e-4
+  %(prog)s --base-matrix data/forge_matrix/zena007_matrix.yaml --rank-choices 8,16,32 --epoch-max 10
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--base-matrix", required=True, help="Base forge matrix YAML (used for model/template/data).")
     parser.add_argument("--tag", default="bayes", help="Run tag for saves directory.")
     parser.add_argument("--n-trials", type=int, default=20, help="Number of Optuna trials.")

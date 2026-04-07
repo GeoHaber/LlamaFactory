@@ -400,7 +400,17 @@ def cmd_export(args: argparse.Namespace) -> int:
 # ── CLI ──────────────────────────────────────────────────────────────────
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Student Registry — longitudinal model tracking.")
+    parser = argparse.ArgumentParser(
+        description="Student Registry — longitudinal model tracking.",
+        epilog="""\
+examples:
+  %(prog)s register --saves-tag zena007 --variant-id B
+  %(prog)s list
+  %(prog)s update-eval --model-id zena007/B --eval-file eval_scorecards.jsonl
+  %(prog)s gap-analysis --model-id zena007/B
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     sub = parser.add_subparsers(dest="command")
 
     # register

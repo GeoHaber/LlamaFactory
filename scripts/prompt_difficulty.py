@@ -147,7 +147,16 @@ def print_histogram(scored: list[dict], bins: int = 10) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Prompt difficulty scoring and filtering.")
+    parser = argparse.ArgumentParser(
+        description="Prompt difficulty scoring and filtering.",
+        epilog="""\
+examples:
+  %(prog)s --teacher-responses data/teacher_responses.jsonl --out-scored scored.jsonl --histogram
+  %(prog)s --sft-data data/purified/consensus_sft.jsonl --min-difficulty 0.2 --out-filtered hard_only.jsonl
+  %(prog)s --teacher-responses data/teacher_responses.jsonl --histogram
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--teacher-responses", help="Raw teacher_responses.jsonl to score.")
     parser.add_argument("--sft-data", help="Purified SFT data with difficulty fields to filter.")
     parser.add_argument("--min-difficulty", type=float, default=0.0, help="Minimum difficulty threshold for filtering.")

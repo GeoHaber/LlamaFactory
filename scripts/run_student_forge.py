@@ -308,10 +308,18 @@ class ForgeState:
         }
 
     def _save(self) -> None:
-        """Atomic write: tmp file + rename."""
-        tmp = self._path.with_suffix(".tmp")
-        tmp.write_text(json.dumps(self._data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-        tmp.replace(self._path)
+        """Atomic write: unique tmp file + rename (thread-safe on Windows)."""
+        import tempfile
+
+        fd, tmp_name = tempfile.mkstemp(dir=self._path.parent, suffix=".tmp")
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(self._data, f, indent=2, ensure_ascii=False)
+                f.write("\n")
+            Path(tmp_name).replace(self._path)
+        except Exception:
+            Path(tmp_name).unlink(missing_ok=True)
+            raise
 
     def record_complete(self, variant_id: str, result: dict[str, Any]) -> None:
         with self._lock:
@@ -597,7 +605,17 @@ def _train_variant(
 # ── Main ─────────────────────────────────────────────────────────────────
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Student Forge — parallel multi-variant distillation.")
+    parser = argparse.ArgumentParser(
+        description="Student Forge — parallel multi-variant distillation.",
+        epilog="""\
+examples:
+  %(prog)s --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007 --dry-run
+  %(prog)s --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007
+  %(prog)s --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007 --early-stop-patience 3
+  %(prog)s --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007 --retry-variant B,C
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--matrix", required=True, help="Path to forge_matrix YAML.")
     parser.add_argument("--tag", default="", help="Run tag (overrides matrix file tag).")
     parser.add_argument("--py", default=".venv-py314/Scripts/python.exe", help="Python interpreter path.")

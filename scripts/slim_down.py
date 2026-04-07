@@ -225,7 +225,16 @@ def _collect(buffers: dict[str, SPSCRingBuffer], total: int) -> list[dict]:
 # ── Main ─────────────────────────────────────────────────────────────────
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Slim-Down — parallel GGUF export + speed bench.")
+    parser = argparse.ArgumentParser(
+        description="Slim-Down — parallel GGUF export + speed bench.",
+        epilog="""\
+examples:
+  %(prog)s --saves-tag zena007 --quants Q4_K_M Q5_K_M Q8_0
+  %(prog)s --saves-tag zena007 --recommend-quant
+  %(prog)s --model-path models/qwen --quants Q4_K_M --probes probes.jsonl --bench-count 10
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--saves-tag", help="Tag from forge pipeline (reads champion.txt).")
     parser.add_argument("--model-path", help="Base model path (overrides champion.txt).")
     parser.add_argument("--adapter-path", help="Adapter path (overrides champion.txt).")

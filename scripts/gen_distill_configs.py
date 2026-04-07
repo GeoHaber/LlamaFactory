@@ -171,7 +171,16 @@ def _write_yaml(cfg: dict, path: Path, header: str = "") -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Generate distillation training configs.")
+    parser = argparse.ArgumentParser(
+        description="Generate distillation training configs.",
+        epilog="""\
+examples:
+  %(prog)s --student Qwen/Qwen2.5-1.5B --data-dir data/zena007/purified --tag zena007
+  %(prog)s --student Qwen/Qwen2.5-1.5B --data-dir data/purified --tag test --cpu-safe --auto-register
+  %(prog)s --student Qwen/Qwen2.5-1.5B --data-dir data/purified --tag test --min-dpo-samples 50
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--student", required=True, help="Student model name/path (e.g. Qwen/Qwen2.5-1.5B-Instruct).")
     parser.add_argument("--data-dir", required=True, help="Directory with purified data (consensus_sft.jsonl, conflict_dpo.jsonl).")
     parser.add_argument("--out-dir", default="examples/distillation/auto", help="Output directory for YAML configs.")

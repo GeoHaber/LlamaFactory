@@ -349,7 +349,16 @@ def select_champion(
 # ── Main ─────────────────────────────────────────────────────────────────
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Eval Student Panel — two-pass parallel verification.")
+    parser = argparse.ArgumentParser(
+        description="Eval Student Panel — two-pass parallel verification.",
+        epilog="""\
+examples:
+  %(prog)s --saves-tag zena007 --probes data/zena007/purified/eval_probes.jsonl
+  %(prog)s --saves-tag zena007 --probes eval_probes.jsonl --top-k 3 --quick-count 20
+  %(prog)s --saves-tag zena007 --probes eval_probes.jsonl --teacher-manifest teachers.json
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--saves-tag", required=True, help="Tag used by run_student_forge.py.")
     parser.add_argument("--probes", required=True, help="Path to eval_probes.jsonl.")
     parser.add_argument("--py", default=".venv-py314/Scripts/python.exe", help="Python interpreter.")

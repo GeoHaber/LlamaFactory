@@ -30,6 +30,11 @@ class TestScriptImports:
         "validate_datasets.py",
         "prompt_difficulty.py",
         "bayesian_forge.py",
+        "teacher_profile.py",
+        "pipeline_preflight.py",
+        "loss_chart.py",
+        "pipeline_events.py",
+        "orchestrate_pipeline.py",
     ])
     def test_script_importable(self, script):
         """Script should be importable as a module (syntax check)."""
@@ -53,6 +58,10 @@ class TestScriptHelp:
         "gen_distill_configs.py",
         "validate_datasets.py",
         "prompt_difficulty.py",
+        "teacher_profile.py",
+        "pipeline_preflight.py",
+        "loss_chart.py",
+        "orchestrate_pipeline.py",
     ])
     def test_script_help(self, script):
         script_path = _SCRIPTS_DIR / script

@@ -149,6 +149,11 @@ concurrently, then splitting outputs into consensus (SFT) and conflict (DPO) dat
 | `scripts/validate_datasets.py` | Data validation: duplicates, leakage, balance, DPO validity |
 | `scripts/prompt_difficulty.py` | Prompt difficulty scoring + histogram + filtering |
 | `scripts/bayesian_forge.py` | Bayesian hyperparameter search (Optuna TPE sampler) |
+| `scripts/teacher_profile.py` | Per-teacher quality analysis (agreement, GOLD/SILVER contribution) |
+| `scripts/pipeline_preflight.py` | Pre-run validator (manifest, prompts, configs, disk, deps) |
+| `scripts/loss_chart.py` | Loss comparison chart (text + SVG) with convergence prediction |
+| `scripts/pipeline_events.py` | Structured JSON event logger for pipeline stages |
+| `scripts/orchestrate_pipeline.py` | Cross-platform Python pipeline orchestrator (replaces PS1) |
 
 #### Generation architecture (v4 — SPSC Ring-Buffer FIFO)
 
@@ -326,9 +331,10 @@ Local test suites (no GPU required):
 | Suite | Command | Tests |
 |-------|---------|-------|
 | Forge auto-heal | `pytest tests/test_forge_autoheal.py -v --noconftest` | 16 |
-| Integration pipeline | `pytest tests/test_integration_pipeline.py -v --noconftest` | 26 |
+| Integration pipeline | `pytest tests/test_integration_pipeline.py -v --noconftest` | 35 |
+| End-to-end toy | `pytest tests/test_end_to_end_toy.py -v --noconftest` | 8 |
 | Graduation eval (zen_core_libs) | `pytest zen_core_libs/llm/tests/test_eval.py -v` | 42 |
-| **Total** | | **84** |
+| **Total** | | **101** |
 
 ## Common Commands
 

@@ -309,6 +309,135 @@ def check_dataset_info_paths(report: ValidationReport, base_dir: Path = Path("da
             )
 
 
+def check_length_distribution(
+    rows: list[dict], dataset_name: str, report: ValidationReport,
+    short_threshold: int = 50,
+    long_threshold: int = 8000,
+) -> None:
+    """Check output length distribution for anomalies."""
+    if not rows:
+        return
+
+    lengths = []
+    for row in rows:
+        text = row.get("output", row.get("chosen", ""))
+        lengths.append(len(text))
+
+    if not lengths:
+        return
+
+    avg = sum(lengths) / len(lengths)
+    sorted_lengths = sorted(lengths)
+    median = sorted_lengths[len(sorted_lengths) // 2]
+    p10 = sorted_lengths[len(sorted_lengths) // 10] if len(sorted_lengths) >= 10 else sorted_lengths[0]
+    p90 = sorted_lengths[int(len(sorted_lengths) * 0.9)] if len(sorted_lengths) >= 10 else sorted_lengths[-1]
+
+    report.note(
+        f"{dataset_name}: output length — median={median}, avg={avg:.0f}, "
+        f"p10={p10}, p90={p90}"
+    )
+
+    short_count = sum(1 for l in lengths if l < short_threshold)
+    long_count = sum(1 for l in lengths if l > long_threshold)
+
+    if short_count > len(lengths) * 0.1:
+        report.warn(
+            f"{dataset_name}: {short_count}/{len(lengths)} outputs are very short "
+            f"(< {short_threshold} chars) — potential truncation or empty responses"
+        )
+
+    if long_count > len(lengths) * 0.1:
+        report.warn(
+            f"{dataset_name}: {long_count}/{len(lengths)} outputs are very long "
+            f"(> {long_threshold} chars) — may exceed context window"
+        )
+
+
+def check_lexical_diversity(
+    rows: list[dict], dataset_name: str, report: ValidationReport,
+) -> None:
+    """Check vocabulary diversity across outputs (type-token ratio)."""
+    if not rows:
+        return
+
+    all_tokens: list[str] = []
+    for row in rows:
+        text = row.get("output", row.get("chosen", ""))
+        tokens = text.lower().split()
+        all_tokens.extend(tokens)
+
+    if not all_tokens:
+        return
+
+    unique = len(set(all_tokens))
+    total = len(all_tokens)
+    ttr = unique / total if total > 0 else 0
+
+    report.note(
+        f"{dataset_name}: lexical diversity — {unique} unique / {total} total tokens "
+        f"(TTR={ttr:.3f})"
+    )
+
+    if ttr < 0.01 and total > 100:
+        report.warn(
+            f"{dataset_name}: extremely low lexical diversity (TTR={ttr:.3f}) — "
+            f"outputs may be repetitive or formulaic"
+        )
+
+
+def check_dpo_pair_similarity(
+    rows: list[dict], dataset_name: str, report: ValidationReport,
+) -> None:
+    """Check similarity between chosen/rejected pairs in DPO data."""
+    if not rows:
+        return
+
+    identical = 0
+    very_similar = 0
+    very_different = 0
+
+    for row in rows:
+        chosen = row.get("chosen", "").strip()
+        rejected = row.get("rejected", "").strip()
+
+        if not chosen or not rejected:
+            continue
+
+        if chosen == rejected:
+            identical += 1
+            continue
+
+        # Quick length-ratio similarity check
+        len_c, len_r = len(chosen), len(rejected)
+        if len_c > 0 and len_r > 0:
+            ratio = min(len_c, len_r) / max(len_c, len_r)
+            # Check first 200 chars overlap
+            overlap = sum(1 for a, b in zip(chosen[:200], rejected[:200]) if a == b)
+            char_sim = overlap / min(200, min(len_c, len_r))
+
+            if char_sim > 0.95:
+                very_similar += 1
+            elif ratio < 0.2:
+                very_different += 1
+
+    total = len(rows)
+    if identical:
+        report.warn(
+            f"{dataset_name}: {identical}/{total} DPO pairs are identical — "
+            f"no learning signal"
+        )
+    if very_similar > total * 0.5:
+        report.warn(
+            f"{dataset_name}: {very_similar}/{total} DPO pairs are very similar — "
+            f"weak preference signal, consider quality-based filtering"
+        )
+    if very_different > total * 0.5:
+        report.note(
+            f"{dataset_name}: {very_different}/{total} DPO pairs have very different "
+            f"lengths — strong structural signal"
+        )
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
@@ -335,11 +464,14 @@ def validate(
         check_diversity(sft_rows, "SFT", report)
         check_byte_ranges(sft_rows, "SFT", report)
         check_category_distribution(sft_rows, "SFT", report)
+        check_length_distribution(sft_rows, "SFT", report)
+        check_lexical_diversity(sft_rows, "SFT", report)
 
     if dpo_rows:
         check_duplicates(dpo_rows, "DPO", report)
         check_byte_ranges(dpo_rows, "DPO", report)
         check_dpo_validity(dpo_rows, report)
+        check_dpo_pair_similarity(dpo_rows, "DPO", report)
 
     # Check train/probe leakage
     if train_rows and probe_rows:
@@ -356,7 +488,17 @@ def validate(
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Validate distillation datasets before training.")
+    parser = argparse.ArgumentParser(
+        description="Validate distillation datasets before training.",
+        epilog="""\
+examples:
+  %(prog)s --sft-data data/purified/consensus_sft.jsonl
+  %(prog)s --sft-data data/purified/consensus_sft.jsonl --dpo-data data/purified/conflict_dpo.jsonl
+  %(prog)s --train-data data/purified/train_sft.jsonl --probe-data data/purified/eval_probes.jsonl
+  %(prog)s --sft-data data/purified/consensus_sft.jsonl --json-out validation_report.json
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--sft-data", help="Path to consensus_sft.jsonl")
     parser.add_argument("--dpo-data", help="Path to conflict_dpo.jsonl")
     parser.add_argument("--train-data", help="Path to train_sft.jsonl (post-split)")

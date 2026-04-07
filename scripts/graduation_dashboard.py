@@ -149,6 +149,18 @@ def _build_html(report: dict[str, Any]) -> str:
         html += f"<th>{c}</th>"
     html += "<th>Overall</th><th></th></tr></thead><tbody>"
 
+    # Pre-compute best value per category for delta indicators
+    best_per_cat: dict[str, float] = {}
+    best_overall = 0.0
+    for s in students:
+        retention = s.get("retention", {})
+        for c in cats:
+            val = retention.get(c)
+            if val is not None:
+                best_per_cat[c] = max(best_per_cat.get(c, 0.0), val)
+        best_overall = max(best_overall, s.get("overall_retention", 0))
+    show_delta = len(students) > 1
+
     for s in students:
         retention = s.get("retention", {})
         detail = s.get("retention_detail", {})
@@ -166,6 +178,13 @@ def _build_html(report: dict[str, Any]) -> str:
             ci = ""
             if "ci_lower" in info:
                 ci = f'<br><span style="font-size:11px;color:#9ca3af">{info["ci_lower"]:.0%}&ndash;{info["ci_upper"]:.0%}</span>'
+            # Delta indicator vs best in category
+            delta = ""
+            if show_delta and c in best_per_cat:
+                diff = val - best_per_cat[c]
+                if abs(diff) >= 0.005:
+                    d_color = "#dc2626" if diff < 0 else "#16a34a"
+                    delta = f'<br><span style="font-size:11px;color:{d_color}">{diff:+.0%}</span>'
             if c in low_conf:
                 cls = "cell-low"
             elif c in weak:
@@ -174,10 +193,16 @@ def _build_html(report: dict[str, Any]) -> str:
                 cls = "cell-great"
             else:
                 cls = "cell-good"
-            html += f'<td class="cell-val {cls}">{val:.0%}{ci}</td>'
+            html += f'<td class="cell-val {cls}">{val:.0%}{ci}{delta}</td>'
 
         overall = s.get("overall_retention", 0)
-        html += f'<td class="cell-val"><b>{overall:.0%}</b></td>'
+        o_delta = ""
+        if show_delta:
+            diff = overall - best_overall
+            if abs(diff) >= 0.005:
+                d_color = "#dc2626" if diff < 0 else "#16a34a"
+                o_delta = f' <span style="font-size:11px;color:{d_color}">({diff:+.0%})</span>'
+        html += f'<td class="cell-val"><b>{overall:.0%}</b>{o_delta}</td>'
         chip = "chip-pass" if graduated else "chip-fail"
         word = "Pass" if graduated else "Fail"
         html += f'<td><span class="chip {chip}">{word}</span></td>'
@@ -197,6 +222,72 @@ def build_dashboard(report: dict[str, Any]) -> gr.Blocks:
     return demo
 
 
+def build_markdown(report: dict[str, Any]) -> str:
+    """Export graduation report as Markdown text."""
+    threshold = report.get("threshold", 0.85)
+    students = report.get("students", [])
+    ruin_threshold = report.get("ruin_threshold", 0.50)
+
+    if not students:
+        return "# Graduation Report\n\nNo results.\n"
+
+    best = max(students, key=lambda s: s.get("overall_retention", 0))
+    best_pct = round(best.get("overall_retention", 0) * 100)
+    n_grad = sum(1 for s in students if s.get("graduated"))
+    n_total = len(students)
+
+    if n_grad == n_total:
+        verdict = "SHIP IT"
+    elif n_grad > 0:
+        verdict = "REVIEW"
+    else:
+        verdict = "KILL IT"
+
+    lines: list[str] = []
+    lines.append(f"# Graduation Report — {verdict} ({best_pct}%)")
+    lines.append(f"\n{n_grad}/{n_total} graduated · threshold {threshold:.0%}\n")
+
+    # Ruin alerts
+    for s in students:
+        for cat, info in s.get("retention_detail", {}).items():
+            if not info.get("low_confidence") and info.get("value", 1.0) < ruin_threshold:
+                lines.append(f"- **Ruin**: {s['variant_id']} {cat} {info['value']:.0%}")
+
+    # Emergence alerts
+    for s in students:
+        for cat in s.get("emergent_categories", []):
+            lines.append(f"- **Emergence**: {s['variant_id']} {cat}")
+
+    # Table
+    cats: list[str] = []
+    seen: set[str] = set()
+    for s in students:
+        for c in s.get("retention", {}):
+            if c not in seen:
+                cats.append(c)
+                seen.add(c)
+
+    header = "| Variant | " + " | ".join(cats) + " | Overall | Status |"
+    sep = "|" + "|".join(["---"] * (len(cats) + 3)) + "|"
+    lines.append(f"\n{header}")
+    lines.append(sep)
+
+    for s in students:
+        retention = s.get("retention", {})
+        graduated = s.get("graduated", False)
+        row = f"| **{s['variant_id']}** |"
+        for c in cats:
+            val = retention.get(c)
+            row += f" {val:.0%} |" if val is not None else " — |"
+        overall = s.get("overall_retention", 0)
+        status = "Pass" if graduated else "Fail"
+        row += f" **{overall:.0%}** | {status} |"
+        lines.append(row)
+
+    lines.append(f"\n*Threshold {threshold:.0%} · Ruin floor {ruin_threshold:.0%}*\n")
+    return "\n".join(lines)
+
+
 def _build_live_html(results: list[dict]) -> str:
     """Build a live progress view from forge_results.jsonl entries."""
     if not results:
@@ -212,16 +303,23 @@ def _build_live_html(results: list[dict]) -> str:
     html += "</div>"
 
     html += '<table class="grid"><thead><tr>'
-    html += "<th>Variant</th><th>Model</th><th>SFT Loss</th><th>DPO Loss</th><th>Time</th><th>Status</th>"
+    html += "<th>#</th><th>Variant</th><th>Model</th><th>SFT Loss</th><th>DPO Loss</th><th>Time</th><th>Status</th>"
     html += "</tr></thead><tbody>"
 
-    for r in sorted(results, key=lambda x: x.get("sft_final_loss") or float("inf")):
+    sorted_results = sorted(results, key=lambda x: x.get("sft_final_loss") or float("inf"))
+    best_loss = sorted_results[0].get("sft_final_loss") if sorted_results and sorted_results[0].get("ok") else None
+
+    for rank, r in enumerate(sorted_results, 1):
         sft = f"{r['sft_final_loss']:.4f}" if r.get("sft_final_loss") is not None else "n/a"
         dpo = f"{r['dpo_final_loss']:.4f}" if r.get("dpo_final_loss") is not None else "n/a"
         elapsed = f"{r.get('elapsed_sec', 0):.0f}s"
         chip = "chip-pass" if r.get("ok") else "chip-fail"
         word = "OK" if r.get("ok") else "FAIL"
-        html += f'<tr><td><b>{r.get("variant_id", "?")}</b></td>'
+        # Highlight champion (rank 1 with ok status)
+        is_champion = rank == 1 and r.get("ok")
+        row_style = ' style="background:#f0fdf4"' if is_champion else ""
+        rank_display = f"🏆 {rank}" if is_champion else str(rank)
+        html += f'<tr{row_style}><td>{rank_display}</td><td><b>{r.get("variant_id", "?")}</b></td>'
         html += f'<td>{r.get("model", "?")}</td>'
         html += f'<td class="cell-val">{sft}</td>'
         html += f'<td class="cell-val">{dpo}</td>'
@@ -259,7 +357,16 @@ def build_live_dashboard(results_path: Path, refresh_sec: int = 10) -> gr.Blocks
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Graduation dashboard.")
+    parser = argparse.ArgumentParser(
+        description="Graduation dashboard.",
+        epilog="""\
+examples:
+  %(prog)s --saves-tag zena007
+  %(prog)s --report saves/zena007/graduation_report.json --port 8080
+  %(prog)s --saves-tag zena007 --live --refresh-sec 5
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--report", help="Path to graduation_report.json.")
     parser.add_argument("--saves-tag", help="Load from saves/<tag>/graduation_report.json.")
     parser.add_argument("--port", type=int, default=7860)
@@ -268,6 +375,7 @@ def main() -> int:
                         help="Live mode: watch forge_results.jsonl and auto-refresh.")
     parser.add_argument("--refresh-sec", type=int, default=10,
                         help="Auto-refresh interval in seconds for live mode (default: 10).")
+    parser.add_argument("--export-markdown", help="Export report as Markdown to this path (no UI launched).")
     args = parser.parse_args()
 
     # Live mode — watch forge results
@@ -297,6 +405,16 @@ def main() -> int:
             report = json.loads(report_path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, ValueError):
             report = {}
+
+    # Markdown export (no UI)
+    if args.export_markdown:
+        md = build_markdown(report)
+        md_path = Path(args.export_markdown)
+        md_path.parent.mkdir(parents=True, exist_ok=True)
+        md_path.write_text(md, encoding="utf-8")
+        print(f"Markdown exported to {md_path}")  # xray: ignore[PY-004]
+        return 0
+
     demo = build_dashboard(report)
     demo.launch(server_port=args.port, share=args.share)
     return 0

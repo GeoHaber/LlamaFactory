@@ -312,59 +312,114 @@ def _save_jsonl(rows: list[dict], path: Path) -> None:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
+def _count_lines(path: Path) -> int:
+    """Count non-empty lines in a file (for resume tracking)."""
+    if not path.exists():
+        return 0
+    count = 0
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if line.strip():
+                count += 1
+    return count
+
+
+def _append_jsonl(row: dict, path: Path) -> None:
+    """Append a single JSON line to a file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
 def main() -> int:
-    parser = argparse.ArgumentParser(description="Purify multi-teacher outputs into GOLD/SILVER/DROP tiers.")
+    parser = argparse.ArgumentParser(
+        description="Purify multi-teacher outputs into GOLD/SILVER/DROP tiers.",
+        epilog="""\
+examples:
+  %(prog)s --input data/teacher_responses.jsonl --out-dir data/purified
+  %(prog)s --input data/teacher_responses.jsonl --out-dir data/purified --resume
+  %(prog)s --input data/teacher_responses.jsonl --out-dir data/purified --answer-threshold 0.9
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
     parser.add_argument("--input", required=True, help="Path to teacher_responses.jsonl.")
     parser.add_argument("--out-dir", required=True, help="Output directory for purified data.")
     parser.add_argument("--answer-threshold", type=float, default=0.85, help="N-gram similarity threshold for answer agreement (default: 0.85).")
     parser.add_argument("--reason-threshold", type=float, default=0.6, help="N-gram similarity threshold for reasoning alignment (default: 0.6).")
+    parser.add_argument("--resume", action="store_true",
+                        help="Resume from where last run left off (skip already-processed samples).")
     args = parser.parse_args()
 
     input_path = Path(args.input)
     out_dir = Path(args.out_dir)  # xray: ignore[PY-004]
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    gold_path = out_dir / "consensus_sft.jsonl"
+    silver_path = out_dir / "conflict_dpo.jsonl"
+    drop_path = out_dir / "dropped_log.jsonl"
 
     samples = _load_jsonl(input_path)
-    print(f"Loaded {len(samples)} samples for purification.")  # xray: ignore[PY-004]
+    total = len(samples)
+    print(f"Loaded {total} samples for purification.")  # xray: ignore[PY-004]
 
-    gold: list[dict] = []
-    silver: list[dict] = []
-    dropped: list[dict] = []
+    # Resume support: count already-processed lines across all 3 output files
+    skip = 0
+    if args.resume:
+        skip = _count_lines(gold_path) + _count_lines(silver_path) + _count_lines(drop_path)
+        if skip > 0:
+            print(f"Resuming: skipping {skip} already-processed samples.")  # xray: ignore[PY-004]
+        if skip >= total:
+            print("All samples already processed — nothing to do.")  # xray: ignore[PY-004]
+    else:
+        # Fresh run: truncate output files
+        for p in (gold_path, silver_path, drop_path):
+            if p.exists():
+                p.write_text("", encoding="utf-8")
 
-    for sample in samples:
+    gold_count = _count_lines(gold_path) if args.resume else 0
+    silver_count = _count_lines(silver_path) if args.resume else 0
+    drop_count = _count_lines(drop_path) if args.resume else 0
+
+    for idx, sample in enumerate(samples):
+        if idx < skip:
+            continue
+
         tier, record = classify_sample(sample, args.answer_threshold, args.reason_threshold)
         if tier == "GOLD":
-            gold.append(record)
+            _append_jsonl(record, gold_path)
+            gold_count += 1
         elif tier == "SILVER":
-            silver.append(record)
+            _append_jsonl(record, silver_path)
+            silver_count += 1
         else:
-            dropped.append(record)
+            _append_jsonl(record, drop_path)
+            drop_count += 1
 
-    # Save outputs
-    _save_jsonl(gold, out_dir / "consensus_sft.jsonl")
-    _save_jsonl(silver, out_dir / "conflict_dpo.jsonl")
-    _save_jsonl(dropped, out_dir / "dropped_log.jsonl")
+        # Progress every 500 samples
+        processed = idx + 1
+        if processed % 500 == 0 or processed == total:
+            print(f"  [{processed}/{total}] G={gold_count} S={silver_count} D={drop_count}", flush=True)  # xray: ignore[PY-004]
 
     # Save report
     report = {
-        "total_samples": len(samples),
-        "gold_count": len(gold),
-        "silver_count": len(silver),
-        "dropped_count": len(dropped),
-        "gold_pct": round(100.0 * len(gold) / max(len(samples), 1), 1),
-        "silver_pct": round(100.0 * len(silver) / max(len(samples), 1), 1),
-        "dropped_pct": round(100.0 * len(dropped) / max(len(samples), 1), 1),
+        "total_samples": total,
+        "gold_count": gold_count,
+        "silver_count": silver_count,
+        "dropped_count": drop_count,
+        "gold_pct": round(100.0 * gold_count / max(total, 1), 1),
+        "silver_pct": round(100.0 * silver_count / max(total, 1), 1),
+        "dropped_pct": round(100.0 * drop_count / max(total, 1), 1),
         "answer_threshold": args.answer_threshold,
         "reason_threshold": args.reason_threshold,
     }
     report_path = out_dir / "purification_report.json"
-    report_path.parent.mkdir(parents=True, exist_ok=True)
     with report_path.open("w", encoding="utf-8") as f:  # xray: ignore[PY-004]
         json.dump(report, f, indent=2)  # xray: ignore[PY-004]
   # xray: ignore-next[PY-004]
     print(f"\n=== Purification Report ===")  # xray: ignore[PY-004]
-    print(f"  GOLD  (SFT):  {len(gold):>4} ({report['gold_pct']:.1f}%)")  # xray: ignore[PY-004]
-    print(f"  SILVER (DPO): {len(silver):>4} ({report['silver_pct']:.1f}%)")  # xray: ignore[PY-004]
-    print(f"  DROP:         {len(dropped):>4} ({report['dropped_pct']:.1f}%)")  # xray: ignore[PY-004]
+    print(f"  GOLD  (SFT):  {gold_count:>4} ({report['gold_pct']:.1f}%)")  # xray: ignore[PY-004]
+    print(f"  SILVER (DPO): {silver_count:>4} ({report['silver_pct']:.1f}%)")  # xray: ignore[PY-004]
+    print(f"  DROP:         {drop_count:>4} ({report['dropped_pct']:.1f}%)")  # xray: ignore[PY-004]
     print(f"\nOutputs saved to {out_dir}/")  # xray: ignore[PY-004]
     return 0
 

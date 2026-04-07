@@ -662,7 +662,14 @@ def _make_server_backend(manifest: dict):
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description="Generate responses from multiple teachers via zen_core_libs llama.cpp."
+        description="Generate responses from multiple teachers via zen_core_libs llama.cpp.",
+        epilog="""\
+examples:
+  %(prog)s --manifest teachers.json --prompts data/prompts.jsonl --out data/responses.jsonl
+  %(prog)s --manifest teachers.json --prompts data/prompts.jsonl --out data/responses.jsonl --dispatch-mode teacher-fifo
+  %(prog)s --manifest teachers.json --prompts data/prompts.jsonl --out data/responses.jsonl --teacher-timeout 120
+""",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument("--manifest", required=True, help="Path to teacher_manifest.json.")
     parser.add_argument("--prompts", required=True, help="Path to prompts file (JSONL, JSON alpaca, or JSON messages).")
