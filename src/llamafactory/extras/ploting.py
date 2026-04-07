@@ -69,8 +69,12 @@ def gen_loss_plot(trainer_log: list[dict[str, Any]]) -> "matplotlib.figure.Figur
 def plot_loss(save_dictionary: str, keys: list[str] = ["loss"]) -> None:
     r"""Plot loss curves and saves the image."""
     plt.switch_backend("agg")
-    with open(os.path.join(save_dictionary, TRAINER_STATE_NAME), encoding="utf-8") as f:
-        data = json.load(f)
+    trainer_state_path = os.path.join(save_dictionary, TRAINER_STATE_NAME)
+    try:
+        with open(trainer_state_path, encoding="utf-8") as f:
+            data = json.load(f)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"Malformed trainer state JSON: {trainer_state_path}") from exc
 
     for key in keys:
         steps, metrics = [], []

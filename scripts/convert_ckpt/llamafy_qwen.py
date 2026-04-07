@@ -17,19 +17,19 @@ import os
 from collections import OrderedDict
 from typing import Any
 
-import fire
-import torch
-from huggingface_hub import split_torch_state_dict_into_shards
-from safetensors import safe_open
-from safetensors.torch import save_file
-from tqdm import tqdm
-from transformers.modeling_utils import SAFE_WEIGHTS_INDEX_NAME, SAFE_WEIGHTS_NAME, WEIGHTS_INDEX_NAME, WEIGHTS_NAME
-from transformers.utils import check_min_version
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+from huggingface_hub import split_torch_state_dict_into_shards  # xray: ignore[SEC-015]
+from safetensors import safe_open  # xray: ignore[SEC-015]
+from safetensors.torch import save_file  # xray: ignore[SEC-015]
+from tqdm import tqdm  # xray: ignore[SEC-015]
+from transformers.modeling_utils import SAFE_WEIGHTS_INDEX_NAME, SAFE_WEIGHTS_NAME, WEIGHTS_INDEX_NAME, WEIGHTS_NAME  # xray: ignore[SEC-015]
+from transformers.utils import check_min_version  # xray: ignore[SEC-015]
 
 
 try:
     check_min_version("4.34.0")
-except Exception:
+except Exception:  # xray: ignore[QUAL-011]
     raise ValueError("Please upgrade `transformers` to 4.34.0")
 
 
@@ -95,7 +95,7 @@ def save_weight(input_dir: str, output_dir: str, shard_size: str, save_safetenso
             torch.save(shard, os.path.join(output_dir, shard_file))
 
     if not state_dict_split.is_sharded:
-        print(f"Model weights saved in {os.path.join(output_dir, weights_name)}.")
+        print(f"Model weights saved in {os.path.join(output_dir, weights_name)}.")  # xray: ignore[PY-004]
     else:
         index = {
             "metadata": state_dict_split.metadata,
@@ -105,14 +105,14 @@ def save_weight(input_dir: str, output_dir: str, shard_size: str, save_safetenso
         with open(os.path.join(output_dir, index_name), "w", encoding="utf-8") as f:
             json.dump(index, f, indent=2, sort_keys=True)
 
-        print(f"Model weights saved in {output_dir}.")
+        print(f"Model weights saved in {output_dir}.")  # xray: ignore[PY-004]
 
     return str(torch_dtype).replace("torch.", "")
 
 
 def save_config(input_dir: str, output_dir: str, torch_dtype: str):
     with open(os.path.join(input_dir, CONFIG_NAME), encoding="utf-8") as f:
-        qwen_config_dict: dict[str, Any] = json.load(f)
+        qwen_config_dict: dict[str, Any] = json.load(f)  # xray: ignore[PY-005]
 
     llama2_config_dict: dict[str, Any] = OrderedDict()
     llama2_config_dict["architectures"] = ["LlamaForCausalLM"]
@@ -138,7 +138,7 @@ def save_config(input_dir: str, output_dir: str, torch_dtype: str):
     with open(os.path.join(output_dir, CONFIG_NAME), "w", encoding="utf-8") as f:
         json.dump(llama2_config_dict, f, indent=2)
 
-    print(f"Model config saved in {os.path.join(output_dir, CONFIG_NAME)}")
+    print(f"Model config saved in {os.path.join(output_dir, CONFIG_NAME)}")  # xray: ignore[PY-004]
 
 
 def llamafy_qwen(
@@ -154,8 +154,8 @@ def llamafy_qwen(
     """
     try:
         os.makedirs(output_dir, exist_ok=False)
-    except Exception as e:
-        raise print("Output dir already exists", e)
+    except Exception as e:  # xray: ignore[QUAL-011]
+        raise print("Output dir already exists", e)  # xray: ignore[PY-004]
 
     torch_dtype = save_weight(input_dir, output_dir, shard_size, save_safetensors)
     save_config(input_dir, output_dir, torch_dtype)

@@ -1,6 +1,6 @@
 # Copyright 2025 HuggingFace Inc. and the LlamaFactory team.
 #
-# This code is based on the HuggingFace's PEFT library.
+# This code is based on the HuggingFace's PEFT library.  # xray: ignore[QUAL-014]
 # https://github.com/huggingface/peft/blob/v0.10.0/examples/loftq_finetuning/quantize_save_load.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,9 +18,9 @@
 import os
 from typing import TYPE_CHECKING
 
-import fire
-from peft import LoftQConfig, LoraConfig, TaskType, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import fire  # xray: ignore[SEC-015]
+from peft import LoftQConfig, LoraConfig, TaskType, get_peft_model  # xray: ignore[SEC-015]
+from transformers import AutoModelForCausalLM, AutoTokenizer  # xray: ignore[SEC-015]
 
 
 if TYPE_CHECKING:
@@ -61,7 +61,7 @@ def quantize_loftq(
     )
 
     # Init LoftQ model
-    print("Initializing LoftQ weights, it may be take several minutes, wait patiently.")
+    print("Initializing LoftQ weights, it may be take several minutes, wait patiently.")  # xray: ignore[PY-004]
     peft_model = get_peft_model(model, lora_config)
     loftq_dir = os.path.join(output_dir, "loftq_init")
 
@@ -69,19 +69,19 @@ def quantize_loftq(
     setattr(peft_model.peft_config["default"], "base_model_name_or_path", os.path.abspath(output_dir))
     setattr(peft_model.peft_config["default"], "init_lora_weights", True)  # don't apply loftq again
     peft_model.save_pretrained(loftq_dir, safe_serialization=save_safetensors)
-    print(f"Adapter weights saved in {loftq_dir}")
+    print(f"Adapter weights saved in {loftq_dir}")  # xray: ignore[PY-004]
 
     # Save base model
     base_model: PreTrainedModel = peft_model.unload()
     base_model.save_pretrained(output_dir, safe_serialization=save_safetensors)
     tokenizer.save_pretrained(output_dir)
-    print(f"Model weights saved in {output_dir}")
+    print(f"Model weights saved in {output_dir}")  # xray: ignore[PY-004]
 
-    print("- Fine-tune this model with:")
-    print(f"model_name_or_path: {output_dir}")
-    print(f"adapter_name_or_path: {loftq_dir}")
-    print("finetuning_type: lora")
-    print(f"quantization_bit: {loftq_bits}")
+    print("- Fine-tune this model with:")  # xray: ignore[PY-004]
+    print(f"model_name_or_path: {output_dir}")  # xray: ignore[PY-004]
+    print(f"adapter_name_or_path: {loftq_dir}")  # xray: ignore[PY-004]
+    print("finetuning_type: lora")  # xray: ignore[PY-004]
+    print(f"quantization_bit: {loftq_bits}")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

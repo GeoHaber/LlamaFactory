@@ -14,12 +14,12 @@
 
 from collections import defaultdict
 
-import fire
-from tqdm import tqdm
+import fire  # xray: ignore[SEC-015]
+from tqdm import tqdm  # xray: ignore[SEC-015]
 
-from llamafactory.data import get_dataset, get_template_and_fix_tokenizer
-from llamafactory.hparams import get_train_args
-from llamafactory.model import load_tokenizer
+from llamafactory.data import get_dataset, get_template_and_fix_tokenizer  # xray: ignore[SEC-015]
+from llamafactory.hparams import get_train_args  # xray: ignore[SEC-015]
+from llamafactory.model import load_tokenizer  # xray: ignore[SEC-015]
 
 
 def length_cdf(
@@ -62,7 +62,7 @@ def length_cdf(
     for length, count in length_tuples:
         count_accu += count
         prob_accu += count / total_num * 100
-        print(f"{count_accu:d} ({prob_accu:.2f}%) samples have length < {length + interval}.")
+        print(f"{count_accu:d} ({prob_accu:.2f}%) samples have length < {length + interval}.")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

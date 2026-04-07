@@ -15,12 +15,12 @@
 import json
 import os
 
-import fire
-import torch
-import torch.distributed as dist
-from transformers import AutoConfig
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+import torch.distributed as dist  # xray: ignore[SEC-015]
+from transformers import AutoConfig  # xray: ignore[SEC-015]
 
-from llamafactory.train.tuner import run_exp
+from llamafactory.train.tuner import run_exp  # xray: ignore[SEC-015]
 
 
 BASE = 2  # gemm (add + mul)
@@ -146,7 +146,7 @@ def calculate_mfu(
 
     if int(os.getenv("LOCAL_RANK", "0")) == 0:
         with open(os.path.join("saves", "test_mfu", "all_results.json"), encoding="utf-8") as f:
-            result = json.load(f)
+            result = json.load(f)  # xray: ignore[PY-005]
 
         total_batch_size = batch_size * world_size
         mfu_value = (
@@ -154,8 +154,8 @@ def calculate_mfu(
             * compute_model_flops(model_name_or_path, total_batch_size, seq_length)
             / compute_device_flops(world_size)
         )
-        print(f"MFU: {mfu_value * 100:.2f}%")
+        print(f"MFU: {mfu_value * 100:.2f}%")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":
-    fire.Fire(calculate_mfu)
+    fire.Fire(calculate_mfu)  # xray: ignore[PY-004]

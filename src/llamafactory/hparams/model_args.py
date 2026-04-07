@@ -165,6 +165,34 @@ class BaseModelArguments:
         default=EngineName.HF,
         metadata={"help": "Backend engine used at inference."},
     )
+    use_ad_coordinator: bool = field(
+        default=False,
+        metadata={"help": "Whether or not to enable adaptive decomposition coordinator at inference."},
+    )
+    ad_coordinator_policy: Literal["fast", "balanced", "quality"] = field(
+        default="balanced",
+        metadata={"help": "Routing policy used by AD coordinator."},
+    )
+    ad_complexity_threshold: int = field(
+        default=400,
+        metadata={"help": "Minimum query length considered complex by AD coordinator."},
+    )
+    ad_use_role_specific_models: bool = field(
+        default=False,
+        metadata={"help": "Whether or not to use dedicated models for planner/coder/logician roles."},
+    )
+    ad_planner_model_name_or_path: str | None = field(
+        default=None,
+        metadata={"help": "Optional dedicated model path for planner role in AD coordinator."},
+    )
+    ad_coder_model_name_or_path: str | None = field(
+        default=None,
+        metadata={"help": "Optional dedicated model path for coder role in AD coordinator."},
+    )
+    ad_logician_model_name_or_path: str | None = field(
+        default=None,
+        metadata={"help": "Optional dedicated model path for logician role in AD coordinator."},
+    )
     offload_folder: str = field(
         default="offload",
         metadata={"help": "Path to offload model weights."},
@@ -423,7 +451,10 @@ class VllmArguments:
 
     def __post_init__(self):
         if isinstance(self.vllm_config, str) and self.vllm_config.startswith("{"):
-            self.vllm_config = _convert_str_dict(json.loads(self.vllm_config))
+            try:
+                self.vllm_config = _convert_str_dict(json.loads(self.vllm_config))
+            except json.JSONDecodeError as exc:
+                raise ValueError("`vllm_config` must be a valid JSON object string.") from exc
 
 
 @dataclass
@@ -455,7 +486,10 @@ class SGLangArguments:
 
     def __post_init__(self):
         if isinstance(self.sglang_config, str) and self.sglang_config.startswith("{"):
-            self.sglang_config = _convert_str_dict(json.loads(self.sglang_config))
+            try:
+                self.sglang_config = _convert_str_dict(json.loads(self.sglang_config))
+            except json.JSONDecodeError as exc:
+                raise ValueError("`sglang_config` must be a valid JSON object string.") from exc
 
 
 @dataclass

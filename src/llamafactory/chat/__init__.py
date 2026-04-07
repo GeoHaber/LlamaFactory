@@ -13,7 +13,9 @@
 # limitations under the License.
 
 from .base_engine import BaseEngine
+from .autotune import HardwareAutoTuner
 from .chat_model import ChatModel
+from .coordinator import ADCoordinator, CoordinatorTrace
 
 
-__all__ = ["BaseEngine", "ChatModel"]
+__all__ = ["BaseEngine", "HardwareAutoTuner", "ChatModel", "ADCoordinator", "CoordinatorTrace"]

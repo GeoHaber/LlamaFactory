@@ -64,4 +64,83 @@ CSS = r"""
 .dark .modal-box {
   border: 2px solid white !important;
 }
+
+.lf-help-q {
+  margin-left: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #64748b;
+  background: transparent;
+  color: #64748b;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  cursor: pointer;
+}
+
+.lf-help-q:hover {
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+.lf-help-host {
+  position: relative;
+}
+
+.lf-help-q-corner {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #64748b;
+  background: rgba(17, 24, 39, 0.85);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 16px;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.lf-help-q-corner:hover {
+  border-color: #0ea5e9;
+  color: #0ea5e9;
+}
+
+.lf-zena-menu {
+  position: fixed;
+  z-index: 3000;
+  min-width: 220px;
+  border-radius: 10px;
+  border: 1px solid #334155;
+  background: #111827;
+  color: #e5e7eb;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  padding: 10px;
+}
+
+.lf-zena-menu h4 {
+  margin: 0 0 10px 0;
+  font-size: 13px;
+}
+
+.lf-zena-menu label {
+  display: block;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.lf-zena-menu select,
+.lf-zena-menu button {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid #475569;
+  background: #1f2937;
+  color: #e5e7eb;
+}
 """

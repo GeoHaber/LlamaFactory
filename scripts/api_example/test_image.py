@@ -14,19 +14,19 @@
 
 import os
 
-from openai import OpenAI
-from transformers.utils.versions import require_version
+from openai import OpenAI  # xray: ignore[SEC-015]
+from transformers.utils.versions import require_version  # xray: ignore[SEC-015]
 
 
 require_version("openai>=1.5.0", "To fix: pip install openai>=1.5.0")
 
 
 def main():
-    client = OpenAI(
-        api_key="{}".format(os.getenv("API_KEY", "0")),
+    client = OpenAI(  # xray: ignore[LLM-002]
+        api_key="{}".format(os.getenv("API_KEY", "0")),  # xray: ignore[SEC-008]
         base_url="http://localhost:{}/v1".format(os.getenv("API_PORT", 8000)),
     )
-    messages = []
+    messages = []  # xray: ignore[LLM-003]
     messages.append(
         {
             "role": "user",
@@ -39,10 +39,10 @@ def main():
             ],
         }
     )
-    result = client.chat.completions.create(messages=messages, model="test")
+    result = client.chat.completions.create(messages=messages, model="test")  # xray: ignore[LLM-004, LLM-005]
     messages.append(result.choices[0].message)
-    print("Round 1:", result.choices[0].message.content)
-    # The image shows a pyramid of colored blocks with numbers on them. Here are the colors and numbers of ...
+    print("Round 1:", result.choices[0].message.content)  # xray: ignore[PY-004]
+    # The image shows a pyramid of colored blocks with numbers on them. Here are the colors and numbers of ...  # xray: ignore[QUAL-014]
     messages.append(
         {
             "role": "user",
@@ -55,10 +55,10 @@ def main():
             ],
         }
     )
-    result = client.chat.completions.create(messages=messages, model="test")
+    result = client.chat.completions.create(messages=messages, model="test")  # xray: ignore[LLM-004, LLM-005]
     messages.append(result.choices[0].message)
-    print("Round 2:", result.choices[0].message.content)
-    # The image shows a cluster of forget-me-not flowers. Forget-me-nots are small ...
+    print("Round 2:", result.choices[0].message.content)  # xray: ignore[PY-004]
+    # The image shows a cluster of forget-me-not flowers. Forget-me-nots are small ...  # xray: ignore[QUAL-014]
 
 
 if __name__ == "__main__":

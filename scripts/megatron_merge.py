@@ -1,6 +1,6 @@
 # Copyright 2025 the ROLL team and the LlamaFactory team.
 #
-# This code is modified from the ROLL library.
+# This code is modified from the ROLL library.  # xray: ignore[QUAL-014]
 # https://github.com/alibaba/ROLL/blob/main/mcore_adapter/tools/convert.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,12 +17,12 @@
 
 import os
 
-import fire
-import torch
-from mcore_adapter.models.converter.post_converter import convert_checkpoint_to_hf, convert_checkpoint_to_mca
-from mcore_adapter.training_args import DistributingParallelArguments
-from mcore_adapter.utils import get_logger
-from transformers import AutoConfig
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+from mcore_adapter.models.converter.post_converter import convert_checkpoint_to_hf, convert_checkpoint_to_mca  # xray: ignore[SEC-015]
+from mcore_adapter.training_args import DistributingParallelArguments  # xray: ignore[SEC-015]
+from mcore_adapter.utils import get_logger  # xray: ignore[SEC-015]
+from transformers import AutoConfig  # xray: ignore[SEC-015]
 
 
 logger = get_logger(__name__)

@@ -1,0 +1,101 @@
+Backend: InProcessAdapter (direct GGUF, no HTTP)
+Adaptive budgets: enabled (task-aware max_tokens + temperature)
+Loaded 629 prompts, 3 teachers.
+  Resumed 629 cached responses for gemma-4-26B-A4B
+  Resumed 614 cached responses for Qwen2.5-14B-Instruct
+  Resumed 333 cached responses for Mistral-7B-Instruct-v0.3
+
+=== Teacher 1/3: Mistral-7B-Instruct-v0.3 (296/629 remaining, ~4.1 GB) ===
+
+=== Teacher 2/3: Qwen2.5-14B-Instruct (15/629 remaining, ~8.4 GB) ===
+
+=== Teacher 3/3: gemma-4-26B-A4B (0/629 remaining, ~15.9 GB) ===
+  All 629 prompts already cached -- skipping.
+
+Dispatch mode: SPSC ring-buffer FIFO (v4)  |  fifo_depth=auto->2048  |  avg_prompt_bytes=154.2  |  ram_pause<12.0%  ram_resume>22.0%
+
+Assigned 311 tasks across 2 workers.
+
+Pre-warming models (sequential load into cache)...
+llama_context: n_ctx_seq (8192) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
+  Loaded Mistral-7B-Instruct-v0.3 (~4.1 GB) in 8.3s
+llama_context: n_ctx_seq (8192) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
+  Loaded Qwen2.5-14B-Instruct (~8.4 GB) in 16.8s
+All models warm. Starting concurrent inference.
+
+  [Mistral-7B-Instruct-v0.3] 1/296 (0%) 'tr-hu2en-0250' 28.3s
+  [Qwen2.5-14B-Instruct] 1/15 (7%) 'tr-en2pt-0224' 86.7s
+  [Qwen2.5-14B-Instruct] 2/15 (13%) 'tr-en2pt-0096' 13.8s [50.2s/prompt, 1.2 prompts/min]
+  [Qwen2.5-14B-Instruct] 3/15 (20%) 'tr-en2id-0031' 12.6s [37.7s/prompt, 1.6 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 2/296 (1%) 'chat-es-0570' 99.4s [63.9s/prompt, 0.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 3/296 (1%) 'tr-ro2hu-0365' 31.5s [53.1s/prompt, 1.1 prompts/min]
+  [Qwen2.5-14B-Instruct] 5/15 (33%) 'tr-hu2ro-0433' 49.7s [35.8s/prompt, 1.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 5/296 (2%) 'ocr-task-0508' 43.0s [65.4s/prompt, 0.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 10/296 (3%) 'tr-he2fr-0447' 30.3s [43.7s/prompt, 1.4 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 15/296 (5%) 'tr-es2pt-0402' 17.8s [35.1s/prompt, 1.7 prompts/min]
+  [Qwen2.5-14B-Instruct] 10/15 (67%) 'tr-en2id-0143' 39.2s [62.1s/prompt, 1.0 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 20/296 (7%) 'tr-en2pt-0008' 18.4s [31.5s/prompt, 1.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 25/296 (8%) 'tr-he2fr-0448' 31.5s [34.4s/prompt, 1.7 prompts/min]
+  [Qwen2.5-14B-Instruct] 15/15 (100%) 'tr-en2he-0115' 77.2s [64.6s/prompt, 0.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 30/296 (10%) 'tr-es2pt-0404' 8.2s [32.7s/prompt, 1.8 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 35/296 (12%) 'chat-fr-0560' 53.4s [27.8s/prompt, 2.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 40/296 (14%) 'tr-de2he-0423' 15.4s [27.1s/prompt, 2.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 45/296 (15%) 'tr-he2en-0331' 21.5s [26.5s/prompt, 2.3 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 50/296 (17%) 'tr-en2pt-0240' 9.1s [27.4s/prompt, 2.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 55/296 (19%) 'tr-pt2fr-0463' 7.7s [23.1s/prompt, 2.6 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 60/296 (20%) 'chat-en-0520' 41.9s [23.1s/prompt, 2.6 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 65/296 (22%) 'chat-ro-0532' 50.0s [20.6s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 70/296 (24%) 'tr-id2en-0343' 14.6s [20.9s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 75/296 (25%) 'tr-en2hu-0170' 8.6s [21.6s/prompt, 2.8 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 80/296 (27%) 'chat-hu-0549' 54.1s [22.1s/prompt, 2.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 85/296 (29%) 'tr-de2he-0421' 20.0s [22.2s/prompt, 2.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 90/296 (30%) 'tr-en2de-0174' 3.9s [20.5s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 95/296 (32%) 'tr-en2pt-0232' 5.1s [18.4s/prompt, 3.3 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 100/296 (34%) 'tr-pt2en-0344' 11.6s [19.1s/prompt, 3.1 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 105/296 (35%) 'tr-hu2en-0354' 13.2s [19.1s/prompt, 3.1 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 110/296 (37%) 'chat-hu-0545' 54.8s [18.6s/prompt, 3.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 115/296 (39%) 'chat-sys-0627' 35.0s [19.8s/prompt, 3.0 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 120/296 (41%) 'tr-fr2de-0393' 7.8s [20.2s/prompt, 3.0 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 125/296 (42%) 'tr-ro2en-0249' 14.2s [21.2s/prompt, 2.8 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 130/296 (44%) 'chat-hu-0540' 36.5s [20.4s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 135/296 (46%) 'tr-es2id-0414' 9.2s [19.0s/prompt, 3.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 140/296 (47%) 'tr-en2hu-0010' 9.2s [18.7s/prompt, 3.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 145/296 (49%) 'chat-de-0587' 54.9s [19.2s/prompt, 3.1 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 150/296 (51%) 'tr-en2he-0083' 11.5s [21.9s/prompt, 2.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 155/296 (52%) 'tr-pt2en-0312' 15.6s [21.0s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 160/296 (54%) 'tr-ro2en-0321' 13.3s [20.7s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 165/296 (56%) 'tr-en2fr-0092' 5.5s [21.6s/prompt, 2.8 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 170/296 (57%) 'tr-ro2fr-0369' 11.1s [20.4s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 175/296 (59%) 'tr-en2ro-0233' 7.8s [17.6s/prompt, 3.4 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 180/296 (61%) 'chat-pt-0600' 40.4s [16.4s/prompt, 3.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 185/296 (62%) 'tr-detect-0480' 4.0s [16.3s/prompt, 3.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 190/296 (64%) 'chat-pt-0602' 54.1s [18.3s/prompt, 3.3 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 195/296 (66%) 'ocr-fix-0506' 7.9s [17.2s/prompt, 3.5 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 200/296 (68%) 'tr-es2de-0409' 9.1s [19.4s/prompt, 3.1 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 205/296 (69%) 'tr-pt2en-0272' 9.8s [20.8s/prompt, 2.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 210/296 (71%) 'tr-en2hu-0218' 9.5s [18.6s/prompt, 3.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 215/296 (73%) 'tr-es2id-0411' 10.1s [19.7s/prompt, 3.0 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 220/296 (74%) 'tr-es2en-0333' 12.1s [17.2s/prompt, 3.5 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 225/296 (76%) 'tr-en2pt-0168' 11.8s [17.9s/prompt, 3.4 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 230/296 (78%) 'tr-hu2en-0274' 14.6s [16.8s/prompt, 3.6 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 235/296 (79%) 'tr-ro2de-0374' 11.2s [15.3s/prompt, 3.9 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 240/296 (81%) 'chat-x-he2en-0614' 18.1s [17.9s/prompt, 3.3 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 245/296 (83%) 'tr-en2pt-0072' 4.1s [17.3s/prompt, 3.5 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 250/296 (84%) 'tr-en2ro-0081' 12.8s [18.7s/prompt, 3.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 255/296 (86%) 'tr-en2es-0045' 6.4s [19.8s/prompt, 3.0 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 260/296 (88%) 'tr-fr2pt-0390' 10.3s [17.9s/prompt, 3.3 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 265/296 (90%) 'tr-en2pt-0160' 9.1s [18.9s/prompt, 3.2 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 270/296 (91%) 'tr-en2id-0007' 11.6s [17.9s/prompt, 3.4 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 275/296 (93%) 'tr-hu2he-0430' 28.7s [19.9s/prompt, 3.0 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 280/296 (95%) 'ocr-know-0518' 39.6s [21.5s/prompt, 2.8 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 285/296 (96%) 'tr-en2ro-0033' 12.8s [19.4s/prompt, 3.1 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 290/296 (98%) 'tr-en2ro-0105' 8.4s [22.2s/prompt, 2.7 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 295/296 (100%) 'tr-en2hu-0026' 13.8s [21.4s/prompt, 2.8 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 296/296 (100%) 'tr-en2he-0115' 14.1s [20.0s/prompt, 3.0 prompts/min]
+
+--- Teacher Speed Summary ---
+  Mistral-7B-Instruct-v0.3: 30 prompts in 6218s wall (avg 20.0s/prompt, 3.0 prompts/min)
+  Qwen2.5-14B-Instruct: 15 prompts in 6218s wall (avg 64.6s/prompt, 0.9 prompts/min)
+
+Saved 629 rows to data\zena007\teacher_responses.jsonl
+Total teacher calls: 311 new + 1576 resumed (skipped 0 via routing)

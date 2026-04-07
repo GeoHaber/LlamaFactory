@@ -40,6 +40,7 @@ LlamaFactory Docs
    advanced/distributed/parallel-dp-tp-ep-sp-cp
    advanced/custom-kernels/triton
    advanced/custom-kernels/fused-operators
+   advanced/ui-backdoor-gemma4-distillation-playbook
 
 .. toctree::
    :maxdepth: 1

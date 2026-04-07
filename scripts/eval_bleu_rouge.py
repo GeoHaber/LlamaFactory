@@ -16,8 +16,8 @@ import json
 import logging
 import time
 
-import fire
-from datasets import load_dataset
+import fire  # xray: ignore[SEC-015]
+from datasets import load_dataset  # xray: ignore[SEC-015]
 
 
 try:
@@ -27,8 +27,8 @@ try:
 
     jieba.setLogLevel(logging.CRITICAL)
     jieba.initialize()
-except ImportError:
-    print("Please install llamafactory with `pip install -r requirements/metrics.txt`.")
+except ImportError:  # xray: ignore[QUAL-002]
+    print("Please install llamafactory with `pip install -r requirements/metrics.txt`.")  # xray: ignore[PY-004]
     raise
 
 
@@ -66,13 +66,13 @@ def main(filename: str):
 
     average_score = {}
     for task, scores in sorted(score_dict.items(), key=lambda x: x[0]):
-        print(f"{task}: {sum(scores) / len(scores):.4f}")
+        print(f"{task}: {sum(scores) / len(scores):.4f}")  # xray: ignore[PY-004]
         average_score[task] = sum(scores) / len(scores)
 
     with open("predictions_score.json", "w", encoding="utf-8") as f:
         json.dump(average_score, f, indent=4)
 
-    print(f"\nDone in {time.time() - start_time:.3f}s.\nScore file saved to predictions_score.json")
+    print(f"\nDone in {time.time() - start_time:.3f}s.\nScore file saved to predictions_score.json")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

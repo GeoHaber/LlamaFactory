@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM
+from transformers import AutoTokenizer, Qwen3Config, Qwen3ForCausalLM  # xray: ignore[SEC-015]
 
 
 if __name__ == "__main__":

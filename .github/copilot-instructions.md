@@ -127,6 +127,128 @@ pip3 install build && python3 -m build
 - Training pipelines are in `src/llamafactory/train/`
 - Support for different training methods: SFT, DPO, PPO, RM, PT, KTO, ORPO
 
+### Multi-Teacher Distillation & FIFO Dispatch
+
+The multi-teacher distillation system generates training data by running multiple GGUF teachers
+concurrently, then splitting outputs into consensus (SFT) and conflict (DPO) datasets.
+
+#### Key scripts
+
+| Script | Purpose |
+|--------|---------|
+| `scripts/multi_teacher_generate.py` | Generate responses from multiple GGUF teachers |
+| `scripts/purify_teacher_outputs.py` | Split responses into consensus (SFT) / conflict (DPO) |
+| `scripts/gen_distill_configs.py` | Auto-generate SFT / DPO / merge YAML configs |
+| `scripts/run_student_forge.py` | Parallel training of multiple student variants (Forge Matrix) |
+| `scripts/eval_student_panel.py` | Two-pass evaluation: quick quiz → deep exam |
+| `scripts/student_registry.py` | Persist eval scores and gap analysis across runs |
+| `scripts/slim_down.py` | GGUF export + speed benchmark of merged model |
+| `scripts/graduation_dashboard.py` | HTML dashboard with SVG verdict ring for eval results |
+| `scripts/benchmark_multi_teacher_dispatch.py` | A/B benchmark for dispatch modes |
+| `scripts/run_zena007_end_to_end.ps1` | Full pipeline orchestrator (sequential or Forge Matrix) |
+
+#### Generation architecture (v4 — SPSC Ring-Buffer FIFO)
+
+- Per-teacher `SPSCRingBuffer` (lock-free, GIL-atomic integer stores)
+- Default 2048-slot depth via `--fifo-size 0` (auto mode)
+- `RAMPressureThrottle` with hysteresis (`--ram-pause-pct 12 --ram-resume-pct 22`)
+- Adaptive decoding budgets per prompt category (`--adaptive-budgets`)
+- Per-teacher JSONL checkpoints in `data/<tag>/checkpoints/` for crash-safe resume
+- Backends: `InProcessAdapter` (direct GGUF, no HTTP) or `LlamaServerManager` (HTTP)
+
+Shared library: `zen_core_libs` provides `SPSCRingBuffer`, `InProcessAdapter`,
+and `RAMPressureThrottle` in `zen_core_libs.common.system` and `zen_core_libs.llm`.
+
+`InProcessAdapter.chat()` signature: `messages: list[dict[str, Any]] | None = None` — always
+use fully-typed dicts. The `_build_messages` helper also returns `list[dict[str, Any]]`.
+
+#### Pipeline stages & crash-resume
+
+Every stage is idempotent — re-run the same command after any crash:
+
+| Stage | Skip condition | Resume behaviour |
+|-------|---------------|-----------------|
+| Generation | `teacher_responses.jsonl` exists with expected row count | Per-teacher checkpoints auto-merged; missing prompts refilled |
+| Purification | `purified/purification_report.json` exists | Full skip |
+| Config gen | Both `*_sft.yaml` and `*_merge.yaml` exist | Full skip |
+| Dataset registration | Entry already in `dataset_info.json` | Idempotent write |
+| SFT training | `adapter_model.safetensors` present in output dir | Auto-resumes from highest `checkpoint-N` |
+| DPO training | Same as SFT, or no `conflict_dpo.jsonl` samples | Skipped entirely when no DPO data |
+| Merge | `saves/<tag>/merged/config.json` exists | Full skip |
+
+#### Student Forge Matrix (parallel multi-variant training)
+
+`run_zena007_end_to_end.ps1 -UseForge` activates Forge Matrix mode which trains N student
+variants in parallel (controlled by `max_parallel` in the matrix YAML). Each variant can
+differ in model, LoRA rank, learning rate, and epoch count. After training, an eval panel
+scores all variants and selects the champion for merging.
+
+Matrix config: `data/forge_matrix/<tag>_matrix.yaml` — defines `sft_data`, `dpo_data`,
+`max_parallel`, `eval_probe_split`, and per-variant settings.
+
+The forge automatically:
+1. Splits `consensus_sft.jsonl` into `train_sft.jsonl` + `eval_probes.jsonl` (probe_fraction)
+2. Registers `<tag>_forge_train_sft` in `dataset_info.json` (relative to `data/` dir)
+3. Generates per-variant YAML configs in `examples/distillation/auto/forge/<tag>/`
+4. Trains variants concurrently via SPSC ring-buffer result collection
+5. Writes `saves/<tag>/forge_results.jsonl` and `saves/<tag>/champion.txt`
+
+#### Student Forge Auto-Healing (`run_student_forge.py`)
+
+`ForgeState` provides crash-safe state management for multi-day training runs:
+
+- **Atomic state file** (`saves/<tag>/forge_state.json`) — records completed/failed variants,
+  heartbeat timestamps, and partial results. Survives crashes.
+- **Checkpoint resume** — `_find_latest_checkpoint(output_dir)` finds the highest
+  `checkpoint-N` directory for automatic resume via `overwrite_output_dir: False`.
+- **Heartbeat** — background thread writes timestamps every 30s; stale heartbeats
+  (>120s) indicate a hung worker.
+- **LLM diagnosis** — `_diagnose_with_llm(stderr)` sends error logs to a local GGUF
+  model for root-cause analysis when a training variant fails.
+- **Idempotent re-run** — ForgeState skips already-completed variants on restart.
+
+Tests: `tests/test_forge_autoheal.py` (12 tests covering state, checkpoints, heartbeat,
+atomic writes).
+
+#### Graduation Dashboard (`graduation_dashboard.py`)
+
+Generates a single-page HTML report from a graduation report JSON:
+
+- SVG ring with pass/fail/review verdict and percentage
+- Clean HTML table with per-category retention, confidence, and status
+- Ruin and emergence alert banners
+- Raw JSON in an accordion for debugging
+
+Usage: `python scripts/graduation_dashboard.py --saves-tag zena007`
+
+#### Graduation Exam (`zen_core_libs.llm.eval`)
+
+Shared evaluation library in `zen_core_libs` (not in this repo). Key exports:
+
+- `compute_retention()` — teacher-vs-student retention ratio per category
+- `graduation_report()` — multi-student comparison with pass/fail verdicts
+- `bootstrap_ci()` — confidence intervals via bootstrap resampling
+- `detect_emergence()` — finds categories where student beats all teachers
+- `RuinDetected` — exception raised when retention drops below threshold
+- `extract_category()` — extracts category from prompt ID or explicit field
+
+Tests: `zen_core_libs/llm/tests/test_eval.py` (42 tests).
+
+#### Config generation rules (`gen_distill_configs.py`)
+
+- `_merge_config(student, tag, has_dpo=True/False)` — only chains DPO adapter when
+  `has_dpo=True`; if no conflict/DPO samples exist the merge config uses SFT adapter only
+- **Do NOT add `booster: auto`** (or any non-HfArgumentParser key) to generated YAML configs —
+  LlamaFactory's `parse_dict` will raise `ValueError: Some keys are not used` at startup
+- `bf16` is set to `not cpu_safe` — always pass `--cpu-safe` on CPU-only machines
+
+#### `dataset_info.json` file_name convention
+
+Paths in `dataset_info.json` are **relative to `dataset_dir`** (default `"data"`). Always
+strip the leading `data/` prefix. Use `_rel_to_data(path)` helper in `run_student_forge.py`
+to compute the correct relative path. Wrong: `"data/zena007/purified/x.jsonl"` →
+LlamaFactory joins `data/ + data/zena007/...` = double-path crash.
+
 ## Key Dependencies
 
 - Python >= 3.9.0
@@ -136,6 +258,7 @@ pip3 install build && python3 -m build
 - accelerate for distributed training
 - gradio for web UI
 - trl for reinforcement learning
+- psutil for RAM-pressure throttling (multi-teacher generation)
 - Optional: vllm/sglang for inference, flash-attention-2, unsloth, liger-kernel
 
 ## Entry Points
@@ -144,6 +267,13 @@ pip3 install build && python3 -m build
 - **Web UI**: `llamafactory-cli webui` or `python src/webui.py`
 - **API Server**: `llamafactory-cli api` or `python src/api.py`
 - **Chat Interface**: `llamafactory-cli chat --model_name_or_path MODEL_PATH`
+- **Multi-Teacher Generation**: `python scripts/multi_teacher_generate.py --manifest MANIFEST --prompts PROMPTS --dispatch-mode teacher-fifo --fifo-size 0`
+- **Dispatch Benchmark**: `python scripts/benchmark_multi_teacher_dispatch.py --manifest MANIFEST --prompts PROMPTS --output-dir OUT`
+- **End-to-End Distillation (sequential)**: `./scripts/run_zena007_end_to_end.ps1`
+- **End-to-End Distillation (Forge Matrix)**: `./scripts/run_zena007_end_to_end.ps1 -UseForge`
+- **Forge dry-run**: `python scripts/run_student_forge.py --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007 --dry-run`
+- **Eval panel only**: `python scripts/eval_student_panel.py --saves-tag zena007 --probes data/zena007/purified/eval_probes.jsonl`
+- **Graduation dashboard**: `python scripts/graduation_dashboard.py --saves-tag zena007`
 
 ## Environment Setup
 
@@ -170,6 +300,31 @@ pip install -e ".[dev]"
 5. Run quality checks: `make style && make quality`
 6. Run tests: `make test`
 7. Submit a pull request
+
+### WebUI Architecture
+
+The Web UI is built with Gradio in `src/llamafactory/webui/`. Key files:
+
+- `interface.py` — top-level `create_ui()` assembles tabs, JS injection, Zena menu
+- `engine.py` — `Engine` class: state manager, coordinates manager/runner/chatter
+- `runner.py` — `Runner` class: training/eval subprocess lifecycle
+- `chatter.py` — `WebChatModel`: model load/unload, chat streaming
+- `control.py` — dropdown/validation handlers (model info, checkpoints, auto-tune)
+- `components/` — one file per tab (top, train, eval, infer, export, chatbot, data, footer)
+
+All visible buttons are wired to real handlers. 6 help accordions (`*_help_tab`) are
+`visible=False` — they have `lang.change` handlers but are never shown (JS `?` icons
+serve the same purpose). No NOOP or dead handlers exist.
+
+### Testing
+
+Local test suites (no GPU required):
+
+| Suite | Command | Tests |
+|-------|---------|-------|
+| Forge auto-heal | `pytest tests/test_forge_autoheal.py -v --noconftest` | 12 |
+| Graduation eval (zen_core_libs) | `pytest zen_core_libs/llm/tests/test_eval.py -v` | 42 |
+| **Total** | | **54** |
 
 ## Common Commands
 

@@ -18,7 +18,7 @@ import pytest
 import torch
 from transformers import AutoConfig, AutoModelForCausalLM
 
-from llamafactory.model.model_utils.misc import find_expanded_modules
+from llamafactory.model.model_utils.misc import find_all_linear_modules, find_expanded_modules
 
 
 HF_TOKEN = os.getenv("HF_TOKEN")
@@ -41,3 +41,28 @@ def test_expanded_modules():
         "model.layers.31.self_attn.q_proj",
         "model.layers.31.self_attn.v_proj",
     ]
+
+
+def test_find_all_linear_modules_includes_conv1d():
+    class Conv1D(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+
+        def forward(self, x):
+            return x
+
+    class DummyConfig:
+        model_type = "gpt2"
+
+    class DummyModel(torch.nn.Module):
+        def __init__(self):
+            super().__init__()
+            self.config = DummyConfig()
+            self.c_attn = Conv1D()
+            self.c_proj = Conv1D()
+            self.embed = torch.nn.Embedding(4, 2)
+            self.lm_head = torch.nn.Linear(2, 4)
+
+    model = DummyModel()
+    module_names = find_all_linear_modules(model, freeze_vision_tower=False)
+    assert sorted(module_names) == ["c_attn", "c_proj"]

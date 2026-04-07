@@ -1,6 +1,6 @@
 # Copyright 2025 Microsoft Corporation and the LlamaFactory team.
 #
-# This code is inspired by the Microsoft's DeepSpeed library.
+# This code is inspired by the Microsoft's DeepSpeed library.  # xray: ignore[QUAL-014]
 # https://www.deepspeed.ai/tutorials/flops-profiler/
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,12 +15,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-import fire
-import torch
-from deepspeed.accelerator import get_accelerator  # type: ignore
-from deepspeed.profiling.flops_profiler import get_model_profile  # type: ignore
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+from deepspeed.accelerator import get_accelerator  # type: ignore  # xray: ignore[SEC-015]
+from deepspeed.profiling.flops_profiler import get_model_profile  # type: ignore  # xray: ignore[SEC-015]
 
-from llamafactory.chat import ChatModel
+from llamafactory.chat import ChatModel  # xray: ignore[SEC-015]
 
 
 def calculate_flops(
@@ -40,9 +40,9 @@ def calculate_flops(
         flops, macs, params = get_model_profile(
             chat_model.engine.model, kwargs=input_dict, print_profile=True, detailed=True
         )
-        print("FLOPs:", flops)
-        print("MACs:", macs)
-        print("Params:", params)
+        print("FLOPs:", flops)  # xray: ignore[PY-004]
+        print("MACs:", macs)  # xray: ignore[PY-004]
+        print("Params:", params)  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

@@ -1,0 +1,32 @@
+Backend: InProcessAdapter (direct GGUF, no HTTP)
+Adaptive budgets: enabled (task-aware max_tokens + temperature)
+Loaded 629 prompts, 3 teachers.
+  Resumed 629 cached responses for gemma-4-26B-A4B
+  Resumed 462 cached responses for Qwen2.5-14B-Instruct
+  Resumed 91 cached responses for Mistral-7B-Instruct-v0.3
+
+=== Teacher 1/3: Mistral-7B-Instruct-v0.3 (538/629 remaining, ~4.1 GB) ===
+
+=== Teacher 2/3: Qwen2.5-14B-Instruct (167/629 remaining, ~8.4 GB) ===
+
+=== Teacher 3/3: gemma-4-26B-A4B (0/629 remaining, ~15.9 GB) ===
+  All 629 prompts already cached -- skipping.
+
+Dispatch mode: pre-assigned work lists (v3)  |  ram_pause<12.0%  ram_resume>22.0%
+
+Assigned 705 tasks across 2 workers.
+
+Pre-warming models (sequential load into cache)...
+llama_context: n_ctx_seq (8192) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
+  Loaded Mistral-7B-Instruct-v0.3 (~4.1 GB) in 3.2s
+llama_context: n_ctx_seq (8192) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
+  Loaded Qwen2.5-14B-Instruct (~8.4 GB) in 7.2s
+All models warm. Starting concurrent inference.
+
+  [Mistral-7B-Instruct-v0.3] 1/538 (0%) 'chat-es-0579' 60.3s
+  [Mistral-7B-Instruct-v0.3] 2/538 (0%) 'ocr-fix-0496' 17.9s [39.1s/prompt, 1.5 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 3/538 (1%) 'tr-ro2he-0378' 15.8s [31.3s/prompt, 1.9 prompts/min]
+  [Qwen2.5-14B-Instruct] 1/167 (1%) 'chat-hu-0540' 102.6s
+  [Qwen2.5-14B-Instruct] 2/167 (1%) 'tr-en2fr-0124' 15.6s [59.1s/prompt, 1.0 prompts/min]
+  [Qwen2.5-14B-Instruct] 3/167 (2%) 'tr-en2de-0030' 6.7s [41.6s/prompt, 1.4 prompts/min]
+  [Mistral-7B-Instruct-v0.3] 5/538 (1%) 'tr-en2ro-0097' 20.0s [25.3s/prompt, 2.4 prompts/min]

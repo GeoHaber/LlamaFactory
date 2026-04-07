@@ -1,0 +1,24 @@
+{"instruction":"Translate to Romanian only.","input":"Good morning. We are ready to start.","output":"Buna dimineata. Suntem gata sa incepem."}
+{"instruction":"Translate to French only.","input":"Please upload the signed contract before noon.","output":"Veuillez televerser le contrat signe avant midi."}
+{"instruction":"Translate to Hungarian only.","input":"The package will arrive tomorrow afternoon.","output":"A csomag holnap delutan erkezik meg."}
+{"instruction":"Translate to English only.","input":"Bonjour, pouvez-vous confirmer la reunion de demain ?","output":"Hello, can you confirm tomorrow's meeting?"}
+{"instruction":"Translate to Romanian only.","input":"Thank you for your patience and support.","output":"Multumim pentru rabdare si sprijin."}
+{"instruction":"Translate to French only.","input":"I cannot access the dashboard from mobile.","output":"Je ne peux pas acceder au tableau de bord depuis le mobile."}
+{"instruction":"Translate to Hungarian only.","input":"Please restart the service after the update.","output":"Kerjuk, inditsa ujra a szolgaltatast a frissites utan."}
+{"instruction":"Translate to English only.","input":"A rendszer ma este karbantartas miatt nem lesz elerheto.","output":"The system will be unavailable tonight due to maintenance."}
+{"instruction":"OCR cleanup task. Return plain text exactly, one line per source line.","input":"lNV0lCE #A-119\nT0tal: 42,5O EUR\nDafe: 2O26-O4-O5","output":"INVOICE #A-119\nTotal: 42,50 EUR\nDate: 2026-04-05"}
+{"instruction":"OCR cleanup task. Keep punctuation and casing normalized.","input":"cust0mer supp0rt\nema1l: he1p@acme.c0m\nte1: +4O 723 111 222","output":"customer support\nemail: help@acme.com\ntel: +40 723 111 222"}
+{"instruction":"OCR cleanup task from receipt snippet.","input":"subt0tal  18.OO\nvat 19%   3.42\nt0tal     21.42","output":"subtotal 18.00\nvat 19% 3.42\ntotal 21.42"}
+{"instruction":"OCR cleanup task from shipment label.","input":"FRAG1LE\nH4NDLE W1TH C4RE\n0rder lD: 7B-993","output":"FRAGILE\nHANDLE WITH CARE\nOrder ID: 7B-993"}
+{"instruction":"Chat in Romanian: user asks for account unlock help.","input":"Nu pot intra in cont dupa resetarea parolei. Ce pot face?","output":"Verifica daca folosesti aceeasi adresa de email, apoi incearca din nou resetarea parolei. Daca problema continua, contacteaza suportul si mentioneaza ora ultimei incercari."}
+{"instruction":"Chat in French: user asks for API rate limit meaning.","input":"Que signifie une limite de debit API ?","output":"Une limite de debit API est le nombre maximal de requetes autorisees sur une periode donnee. Si vous depassez cette limite, vos requetes peuvent etre retardees ou rejetees."}
+{"instruction":"Chat in Hungarian: user asks for short summary.","input":"Osszefoglalnad roviden a frissites fo valtozasait?","output":"A frissites gyorsabb betoltest, stabilabb szinkronizaciot es javitott hibakezelest hoz."}
+{"instruction":"Chat in English: user asks for safer deployment checklist.","input":"Give me a short safe deployment checklist.","output":"Use this order: run tests, verify migrations, deploy to staging, run smoke checks, deploy gradually, monitor logs and rollback quickly if error rates rise."}
+{"instruction":"Policy task: unsupported language request. Reply with a polite refusal and offer allowed languages only.","input":"Translate this into Spanish: We are launching next week.","output":"I can only support English, Romanian, French, and Hungarian. Please choose one of those languages and I will help."}
+{"instruction":"Policy task: unsupported language chat request. Reply with a polite refusal and offer allowed languages only.","input":"Por favor, explica esta factura en espanol.","output":"I can only support English, Romanian, French, and Hungarian. If you want, I can explain the invoice in one of those four languages."}
+{"instruction":"Policy task: unsupported language request. Reply with a polite refusal and offer allowed languages only.","input":"Bitte antworte auf Deutsch mit einer Zusammenfassung.","output":"I can only support English, Romanian, French, and Hungarian. Please resend your request in one of these languages."}
+{"instruction":"Mixed task: OCR then translate to English.","input":"lNVOlCE\nT0TAL DUE\n3O,OO EUR","output":"INVOICE\nTOTAL DUE\n30,00 EUR"}
+{"instruction":"Translate cleaned OCR text to French.","input":"INVOICE\nTOTAL DUE\n30,00 EUR","output":"FACTURE\nTOTAL A PAYER\n30,00 EUR"}
+{"instruction":"Translate to Romanian with concise tone.","input":"Your trial expires in 3 days.","output":"Perioada de test expira in 3 zile."}
+{"instruction":"Translate to Hungarian with concise tone.","input":"Your session has expired. Please sign in again.","output":"A munkamenet lejart. Kerjuk, jelentkezzen be ujra."}
+{"instruction":"Translate to French with formal tone.","input":"We confirmed your payment and activated your subscription.","output":"Nous avons confirme votre paiement et active votre abonnement."}

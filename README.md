@@ -100,6 +100,7 @@ Read technical notes:
 - **Wide tasks**: Multi-turn dialogue, tool using, image understanding, visual grounding, video recognition, audio understanding, etc.
 - **Experiment monitors**: LlamaBoard, TensorBoard, Wandb, MLflow, [SwanLab](https://github.com/SwanHubX/SwanLab), etc.
 - **Faster inference**: OpenAI-style API, Gradio UI and CLI with [vLLM worker](https://github.com/vllm-project/vllm) or [SGLang worker](https://github.com/sgl-project/sglang).
+- **Multi-teacher distillation**: Lock-free FIFO dispatch with SPSC ring buffers, concurrent GGUF inference, RAM-pressure throttling, adaptive decoding budgets, and full checkpoint/resume. See [distillation examples](examples/distillation/README.md).
 
 ### Day-N Support for Fine-Tuning Cutting-Edge Models
 
@@ -134,6 +135,10 @@ Read technical notes:
 </details>
 
 ## Changelog
+
+[26/04/06] We added **graduation exam system** with auto-healing forge, confidence intervals (bootstrap CI), emergence detection, ruin guards, and an HTML dashboard with SVG verdict ring. The Student Forge now supports crash-safe multi-day runs via `ForgeState` with atomic checkpoints, heartbeat monitoring, and LLM-powered failure diagnosis. Code quality verified at **X-Ray A+ (score 100)** across all 44 script files. See [copilot-instructions](.github/copilot-instructions.md) for details.
+
+[26/04/06] We added **multi-teacher FIFO dispatch** (v4) for distillation, featuring lock-free SPSC ring buffers (2K default depth), RAM-pressure throttling, adaptive decoding budgets, and checkpoint/resume. See [examples/distillation/README.md](examples/distillation/README.md) and the [distillation playbook](docs/en/advanced/ui-backdoor-gemma4-distillation-playbook.md) for details.
 
 [26/04/05] We added a documentation-backed enhancement tracking flow for recent WebUI changes, including per-field help popups, Zena quick menu controls, expanded WebUI language options, and locale fallback improvements. See [docs/en/release-notes.md](docs/en/release-notes.md) for details.
 

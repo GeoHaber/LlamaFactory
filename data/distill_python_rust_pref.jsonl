@@ -1,0 +1,2 @@
+{"prompt":"Translate Python to Rust and review trade-offs.\nPython:\ndef add(a, b):\n    return a + b","chosen":"fn add(a: i32, b: i32) -> i32 { a + b }\nReview: pure function, no ownership pitfalls.","rejected":"You can probably do this somehow in Rust. Maybe use C++ style classes."}
+{"prompt":"Translate Python to Rust and review trade-offs.\nPython:\ndef is_even(n):\n    return n % 2 == 0","chosen":"fn is_even(n: i32) -> bool { n % 2 == 0 }\nReview: clear predicate, O(1), no allocation.","rejected":"bool even(int n) { return n % 2; }"}

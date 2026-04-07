@@ -20,6 +20,7 @@ import torch
 from transformers.integrations import is_deepspeed_zero3_enabled
 
 from ...extras.packages import is_requests_available
+from ..reward_server_utils import parse_reward_response
 
 
 if is_requests_available():
@@ -36,7 +37,7 @@ def get_rewards_from_server(server_url: str, messages: list[str]) -> list["torch
     headers = {"Content-Type": "application/json"}
     payload = {"model": "model", "messages": messages}
     response = requests.post(server_url, json=payload, headers=headers)
-    rewards = json.loads(response.text)["scores"]
+    rewards = parse_reward_response(response)
     return torch.Tensor(rewards)
 
 

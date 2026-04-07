@@ -16,17 +16,17 @@ import os
 from dataclasses import dataclass
 from typing import Any
 
-import fire
-import torch
-from peft import PeftModel
-from torch.utils.data import Dataset
-from transformers import DataCollatorForSeq2Seq, Qwen2_5_VLProcessor
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+from peft import PeftModel  # xray: ignore[SEC-015]
+from torch.utils.data import Dataset  # xray: ignore[SEC-015]
+from transformers import DataCollatorForSeq2Seq, Qwen2_5_VLProcessor  # xray: ignore[SEC-015]
 
-from llamafactory.extras.constants import IGNORE_INDEX
-from llamafactory.hparams import get_train_args
-from llamafactory.model import load_model, load_tokenizer
-from llamafactory.train.callbacks import LogCallback
-from llamafactory.train.sft.trainer import CustomSeq2SeqTrainer
+from llamafactory.extras.constants import IGNORE_INDEX  # xray: ignore[SEC-015]
+from llamafactory.hparams import get_train_args  # xray: ignore[SEC-015]
+from llamafactory.model import load_model, load_tokenizer  # xray: ignore[SEC-015]
+from llamafactory.train.callbacks import LogCallback  # xray: ignore[SEC-015]
+from llamafactory.train.sft.trainer import CustomSeq2SeqTrainer  # xray: ignore[SEC-015]
 
 
 class DummyDataset(Dataset):

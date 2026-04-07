@@ -38,6 +38,18 @@ TOOLS = [
 ]
 
 
+def _loads_or_fail(payload: str) -> dict:
+    try:
+        value = json.loads(payload)
+    except json.JSONDecodeError as exc:
+        pytest.fail(f"Failed to parse extracted JSON arguments: {exc}")
+
+    if not isinstance(value, dict):
+        pytest.fail("Extracted JSON arguments should be a dictionary.")
+
+    return value
+
+
 @pytest.mark.runs_on(["cpu", "mps"])
 def test_empty_formatter():
     formatter = EmptyFormatter(slots=["\n"])
@@ -345,7 +357,7 @@ def test_lfm2_tool_extractor_with_nested_dict():
     extracted = formatter.extract(result)
     assert len(extracted) == 1
     assert extracted[0][0] == "search"
-    args = json.loads(extracted[0][1])
+    args = _loads_or_fail(extracted[0][1])
     assert args["query"] == "test"
     assert args["options"] == {"limit": 10, "offset": 0}
 
@@ -357,7 +369,7 @@ def test_lfm2_tool_extractor_with_list_arg():
     extracted = formatter.extract(result)
     assert len(extracted) == 1
     assert extracted[0][0] == "batch_process"
-    args = json.loads(extracted[0][1])
+    args = _loads_or_fail(extracted[0][1])
     assert args["items"] == [1, 2, 3]
     assert args["enabled"] is True
 
@@ -379,4 +391,4 @@ def test_lfm2_tool_round_trip():
     extracted = tool_formatter.extract(formatted[0])
     assert len(extracted) == 1
     assert extracted[0][0] == original["name"]
-    assert json.loads(extracted[0][1]) == original["arguments"]
+    assert _loads_or_fail(extracted[0][1]) == original["arguments"]

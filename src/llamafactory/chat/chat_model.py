@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING, Any, Optional
 from ..extras.constants import EngineName
 from ..extras.misc import torch_gc
 from ..hparams import get_infer_args
+from .coordinator import ADCoordinator
 
 
 if TYPE_CHECKING:
@@ -45,7 +46,10 @@ class ChatModel:
     """
 
     def __init__(self, args: Optional[dict[str, Any]] = None) -> None:
+        self._raw_args = dict(args or {})
         model_args, data_args, finetuning_args, generating_args = get_infer_args(args)
+        self.coordinator: ADCoordinator | None = None
+        self._ad_role_models: list["ChatModel"] = []
 
         if model_args.infer_backend == EngineName.HF:
             from .hf_engine import HuggingfaceEngine
@@ -84,9 +88,48 @@ class ChatModel:
         else:
             raise NotImplementedError(f"Unknown backend: {model_args.infer_backend}")
 
+        if model_args.use_ad_coordinator and self.engine.can_generate:
+            role_chat_callables: dict[str, Any] = {}
+            if model_args.ad_use_role_specific_models:
+                role_paths = {
+                    "planner": model_args.ad_planner_model_name_or_path,
+                    "coder": model_args.ad_coder_model_name_or_path,
+                    "logician": model_args.ad_logician_model_name_or_path,
+                }
+                role_chat_callables = self._build_role_chat_callables(
+                    base_model_path=model_args.model_name_or_path,
+                    role_model_paths=role_paths,
+                )
+
+            self.coordinator = ADCoordinator(
+                chat_callable=self.engine.chat,
+                role_chat_callables=role_chat_callables,
+                policy=model_args.ad_coordinator_policy,
+                complexity_threshold=model_args.ad_complexity_threshold,
+            )
+
         self._loop = asyncio.new_event_loop()
         self._thread = Thread(target=_start_background_loop, args=(self._loop,), daemon=True)
         self._thread.start()
+
+    def _build_role_chat_callables(
+        self,
+        base_model_path: str,
+        role_model_paths: dict[str, str | None],
+    ) -> dict[str, Any]:
+        role_callables: dict[str, Any] = {}
+        for role, role_path in role_model_paths.items():
+            if role_path is None or role_path == "" or role_path == base_model_path:
+                continue
+
+            role_args = dict(self._raw_args)
+            role_args["model_name_or_path"] = role_path
+            role_args["use_ad_coordinator"] = False
+            role_chat_model = ChatModel(role_args)
+            self._ad_role_models.append(role_chat_model)
+            role_callables[role] = role_chat_model.achat
+
+        return role_callables
 
     def chat(
         self,
@@ -115,6 +158,9 @@ class ChatModel:
         **input_kwargs,
     ) -> list["Response"]:
         r"""Asynchronously get a list of responses of the chat model."""
+        if self.coordinator is not None and images is None and videos is None and audios is None:
+            return await self.coordinator.chat(messages, system, tools, **input_kwargs)
+
         return await self.engine.chat(messages, system, tools, images, videos, audios, **input_kwargs)
 
     def stream_chat(
@@ -147,6 +193,13 @@ class ChatModel:
         **input_kwargs,
     ) -> AsyncGenerator[str, None]:
         r"""Asynchronously get the response token-by-token of the chat model."""
+        if self.coordinator is not None and images is None and videos is None and audios is None:
+            # Coordinator currently aggregates multi-role calls before yielding a final response.
+            responses = await self.coordinator.chat(messages, system, tools, **input_kwargs)
+            if responses:
+                yield responses[0].response_text
+            return
+
         async for new_token in self.engine.stream_chat(
             messages, system, tools, images, videos, audios, **input_kwargs
         ):

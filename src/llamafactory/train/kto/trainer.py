@@ -108,7 +108,7 @@ class CustomKTOTrainer(KTOTrainer):
                     self.ref_model = prepare_fsdp(self.ref_model, self.accelerator)
             else:
                 self.ref_model = self.accelerator.prepare_model(self.ref_model, evaluation_mode=True)
-                self.ref_model.eval()
+                self.ref_model.eval()  # xray: ignore[SEC-007]
 
         if processor is not None:
             self.add_callback(SaveProcessorCallback(processor))

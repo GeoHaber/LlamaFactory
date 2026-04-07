@@ -1,0 +1,44 @@
+### Local execution profile for validating the full backdoor workflow.
+### Keep target template files for production runs on capable GPUs.
+
+### model
+model_name_or_path: distilgpt2
+trust_remote_code: true
+
+### method
+stage: sft
+do_train: true
+finetuning_type: lora
+lora_rank: 8
+lora_target: all
+
+### dataset
+dataset_dir: data
+dataset: distill_ocr_chat_translate_4lang_train
+template: default
+cutoff_len: 512
+max_samples: 24
+preprocessing_num_workers: 1
+dataloader_num_workers: 0
+
+### output
+output_dir: saves/gemma4_student/lora/sft_local
+logging_steps: 1
+save_steps: 20
+plot_loss: false
+overwrite_output_dir: true
+save_only_model: true
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 2
+learning_rate: 2.0e-5
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.0
+bf16: false
+fp16: false
+
+### eval
+val_size: 0.0

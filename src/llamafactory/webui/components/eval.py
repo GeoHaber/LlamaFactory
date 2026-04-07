@@ -30,6 +30,51 @@ if TYPE_CHECKING:
     from ..engine import Engine
 
 
+def _make_eval_help(lang: str) -> str:
+    if lang == "zh":
+        return (
+            "### 评估菜单帮助（简单版）\n\n"
+            "- **dataset_dir / dataset**：选择评估数据。\n"
+            "  为什么：决定评估任务与样本。\n"
+            "  怎么用：先确认 `dataset_info.json` 已配置。\n\n"
+            "- **cutoff_len / max_samples / batch_size**：控制评估规模。\n"
+            "  为什么：影响显存占用与速度。\n"
+            "  怎么用：显存不足时降低 batch_size 或 cutoff_len。\n\n"
+            "- **predict**：是否同时生成预测结果。\n"
+            "  为什么：可只算指标，也可保存输出文本。\n"
+            "  怎么用：做样例分析时建议开启。\n\n"
+            "- **max_new_tokens / top_p / temperature**：生成参数。\n"
+            "  为什么：影响输出长度和随机性。\n"
+            "  怎么用：想更稳定就降低 temperature。\n\n"
+            "- **output_dir**：评估结果目录。\n"
+            "  为什么：保存日志、指标和预测文件。\n"
+            "  怎么用：每次评估用不同目录便于对比。"
+        )
+
+    return (
+        "### Evaluation Help (simple)\n\n"
+        "- **dataset_dir / dataset**: choose evaluation data source.\n"
+        "  Why: determines what task and samples are evaluated.\n"
+        "  How: make sure your dataset exists in `dataset_info.json`.\n\n"
+        "- **cutoff_len / max_samples / batch_size**: evaluation size controls.\n"
+        "  Why: they control memory usage and runtime.\n"
+        "  How: reduce batch size or cutoff length if you hit OOM.\n\n"
+        "- **predict**: generate predictions during evaluation.\n"
+        "  Why: useful when you want metrics and sample outputs together.\n"
+        "  How: disable for metrics-only runs, enable for output inspection.\n\n"
+        "- **max_new_tokens / top_p / temperature**: generation behavior.\n"
+        "  Why: affects output length and randomness.\n"
+        "  How: lower temperature for more stable outputs.\n\n"
+        "- **output_dir**: folder for evaluation artifacts.\n"
+        "  Why: stores logs, metrics, and optional predictions.\n"
+        "  How: use a unique folder per run for easier comparisons."
+    )
+
+
+def _update_eval_help(lang: str) -> "gr.Markdown":
+    return gr.Markdown(value=_make_eval_help(lang))
+
+
 def create_eval_tab(engine: "Engine") -> dict[str, "Component"]:
     input_elems = engine.manager.get_base_elems()
     elem_dict = dict()
@@ -57,6 +102,9 @@ def create_eval_tab(engine: "Engine") -> dict[str, "Component"]:
         temperature = gr.Slider(minimum=0.01, maximum=1.5, value=0.95, step=0.01)
         output_dir = gr.Textbox()
 
+    with gr.Accordion("Evaluation help", open=False, visible=False) as eval_help_tab:
+        eval_help = gr.Markdown(value=_make_eval_help("en"))
+
     input_elems.update({max_new_tokens, top_p, temperature, output_dir})
     elem_dict.update(dict(max_new_tokens=max_new_tokens, top_p=top_p, temperature=temperature, output_dir=output_dir))
 
@@ -79,6 +127,8 @@ def create_eval_tab(engine: "Engine") -> dict[str, "Component"]:
             stop_btn=stop_btn,
             resume_btn=resume_btn,
             progress_bar=progress_bar,
+            eval_help_tab=eval_help_tab,
+            eval_help=eval_help,
             output_box=output_box,
         )
     )
@@ -88,6 +138,8 @@ def create_eval_tab(engine: "Engine") -> dict[str, "Component"]:
     start_btn.click(engine.runner.run_eval, input_elems, output_elems)
     stop_btn.click(engine.runner.set_abort)
     resume_btn.change(engine.runner.monitor, outputs=output_elems, concurrency_limit=None)
+    top_lang = engine.manager.get_elem_by_id("top.lang")
+    top_lang.change(_update_eval_help, [top_lang], [eval_help], queue=False)
 
     dataset.focus(list_datasets, [dataset_dir], [dataset], queue=False)
 

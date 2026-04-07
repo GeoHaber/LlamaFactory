@@ -1,0 +1,325 @@
+Loaded 629 samples for purification.
+
+=== Purification Report ===
+  GOLD  (SFT):    71 (11.3%)
+  SILVER (DPO):    0 (0.0%)
+  DROP:          558 (88.7%)
+
+Outputs saved to data\zena007\purified/
+Purified data: SFT=yes, DPO=NO
+  Written: examples\distillation\auto\zena007_sft.yaml
+  Written: examples\distillation\auto\zena007_merge.yaml
+
+=== Add to data/dataset_info.json ===
+{
+  "zena007_consensus_sft": {
+    "file_name": "data\\zena007\\purified\\consensus_sft.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "response": "output"
+    }
+  }
+}
+dataset_info.json updated: zena007_consensus_sft, zena007_conflict_dpo
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\cli.py", line 31, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\cli.py", line 24, in main
+    launcher.launch()
+    ~~~~~~~~~~~~~~~^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\launcher.py", line 157, in launch
+    run_exp()
+    ~~~~~~~^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\train\tuner.py", line 139, in run_exp
+    _training_function(config={"args": args, "callbacks": callbacks})
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\train\tuner.py", line 65, in _training_function
+    model_args, data_args, training_args, finetuning_args, generating_args = get_train_args(args)
+                                                                             ~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\hparams\parser.py", line 296, in get_train_args
+    model_args, data_args, training_args, finetuning_args, generating_args = _parse_train_args(args)
+                                                                             ~~~~~~~~~~~~~~~~~^^^^^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\hparams\parser.py", line 250, in _parse_train_args
+    return _parse_args(parser, args, allow_extra_keys=allow_extra_keys)
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\src\llamafactory\hparams\parser.py", line 97, in _parse_args
+    return parser.parse_dict(args, allow_extra_keys=allow_extra_keys)
+           ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\.venv-py314\Lib\site-packages\transformers\hf_argparser.py", line 383, in parse_dict
+    raise ValueError(f"Some keys are not used by the HfArgumentParser: {sorted(unused_keys)}")
+ValueError: Some keys are not used by the HfArgumentParser: ['booster']
+dataset_info.json already contains both zena007 entries ù skipped.
+[WARNING|2026-04-06 21:32:29] llamafactory.hparams.parser:149 >> We recommend enable mixed precision training.
+[INFO|2026-04-06 21:32:29] llamafactory.hparams.parser:511 >> Process rank: 0, world size: 1, device: cpu, distributed training: False, compute dtype: None
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file vocab.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\vocab.json
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file merges.txt from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\merges.txt
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file tokenizer.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\tokenizer.json
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file added_tokens.json from cache at None
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file special_tokens_map.json from cache at None
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file tokenizer_config.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\tokenizer_config.json
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,192 >> loading file chat_template.jinja from cache at None
+[INFO|tokenization_utils_base.py:2380] 2026-04-06 21:32:30,403 >> Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+[INFO|configuration_utils.py:765] 2026-04-06 21:32:30,628 >> loading configuration file config.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\config.json
+[INFO|configuration_utils.py:839] 2026-04-06 21:32:30,630 >> Model config Qwen2Config {
+  "architectures": [
+    "Qwen2ForCausalLM"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 151643,
+  "dtype": "bfloat16",
+  "eos_token_id": 151645,
+  "hidden_act": "silu",
+  "hidden_size": 1536,
+  "initializer_range": 0.02,
+  "intermediate_size": 8960,
+  "layer_types": [
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention"
+  ],
+  "max_position_embeddings": 32768,
+  "max_window_layers": 21,
+  "model_type": "qwen2",
+  "num_attention_heads": 12,
+  "num_hidden_layers": 28,
+  "num_key_value_heads": 2,
+  "rms_norm_eps": 1e-06,
+  "rope_scaling": null,
+  "rope_theta": 1000000.0,
+  "sliding_window": null,
+  "tie_word_embeddings": true,
+  "transformers_version": "4.57.6",
+  "use_cache": true,
+  "use_sliding_window": false,
+  "vocab_size": 151936
+}
+
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file vocab.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\vocab.json
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file merges.txt from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\merges.txt
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file tokenizer.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\tokenizer.json
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file added_tokens.json from cache at None
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file special_tokens_map.json from cache at None
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file tokenizer_config.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\tokenizer_config.json
+[INFO|tokenization_utils_base.py:2111] 2026-04-06 21:32:30,723 >> loading file chat_template.jinja from cache at None
+[INFO|tokenization_utils_base.py:2380] 2026-04-06 21:32:30,913 >> Special tokens have been added in the vocabulary, make sure the associated word embeddings are fine-tuned or trained.
+[INFO|2026-04-06 21:32:30] llamafactory.data.loader:144 >> Loading dataset zena007/purified/consensus_sft.jsonl...
+
+Generating train split: 0 examples [00:00, ? examples/s]
+Generating train split: 458 examples [00:00, 44248.20 examples/s]
+
+Converting format of dataset (num_proc=1):   0%|          | 0/458 [00:00<?, ? examples/s]
+Converting format of dataset (num_proc=1): 100%|##########| 458/458 [00:04<00:00, 105.35 examples/s]
+Converting format of dataset (num_proc=1): 100%|##########| 458/458 [00:06<00:00, 71.19 examples/s] 
+
+Running tokenizer on dataset (num_proc=1):   0%|          | 0/458 [00:00<?, ? examples/s]
+Running tokenizer on dataset (num_proc=1): 100%|##########| 458/458 [00:04<00:00, 101.04 examples/s]
+Running tokenizer on dataset (num_proc=1): 100%|##########| 458/458 [00:06<00:00, 69.85 examples/s] 
+[INFO|configuration_utils.py:765] 2026-04-06 21:32:44,442 >> loading configuration file config.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\config.json
+[INFO|configuration_utils.py:839] 2026-04-06 21:32:44,443 >> Model config Qwen2Config {
+  "architectures": [
+    "Qwen2ForCausalLM"
+  ],
+  "attention_dropout": 0.0,
+  "bos_token_id": 151643,
+  "dtype": "bfloat16",
+  "eos_token_id": 151645,
+  "hidden_act": "silu",
+  "hidden_size": 1536,
+  "initializer_range": 0.02,
+  "intermediate_size": 8960,
+  "layer_types": [
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention",
+    "full_attention"
+  ],
+  "max_position_embeddings": 32768,
+  "max_window_layers": 21,
+  "model_type": "qwen2",
+  "num_attention_heads": 12,
+  "num_hidden_layers": 28,
+  "num_key_value_heads": 2,
+  "rms_norm_eps": 1e-06,
+  "rope_scaling": null,
+  "rope_theta": 1000000.0,
+  "sliding_window": null,
+  "tie_word_embeddings": true,
+  "transformers_version": "4.57.6",
+  "use_cache": true,
+  "use_sliding_window": false,
+  "vocab_size": 151936
+}
+
+[WARNING|logging.py:328] 2026-04-06 21:32:44,443 >> `torch_dtype` is deprecated! Use `dtype` instead!
+training example:
+input_ids:
+[151644, 8948, 198, 2610, 525, 1207, 16948, 11, 3465, 553, 54364, 14817, 13, 1446, 525, 264, 10950, 17847, 13, 151645, 198, 151644, 872, 198, 27473, 279, 2701, 1467, 504, 58829, 311, 42188, 13, 5512, 8193, 279, 58829, 2319, 504, 419, 6364, 4024, 11, 1221, 14683, 432, 311, 42188, 382, 22574, 4024, 25, 330, 32847, 15198, 0, 358, 3900, 678, 697, 24240, 2525, 830, 419, 1042, 1189, 151645, 198, 151644, 77091, 198, 1425, 3154, 1103, 2319, 25, 330, 39041, 41911, 8557, 524, 57523, 0, 328, 12589, 74223, 77497, 1962, 287, 73176, 39138, 1982, 11346, 2143, 57523, 16806, 2217, 7084, 768, 35454, 2319, 25, 330, 97840, 449, 458, 1945, 19774, 0, 69528, 78, 1709, 15519, 2643, 41398, 939, 35468, 436, 511, 43711, 33760, 5553, 10351, 38024, 2217, 9112, 25, 576, 58829, 2319, 374, 264, 2118, 14468, 315, 279, 6364, 4024, 11, 323, 279, 42188, 2319, 374, 264, 14468, 315, 279, 58829, 2319, 13, 151645, 198]
+inputs:
+<|im_start|>system
+You are Qwen, created by Alibaba Cloud. You are a helpful assistant.<|im_end|>
+<|im_start|>user
+Translate the following text from Indonesian to Portuguese. First produce the Indonesian version from this English original, then translate it to Portuguese.
+
+English original: "Happy birthday! I hope all your wishes come true this year."<|im_end|>
+<|im_start|>assistant
+Indonesian version: "Selamat ulang tahun! Saya hopeless semua keinginan Anda tercapai tahun ini."
+
+Portuguese version: "Feliz aniversßrio! Espero que todos os seus desejos sejam realizados este ano."
+
+Note: The Indonesian version is a direct translation of the English original, and the Portuguese version is a translation of the Indonesian version.<|im_end|>
+
+label_ids:
+[-100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, -100, 1425, 3154, 1103, 2319, 25, 330, 39041, 41911, 8557, 524, 57523, 0, 328, 12589, 74223, 77497, 1962, 287, 73176, 39138, 1982, 11346, 2143, 57523, 16806, 2217, 7084, 768, 35454, 2319, 25, 330, 97840, 449, 458, 1945, 19774, 0, 69528, 78, 1709, 15519, 2643, 41398, 939, 35468, 436, 511, 43711, 33760, 5553, 10351, 38024, 2217, 9112, 25, 576, 58829, 2319, 374, 264, 2118, 14468, 315, 279, 6364, 4024, 11, 323, 279, 42188, 2319, 374, 264, 14468, 315, 279, 58829, 2319, 13, 151645, 198]
+labels:
+Indonesian version: "Selamat ulang tahun! Saya hopeless semua keinginan Anda tercapai tahun ini."
+
+Portuguese version: "Feliz aniversßrio! Espero que todos os seus desejos sejam realizados este ano."
+
+Note: The Indonesian version is a direct translation of the English original, and the Portuguese version is a translation of the Indonesian version.<|im_end|>
+
+[INFO|2026-04-06 21:32:44] llamafactory.model.model_utils.kv_cache:144 >> KV cache is disabled during training.
+[WARNING|logging.py:328] 2026-04-06 21:32:44,685 >> `torch_dtype` is deprecated! Use `dtype` instead!
+[INFO|modeling_utils.py:1172] 2026-04-06 21:32:44,685 >> loading weights file model.safetensors from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\model.safetensors
+[INFO|modeling_utils.py:1243] 2026-04-06 21:32:44,694 >> Will use dtype=torch.bfloat16 as defined in model's config object
+[INFO|modeling_utils.py:2341] 2026-04-06 21:32:44,694 >> Instantiating Qwen2ForCausalLM model under default dtype torch.bfloat16.
+[INFO|configuration_utils.py:986] 2026-04-06 21:32:44,695 >> Generate config GenerationConfig {
+  "bos_token_id": 151643,
+  "eos_token_id": 151645,
+  "use_cache": false
+}
+
+[INFO|configuration_utils.py:941] 2026-04-06 21:32:44,932 >> loading configuration file generation_config.json from cache at C:\AI\Models\.hf_cache\hub\models--Qwen--Qwen2.5-1.5B-Instruct\snapshots\989aa7980e4cf806f80c7fef2b1adb7bc71aa306\generation_config.json
+[INFO|configuration_utils.py:986] 2026-04-06 21:32:44,932 >> Generate config GenerationConfig {
+  "bos_token_id": 151643,
+  "do_sample": true,
+  "eos_token_id": [
+    151645,
+    151643
+  ],
+  "pad_token_id": 151643,
+  "repetition_penalty": 1.1,
+  "temperature": 0.7,
+  "top_k": 20,
+  "top_p": 0.8
+}
+
+[INFO|dynamic_module_utils.py:423] 2026-04-06 21:32:44,957 >> Could not locate the custom_generate/generate.py inside Qwen/Qwen2.5-1.5B-Instruct.
+[INFO|2026-04-06 21:32:44] llamafactory.model.model_utils.checkpointing:144 >> Gradient checkpointing enabled.
+[INFO|2026-04-06 21:32:44] llamafactory.model.model_utils.attention:144 >> Using torch SDPA for faster training and inference.
+[INFO|2026-04-06 21:32:44] llamafactory.model.adapter:144 >> Upcasting trainable params to float32.
+[INFO|2026-04-06 21:32:44] llamafactory.model.adapter:144 >> Fine-tuning method: LoRA
+[INFO|2026-04-06 21:32:44] llamafactory.model.model_utils.misc:144 >> Found linear modules: k_proj,up_proj,v_proj,q_proj,gate_proj,down_proj,o_proj
+[INFO|2026-04-06 21:32:45] llamafactory.model.loader:144 >> trainable params: 18,464,768 || all params: 1,562,179,072 || trainable%: 1.1820
+[WARNING|trainer.py:906] 2026-04-06 21:32:45,293 >> The model is already on multiple devices. Skipping the move to device specified in `args`.
+[WARNING|trainer.py:982] 2026-04-06 21:32:45,300 >> The tokenizer has new PAD/BOS/EOS tokens that differ from the model config and generation config. The model config and generation config were aligned accordingly, being updated with the tokenizer's values. Updated tokens: {'bos_token_id': None, 'pad_token_id': 151643}.
+[INFO|trainer.py:2519] 2026-04-06 21:32:45,568 >> ***** Running training *****
+[INFO|trainer.py:2520] 2026-04-06 21:32:45,568 >>   Num examples = 458
+[INFO|trainer.py:2521] 2026-04-06 21:32:45,568 >>   Num Epochs = 2
+[INFO|trainer.py:2522] 2026-04-06 21:32:45,568 >>   Instantaneous batch size per device = 1
+[INFO|trainer.py:2525] 2026-04-06 21:32:45,568 >>   Total train batch size (w. parallel, distributed & accumulation) = 4
+[INFO|trainer.py:2526] 2026-04-06 21:32:45,568 >>   Gradient Accumulation steps = 4
+[INFO|trainer.py:2527] 2026-04-06 21:32:45,568 >>   Total optimization steps = 230
+[INFO|trainer.py:2528] 2026-04-06 21:32:45,570 >>   Number of trainable parameters = 18,464,768
+
+  0%|          | 0/230 [00:00<?, ?it/s]C:\Users\dvdze\Documents\GitHub\GeorgeHaber\LLM_TEST_BED\ZEN_Forge\LlamaFactory\.venv-py314\Lib\site-packages\torch\utils\data\dataloader.py:775: UserWarning: 'pin_memory' argument is set as true but no accelerator is found, then device pinned memory won't be used.
+  super().__init__(loader)
+
+  0%|          | 1/230 [00:12<49:09, 12.88s/it]
+  1%|          | 2/230 [00:24<45:08, 11.88s/it]
+  1%|1         | 3/230 [00:34<42:34, 11.25s/it]
+  2%|1         | 4/230 [00:49<48:07, 12.78s/it]
+  2%|2         | 5/230 [01:00<45:33, 12.15s/it]
+                                               
+
+  2%|2         | 5/230 [01:00<45:33, 12.15s/it]
+  3%|2         | 6/230 [01:09<41:41, 11.17s/it]
+  3%|3         | 7/230 [01:25<47:20, 12.74s/it]
+  3%|3         | 8/230 [01:33<40:30, 10.95s/it]
+  4%|3         | 9/230 [01:45<41:31, 11.27s/it]
+  4%|4         | 10/230 [01:51<36:13,  9.88s/it]
+                                                
+
+  4%|4         | 10/230 [01:51<36:13,  9.88s/it]
+  5%|4         | 11/230 [01:59<33:14,  9.11s/it]
+  5%|5         | 12/230 [02:07<32:29,  8.94s/it]
+  6%|5         | 13/230 [02:16<32:36,  9.02s/it]
+  6%|6         | 14/230 [02:31<38:06, 10.58s/it]
+  7%|6         | 15/230 [02:43<39:59, 11.16s/it]
+                                                
+
+  7%|6         | 15/230 [02:43<39:59, 11.16s/it]
+  7%|6         | 16/230 [02:55<41:02, 11.51s/it]
+  7%|7         | 17/230 [03:09<42:36, 12.00s/it]
+  8%|7         | 18/230 [03:19<40:26, 11.44s/it]
+  8%|8         | 19/230 [03:38<48:01, 13.65s/it]
+  9%|8         | 20/230 [03:42<38:38, 11.04s/it]
+                                                
+
+  9%|8         | 20/230 [03:42<38:38, 11.04s/it]
+  9%|9         | 21/230 [04:00<45:27, 13.05s/it]
+ 10%|9         | 22/230 [04:19<51:13, 14.78s/it]
+ 10%|#         | 23/230 [04:28<44:38, 12.94s/it]
+ 10%|#         | 24/230 [04:42<45:26, 13.23s/it]
+ 11%|#         | 25/230 [04:51<41:43, 12.21s/it]
+                                                
+
+ 11%|#         | 25/230 [04:51<41:43, 12.21s/it]
+ 11%|#1        | 26/230 [05:05<42:37, 12.54s/it]
+ 12%|#1        | 27/230 [05:10<35:19, 10.44s/it]
+ 12%|#2        | 28/230 [05:16<30:25,  9.04s/it]
+ 13%|#2        | 29/230 [05:36<41:19, 12.34s/it]
+ 13%|#3        | 30/230 [05:56<48:42, 14.61s/it]
+                                                
+
+ 13%|#3        | 30/230 [05:56<48:42, 14.61s/it]

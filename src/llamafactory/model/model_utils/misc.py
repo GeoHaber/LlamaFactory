@@ -45,7 +45,8 @@ def find_all_linear_modules(model: "PreTrainedModel", freeze_vision_tower: bool)
         if any(forbidden_module in name for forbidden_module in forbidden_modules):
             continue
 
-        if "Linear" in module.__class__.__name__ and "Embedding" not in module.__class__.__name__:
+        class_name = module.__class__.__name__
+        if ("Linear" in class_name or "Conv1D" in class_name) and "Embedding" not in class_name:
             module_names.add(name.split(".")[-1])
 
     logger.info_rank0("Found linear modules: {}".format(",".join(module_names)))

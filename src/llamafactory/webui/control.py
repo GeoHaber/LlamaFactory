@@ -27,6 +27,7 @@ from ..extras.constants import (
     TRAINER_LOG,
     TRAINING_STAGES,
 )
+from ..chat.autotune import HardwareAutoTuner
 from ..extras.packages import is_gradio_available, is_matplotlib_available
 from ..extras.ploting import gen_loss_plot
 from ..model import QuantizationMethod
@@ -128,7 +129,14 @@ def get_trainer_info(lang: str, output_path: os.PathLike, do_train: bool) -> tup
         trainer_log: list[dict[str, Any]] = []
         with open(trainer_log_path, encoding="utf-8") as f:
             for line in f:
-                trainer_log.append(json.loads(line))
+                line = line.strip()
+                if not line:
+                    continue
+
+                try:
+                    trainer_log.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
 
         if len(trainer_log) != 0:
             latest_log = trainer_log[-1]
@@ -146,13 +154,16 @@ def get_trainer_info(lang: str, output_path: os.PathLike, do_train: bool) -> tup
 
     swanlab_config_path = os.path.join(output_path, SWANLAB_CONFIG)
     if os.path.isfile(swanlab_config_path):
-        with open(swanlab_config_path, encoding="utf-8") as f:
-            swanlab_public_config = json.load(f)
-            swanlab_link = swanlab_public_config["cloud"]["experiment_url"]
-            if swanlab_link is not None:
-                running_info["swanlab_link"] = gr.Markdown(
-                    ALERTS["info_swanlab_link"][lang] + swanlab_link, visible=True
-                )
+        try:
+            with open(swanlab_config_path, encoding="utf-8") as f:
+                swanlab_public_config = json.load(f)
+                swanlab_link = swanlab_public_config["cloud"]["experiment_url"]
+                if swanlab_link is not None:
+                    running_info["swanlab_link"] = gr.Markdown(
+                        ALERTS["info_swanlab_link"][lang] + swanlab_link, visible=True
+                    )
+        except (json.JSONDecodeError, KeyError, TypeError):
+            pass
 
     return running_log, running_progress, running_info
 
@@ -222,3 +233,56 @@ def list_output_dirs(model_name: str | None, finetuning_type: str, current_time:
                     output_dirs.append(folder)
 
     return gr.Dropdown(choices=output_dirs)
+
+
+def auto_optimize_infer_settings(
+    model_path: str,
+    quantization_method: str,
+    preferred_policy: str,
+    use_role_specific_models: bool,
+    planner_model_path: str,
+    coder_model_path: str,
+    logician_model_path: str,
+) -> tuple["gr.Dropdown", "gr.Dropdown", bool, "gr.Dropdown", "gr.Slider", "gr.Dropdown", str]:
+    r"""Auto optimize runtime settings based on hardware and selected model cocktail."""
+    recommendation = HardwareAutoTuner.recommend(preferred_policy)
+    prediction = HardwareAutoTuner.predict_cocktail(
+        base_model_name_or_path=model_path,
+        infer_dtype=recommendation.infer_dtype,
+        quantization_bit=recommendation.quantization_bit,
+        policy=recommendation.ad_policy,
+        use_role_specific_models=use_role_specific_models,
+        planner_model=planner_model_path or None,
+        coder_model=coder_model_path or None,
+        logician_model=logician_model_path or None,
+    )
+
+    suggested_quant_bit = recommendation.quantization_bit
+    if quantization_method == QuantizationMethod.EETQ and suggested_quant_bit not in (None, 8):
+        suggested_quant_bit = 8
+    elif quantization_method == QuantizationMethod.BNB and suggested_quant_bit not in (None, 8, 4):
+        suggested_quant_bit = 4
+
+    quant_value = "none" if suggested_quant_bit is None else str(suggested_quant_bit)
+    summary = (
+        "Auto Optimize Summary\n"
+        f"- runtime: {recommendation.summary}\n"
+        f"- base_model_size_b: {prediction['base_model_size_b']}\n"
+        f"- estimated_total_memory_gb: {prediction['estimated_total_memory_gb']}\n"
+        f"- available_device_memory_gb: {prediction['available_device_memory_gb']}\n"
+        f"- fit_ratio: {prediction['fit_ratio']}\n"
+        f"- speed_tier: {prediction['speed_tier']}\n"
+        f"- efficiency_score: {prediction['efficiency_score']}\n"
+        f"- suggested_policy: {prediction['suggested_policy']}\n"
+        f"- suggested_complexity_threshold: {prediction['suggested_complexity_threshold']}"
+    )
+
+    return (
+        gr.Dropdown(value=recommendation.infer_backend),
+        gr.Dropdown(value=recommendation.infer_dtype),
+        True,
+        gr.Dropdown(value=prediction["suggested_policy"]),
+        gr.Slider(value=prediction["suggested_complexity_threshold"]),
+        gr.Dropdown(value=quant_value),
+        summary,
+    )

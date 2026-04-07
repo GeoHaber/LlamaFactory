@@ -1,0 +1,19 @@
+{
+  "backend": "inprocess",
+  "max_models": 3,
+  "n_ctx": 4096,
+  "teachers": [
+    {
+      "name": "Llama-3.2-3B-Instruct",
+      "gguf": "C:/AI/Models/Llama-3.2-3B-Instruct-Q4_K_M.gguf"
+    },
+    {
+      "name": "qwen2.5-0.5b-instruct",
+      "gguf": "C:/AI/Models/qwen2.5-0.5b-instruct-q5_k_m.gguf"
+    },
+    {
+      "name": "tinyllama-chat",
+      "gguf": "C:/AI/Models/tinyllama-1.1b-chat.Q4_K_M.gguf"
+    }
+  ]
+}

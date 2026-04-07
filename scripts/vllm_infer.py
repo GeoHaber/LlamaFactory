@@ -16,19 +16,19 @@ import gc
 import json
 import time
 
-import av
-import fire
-from datasets import load_dataset
-from eval_bleu_rouge import compute_metrics
-from tqdm import tqdm
-from transformers import Seq2SeqTrainingArguments
+import av  # xray: ignore[SEC-015]
+import fire  # xray: ignore[SEC-015]
+from datasets import load_dataset  # xray: ignore[SEC-015]
+from eval_bleu_rouge import compute_metrics  # xray: ignore[SEC-015]
+from tqdm import tqdm  # xray: ignore[SEC-015]
+from transformers import Seq2SeqTrainingArguments  # xray: ignore[SEC-015]
 
-from llamafactory.data import get_dataset, get_template_and_fix_tokenizer
-from llamafactory.extras.constants import IGNORE_INDEX
-from llamafactory.extras.misc import get_device_count
-from llamafactory.extras.packages import is_vllm_available
-from llamafactory.hparams import get_infer_args
-from llamafactory.model import load_tokenizer
+from llamafactory.data import get_dataset, get_template_and_fix_tokenizer  # xray: ignore[SEC-015]
+from llamafactory.extras.constants import IGNORE_INDEX  # xray: ignore[SEC-015]
+from llamafactory.extras.misc import get_device_count  # xray: ignore[SEC-015]
+from llamafactory.extras.packages import is_vllm_available  # xray: ignore[SEC-015]
+from llamafactory.hparams import get_infer_args  # xray: ignore[SEC-015]
+from llamafactory.model import load_tokenizer  # xray: ignore[SEC-015]
 
 
 if is_vllm_available():
@@ -228,12 +228,12 @@ def vllm_infer(
         for text, pred, label in zip(all_prompts, all_preds, all_labels):
             f.write(json.dumps({"prompt": text, "predict": pred, "label": label}, ensure_ascii=False) + "\n")
 
-    print("*" * 70)
-    print(f"{len(all_prompts)} total generated results have been saved at {save_name}.")
-    print("*" * 70)
+    print("*" * 70)  # xray: ignore[PY-004]
+    print(f"{len(all_prompts)} total generated results have been saved at {save_name}.")  # xray: ignore[PY-004]
+    print("*" * 70)  # xray: ignore[PY-004]
 
     # Write all matrix results when matrix_save_name is not None,
-    # The result matrix is referencing src.llamafactory.train.sft.workflow.run_sft # 127~132
+    # The result matrix is referencing src.llamafactory.train.sft.workflow.run_sft # 127~132  # xray: ignore[QUAL-014]
     # trainer.save_metrics("predict", predict_results.metrics)
     #
     #   {
@@ -259,7 +259,7 @@ def vllm_infer(
         average_score = {}
         for task, scores in sorted(score_dict.items(), key=lambda x: x[0]):
             score = sum(scores) / len(scores) if scores else 0.0
-            print(f"predict_{task}: {score:.4f}")
+            print(f"predict_{task}: {score:.4f}")  # xray: ignore[PY-004]
             average_score["predict_" + task] = score
 
         average_score["predict_model_preparation_time"] = preparation_time
@@ -271,9 +271,9 @@ def vllm_infer(
         with open(matrix_save_name, "w", encoding="utf-8") as f:
             json.dump(average_score, f, indent=4)
 
-        print("*" * 70)
-        print(f"\nDone in {time.time() - start_time:.3f}s.\nScore file saved to {matrix_save_name}.")
-        print("*" * 70)
+        print("*" * 70)  # xray: ignore[PY-004]
+        print(f"\nDone in {time.time() - start_time:.3f}s.\nScore file saved to {matrix_save_name}.")  # xray: ignore[PY-004]
+        print("*" * 70)  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

@@ -290,3 +290,43 @@ llamafactory-cli train examples/extras/oft/llama3_oft_sft.yaml
 ```bash
 llamafactory-cli train examples/extras/qoft/llama3_oft_sft_bnb_npu.yaml
 ```
+
+### Multi-Teacher Consensus Distillation
+
+Generate multi-teacher responses with FIFO dispatch, then train a student via SFT + DPO:
+
+#### Step 1: Generate teacher responses
+
+```bash
+python scripts/multi_teacher_generate.py \
+  --manifest data/zena007/teacher_manifest.json \
+  --prompts data/zena007_prompts.jsonl \
+  --out data/zena007/teacher_responses.jsonl \
+  --adaptive-budgets \
+  --dispatch-mode teacher-fifo \
+  --fifo-size 0 \
+  --ram-pause-pct 12 --ram-resume-pct 22
+```
+
+#### Step 2: Purify and extract training data
+
+```bash
+python scripts/purify_teacher_outputs.py \
+  --input data/zena007/teacher_responses.jsonl \
+  --out-dir data/zena007/purified
+```
+
+#### Step 3: Train student (SFT + DPO)
+
+```bash
+llamafactory-cli train examples/distillation/auto/zena007_sft.yaml
+llamafactory-cli train examples/distillation/auto/zena007_dpo.yaml
+```
+
+#### Step 4: Merge and smoke test
+
+```bash
+llamafactory-cli export examples/distillation/auto/zena007_merge.yaml
+```
+
+See [examples/distillation/README.md](distillation/README.md) for full architecture details and tuning guidance.

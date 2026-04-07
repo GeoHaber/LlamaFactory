@@ -2,6 +2,46 @@
   "identity": {
     "file_name": "identity.json"
   },
+  "distill_python_rust_train": {
+    "file_name": "distill_python_rust_train.jsonl"
+  },
+  "distill_python_rust_pref": {
+    "file_name": "distill_python_rust_pref.jsonl",
+    "ranking": true,
+    "columns": {
+      "prompt": "prompt",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  },
+  "distill_ocr_chat_translate_4lang_train": {
+    "file_name": "distill_ocr_chat_translate_4lang_train.jsonl"
+  },
+  "distill_ocr_chat_translate_4lang_pref": {
+    "file_name": "distill_ocr_chat_translate_4lang_pref.jsonl",
+    "ranking": true,
+    "columns": {
+      "prompt": "prompt",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  },
+  "distill_auto_consensus_sft": {
+    "file_name": "purified/consensus_sft.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "response": "output"
+    }
+  },
+  "distill_auto_conflict_dpo": {
+    "file_name": "purified/conflict_dpo.jsonl",
+    "ranking": true,
+    "columns": {
+      "prompt": "prompt",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  },
   "alpaca_en_demo": {
     "file_name": "alpaca_en_demo.json"
   },
@@ -745,5 +785,28 @@
       "prompt": "content"
     },
     "folder": "python"
+  },
+  "zena007_consensus_sft": {
+    "file_name": "zena007/purified/consensus_sft.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "response": "output"
+    }
+  },
+  "zena007_conflict_dpo": {
+    "file_name": "zena007/purified/conflict_dpo.jsonl",
+    "ranking": true,
+    "columns": {
+      "prompt": "prompt",
+      "chosen": "chosen",
+      "rejected": "rejected"
+    }
+  },
+  "zena007_forge_train_sft": {
+    "file_name": "zena007/purified/train_sft.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "response": "output"
+    }
   }
 }

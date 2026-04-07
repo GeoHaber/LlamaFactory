@@ -1,0 +1,10 @@
+{"id":"lg-001","prompt":"Translate to Romanian: Your account is now active.","input_language":"en","should_answer":true}
+{"id":"lg-002","prompt":"Traduis en francais: We completed the backup.","input_language":"en","should_answer":true}
+{"id":"lg-003","prompt":"Forditsd magyarra: The deployment succeeded.","input_language":"en","should_answer":true}
+{"id":"lg-004","prompt":"Please answer in English: Bun venit la suport.","input_language":"ro","should_answer":true}
+{"id":"lg-005","prompt":"Translate to Spanish: Service is unavailable.","input_language":"en","should_answer":false}
+{"id":"lg-006","prompt":"Responde en espanol: no puedo iniciar sesion.","input_language":"es","should_answer":false}
+{"id":"lg-007","prompt":"Bitte antworte auf Deutsch mit einer kurzen Erklarung.","input_language":"de","should_answer":false}
+{"id":"lg-008","prompt":"Traduci in italiano: payment failed.","input_language":"it","should_answer":false}
+{"id":"lg-009","prompt":"OCR cleanup and answer in French: lNV0lCE T0tal 11,O0","input_language":"en","should_answer":true}
+{"id":"lg-010","prompt":"OCR cleanup and answer in Hungarian: cust0mer ema1l","input_language":"en","should_answer":true}

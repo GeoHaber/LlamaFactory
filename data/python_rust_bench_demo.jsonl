@@ -1,0 +1,3 @@
+{"id":"1","prompt":"Review this Python function for bugs and translate it to Rust with ownership-safe code: def sum_positive(nums):\n    s=0\n    for n in nums:\n        if n>0:\n            s+=n\n    return s","expected_substrings":["Rust","fn","i32"]}
+{"id":"2","prompt":"Find edge cases in this Python code and provide a Rust rewrite:\n\ndef first_even(nums):\n    for n in nums:\n        if n % 2 == 0:\n            return n\n    return None","expected_substrings":["Option","fn","match"]}
+{"id":"3","prompt":"Translate Python dict frequency counter to Rust and explain complexity:\n\ndef freq(xs):\n    d = {}\n    for x in xs:\n        d[x] = d.get(x,0) + 1\n    return d","expected_substrings":["HashMap","O(","fn"]}

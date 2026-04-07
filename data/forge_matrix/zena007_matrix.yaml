@@ -1,0 +1,54 @@
+# Student Forge Matrix — Zena007 multi-variant parallel distillation
+#
+# Defines N student variants to train in parallel. Each variant differs in
+# model size, LoRA rank, learning rate, and/or epoch count. The forge
+# trains all simultaneously via SPSC ring-buffer collection, then the
+# eval panel scores them in a quick quiz → deep exam two-pass pipeline.
+#
+# Usage:
+#   python scripts/run_student_forge.py --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007
+#   python scripts/run_student_forge.py --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007 --dry-run
+
+# ── Global settings ──────────────────────────────────────────────────────
+tag: zena007
+template: qwen
+cpu_safe: true
+max_parallel: 4
+eval_probe_split: 0.10
+
+sft_data: data/zena007/purified/consensus_sft.jsonl
+dpo_data: data/zena007/purified/conflict_dpo.jsonl
+
+# ── Student variants ─────────────────────────────────────────────────────
+variants:
+  variant_A:
+    model: Qwen/Qwen2.5-0.5B-Instruct
+    lora_rank: 8
+    learning_rate: 2.0e-4
+    num_train_epochs: 2
+    run_dpo: false
+    notes: "Fast baseline — smallest student, no DPO"
+
+  variant_B:
+    model: Qwen/Qwen2.5-1.5B-Instruct
+    lora_rank: 16
+    learning_rate: 2.0e-5
+    num_train_epochs: 2
+    run_dpo: true
+    notes: "Current production baseline"
+
+  variant_C:
+    model: Qwen/Qwen2.5-1.5B-Instruct
+    lora_rank: 32
+    learning_rate: 1.0e-5
+    num_train_epochs: 3
+    run_dpo: true
+    notes: "Deeper LoRA — more capacity, slower convergence"
+
+  variant_D:
+    model: Qwen/Qwen2.5-3B-Instruct
+    lora_rank: 16
+    learning_rate: 2.0e-5
+    num_train_epochs: 2
+    run_dpo: true
+    notes: "Larger student — best quality ceiling"

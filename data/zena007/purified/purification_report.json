@@ -1,0 +1,11 @@
+{
+  "total_samples": 629,
+  "gold_count": 458,
+  "silver_count": 0,
+  "dropped_count": 171,
+  "gold_pct": 72.8,
+  "silver_pct": 0.0,
+  "dropped_pct": 27.2,
+  "answer_threshold": 0.35,
+  "reason_threshold": 0.2
+}

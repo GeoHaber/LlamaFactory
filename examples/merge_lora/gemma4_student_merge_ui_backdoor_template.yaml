@@ -1,0 +1,13 @@
+### Note: DO NOT use quantized model or quantization_bit when merging lora adapters
+
+### model
+model_name_or_path: Qwen/Qwen2.5-1.5B-Instruct
+adapter_name_or_path: saves/gemma4_student/lora/sft,saves/gemma4_student/lora/dpo
+template: qwen
+trust_remote_code: true
+
+### export
+export_dir: saves/gemma4_student/merged/four_lang_ocr_chat
+export_size: 5
+export_device: cpu  # choices: [cpu, auto]
+export_legacy_format: false

@@ -77,7 +77,13 @@ def read_args(args: dict[str, Any] | list[str] | None = None) -> dict[str, Any] 
         return OmegaConf.to_container(OmegaConf.merge(dict_config, override_config))
     elif len(sys.argv) > 1 and sys.argv[1].endswith(".json"):
         override_config = OmegaConf.from_cli(sys.argv[2:])
-        dict_config = OmegaConf.create(json.load(Path(sys.argv[1]).absolute()))
+        config_path = Path(sys.argv[1]).absolute()
+        try:
+            with config_path.open(encoding="utf-8") as f:
+                dict_config = OmegaConf.create(json.load(f))
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Malformed JSON config file: {config_path}") from exc
+
         return OmegaConf.to_container(OmegaConf.merge(dict_config, override_config))
     else:
         return sys.argv[1:]

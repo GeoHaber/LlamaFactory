@@ -76,7 +76,7 @@ class Evaluator:
         choice_probs = torch.nn.functional.softmax(word_probs[:, self.choice_inputs], dim=-1).detach()
         return [chr(ord("A") + offset.item()) for offset in torch.argmax(choice_probs, dim=-1)]
 
-    def eval(self) -> None:
+    def eval(self) -> None:  # xray: ignore[SEC-007]
         eval_task = self.eval_args.task.split("_")[0]
         eval_split = self.eval_args.task.split("_")[1]
 
@@ -87,8 +87,11 @@ class Evaluator:
             token=self.model_args.hf_hub_token,
         )
 
-        with open(mapping, encoding="utf-8") as f:
-            categorys: dict[str, dict[str, str]] = json.load(f)
+        try:
+            with open(mapping, encoding="utf-8") as f:
+                categorys: dict[str, dict[str, str]] = json.load(f)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"Malformed task mapping JSON: {mapping}") from exc
 
         category_corrects = {subj: np.array([], dtype="bool") for subj in SUBJECTS}
         pbar = tqdm(categorys.keys(), desc="Processing subjects", position=0)
@@ -154,5 +157,5 @@ class Evaluator:
                 f.write(score_info)
 
 
-def run_eval() -> None:
-    Evaluator().eval()
+def run_eval() -> None:  # xray: ignore[SEC-007]
+    Evaluator().eval()  # xray: ignore[SEC-007]

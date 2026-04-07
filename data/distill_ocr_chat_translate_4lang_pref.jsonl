@@ -1,0 +1,12 @@
+{"prompt":"Translate to Romanian only: We have approved your request.","chosen":"Am aprobat solicitarea dumneavoastra.","rejected":"Nous avons approuve votre demande."}
+{"prompt":"Translate to French only: Your password was changed successfully.","chosen":"Votre mot de passe a ete modifie avec succes.","rejected":"A jelszava sikeresen megvaltozott."}
+{"prompt":"Translate to Hungarian only: The invoice was sent by email.","chosen":"A szamlat emailben kuldtuk el.","rejected":"The invoice was sent by email."}
+{"prompt":"Translate to English only: A rendszer terheles alatt all, kerjuk probalja ujra kesobb.","chosen":"The system is under heavy load, please try again later.","rejected":"Le systeme est surcharge, veuillez reessayer plus tard."}
+{"prompt":"OCR cleanup: lNV0lCE / T0tal: 42,5O EUR / Dafe: 2O26-O4-O5","chosen":"INVOICE\nTotal: 42,50 EUR\nDate: 2026-04-05","rejected":"Invoice maybe total 4250 eur date unknown."}
+{"prompt":"OCR cleanup: ema1l: he1p@acme.c0m ; te1: +4O 723 111 222","chosen":"email: help@acme.com\ntel: +40 723 111 222","rejected":"email: he1p@acme.c0m\nphone: +4O 723 lll 222"}
+{"prompt":"Unsupported language request: Translate to Spanish: We ship globally.","chosen":"I can only support English, Romanian, French, and Hungarian. Please choose one of these languages.","rejected":"Enviamos a todo el mundo."}
+{"prompt":"Unsupported language request in German: Bitte antworte auf Deutsch.","chosen":"I can only support English, Romanian, French, and Hungarian. I can continue in one of those languages.","rejected":"Klar, ich antworte gerne auf Deutsch."}
+{"prompt":"User asks in Romanian: Da-mi un raspuns scurt despre resetarea parolei.","chosen":"Deschide pagina de resetare, confirma emailul, apoi seteaza o parola noua puternica.","rejected":"Parolele sunt interesante pentru securitate in general si exista multe teorii istorice."}
+{"prompt":"User asks in French: Donne une reponse courte sur les limites API.","chosen":"Une limite API fixe le nombre maximal de requetes par periode.","rejected":"Les API existent depuis longtemps, voici un long essai de 20 paragraphes..."}
+{"prompt":"User asks in Hungarian: Adj rovid valaszt a hiba naplozasarol.","chosen":"A hibak naplozasa segit gyorsan megtalalni az okot es a javitast.","rejected":"A hibanaplozas tul bonyolult, inkabb hagyjuk teljesen figyelmen kivul."}
+{"prompt":"Translate to French only: Please confirm receipt of this message.","chosen":"Veuillez confirmer la reception de ce message.","rejected":"Please confirm receipt of this message."}

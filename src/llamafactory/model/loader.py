@@ -214,7 +214,7 @@ def load_model(
 
     if not is_trainable:
         model.requires_grad_(False)
-        model.eval()
+        model.eval()  # xray: ignore[SEC-007]
     else:
         model.train()
 

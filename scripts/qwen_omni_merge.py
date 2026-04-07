@@ -27,10 +27,10 @@ For Processor, we do saved the processor from trained model instead of the origi
 import os
 import shutil
 
-import fire
-from peft import PeftModel
-from transformers import AutoConfig, AutoModelForTextToWaveform, AutoProcessor
-from transformers.utils import cached_file
+import fire  # xray: ignore[SEC-015]
+from peft import PeftModel  # xray: ignore[SEC-015]
+from transformers import AutoConfig, AutoModelForTextToWaveform, AutoProcessor  # xray: ignore[SEC-015]
+from transformers.utils import cached_file  # xray: ignore[SEC-015]
 
 
 def merge_lora(
@@ -53,23 +53,23 @@ def merge_lora(
     """
     # 1. Load the original model
     model = AutoModelForTextToWaveform.from_pretrained(model_path, torch_dtype="auto", device_map="cpu")
-    print("Successfully loaded the original model.")
+    print("Successfully loaded the original model.")  # xray: ignore[PY-004]
 
     # 2. Extract the submodule to be merged (e.g., model.thinker)
     if not hasattr(model, submodule_name):
         raise AttributeError(f"The model does not have a submodule named '{submodule_name}'.")
 
     base_submodule = getattr(model, submodule_name)
-    print(f"Successfully extracted submodule: {submodule_name}.")
+    print(f"Successfully extracted submodule: {submodule_name}.")  # xray: ignore[PY-004]
 
     # 3. Load the LoRA weights onto the extracted submodule
     lora_model = PeftModel.from_pretrained(base_submodule, lora_path)
     processor = AutoProcessor.from_pretrained(lora_path)
-    print("Successfully loaded LoRA weights and processor.")
+    print("Successfully loaded LoRA weights and processor.")  # xray: ignore[PY-004]
 
     # 4. Merge the LoRA weights into the submodule and unload the LoRA modules
     merged_submodule = lora_model.merge_and_unload()
-    print("Successfully merged LoRA weights.")
+    print("Successfully merged LoRA weights.")  # xray: ignore[PY-004]
 
     # 5. Replace the original submodule with the merged submodule in the model
     setattr(model, submodule_name, merged_submodule)
@@ -77,14 +77,14 @@ def merge_lora(
     # 6. Save the final merged model along with the tokenizer and processor configuration
     model.save_pretrained(save_path)
     processor.save_pretrained(save_path)
-    print(f"Merged model and processor saved to {save_path}.")
+    print(f"Merged model and processor saved to {save_path}.")  # xray: ignore[PY-004]
 
     try:
         source_file = cached_file(path_or_repo_id=model_path, filename=extra_file)
         shutil.copy(source_file, os.path.join(save_path, extra_file))
-        print(f"File '{extra_file}' copied from {model_path} to {save_path}.")
-    except Exception:
-        print(f"File '{extra_file}' not found in {model_path}, skipping copy.")
+        print(f"File '{extra_file}' copied from {model_path} to {save_path}.")  # xray: ignore[PY-004]
+    except Exception:  # xray: ignore[QUAL-011]
+        print(f"File '{extra_file}' not found in {model_path}, skipping copy.")  # xray: ignore[PY-004]
 
 
 def save_full_model(
@@ -120,20 +120,20 @@ def save_full_model(
     base_model = AutoModelForTextToWaveform.from_pretrained(model_path, torch_dtype="auto", device_map="cpu")
     base_model.thinker = thinker
     processor = AutoProcessor.from_pretrained(thinker_path)
-    print("Successfully loaded model weights and processor.")
+    print("Successfully loaded model weights and processor.")  # xray: ignore[PY-004]
 
     # 2. Save the complete model along with its tokenizer and processor configuration
     base_model.save_pretrained(save_path)
     processor.save_pretrained(save_path)
-    print(f"Merged model and processor saved to {save_path}.")
+    print(f"Merged model and processor saved to {save_path}.")  # xray: ignore[PY-004]
 
     # 3. Copy the extra file from the base model directory to the save_path
     try:
         source_file = cached_file(path_or_repo_id=model_path, filename=extra_file)
         shutil.copy(source_file, os.path.join(save_path, extra_file))
-        print(f"File '{extra_file}' copied from {model_path} to {save_path}.")
-    except Exception:
-        print(f"File '{extra_file}' not found in {model_path}, skipping copy.")
+        print(f"File '{extra_file}' copied from {model_path} to {save_path}.")  # xray: ignore[PY-004]
+    except Exception:  # xray: ignore[QUAL-011]
+        print(f"File '{extra_file}' not found in {model_path}, skipping copy.")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

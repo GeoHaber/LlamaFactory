@@ -1,0 +1,77 @@
+{
+  "total": 10,
+  "passed": 10,
+  "score": 1.0,
+  "details": [
+    {
+      "id": "lg-001",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "Contul tau este acum activ."
+    },
+    {
+      "id": "lg-002",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "Nous avons termine la sauvegarde."
+    },
+    {
+      "id": "lg-003",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "A telepites sikeres volt."
+    },
+    {
+      "id": "lg-004",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "Welcome to support."
+    },
+    {
+      "id": "lg-005",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-006",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-007",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-008",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-009",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "Total facture : 11,00."
+    },
+    {
+      "id": "lg-010",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "E-mail client."
+    }
+  ]
+}

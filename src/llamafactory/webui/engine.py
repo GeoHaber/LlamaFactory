@@ -15,6 +15,7 @@
 from typing import TYPE_CHECKING, Any
 
 from .chatter import WebChatModel
+from .components.top import SUPPORTED_WEBUI_LANGS
 from .common import create_ds_config, get_time, load_config
 from .locales import LOCALES
 from .manager import Manager
@@ -50,6 +51,8 @@ class Engine:
         r"""Get the initial value of gradio components and restores training status if necessary."""
         user_config = load_config() if not self.demo_mode else {}  # do not use config in demo mode
         lang = user_config.get("lang") or "en"
+        if lang not in SUPPORTED_WEBUI_LANGS:
+            lang = "en"
         init_dict = {"top.lang": {"value": lang}, "infer.chat_box": {"visible": self.chatter.loaded}}
 
         if not self.pure_chat:
@@ -77,7 +80,7 @@ class Engine:
     def change_lang(self, lang: str):
         r"""Update the displayed language of gradio components."""
         return {
-            elem: elem.__class__(**LOCALES[elem_name][lang])
+            elem: elem.__class__(**LOCALES[elem_name].get(lang, LOCALES[elem_name].get("en", {})))
             for elem_name, elem in self.manager.get_elem_iter()
             if elem_name in LOCALES
         }

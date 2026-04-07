@@ -1,0 +1,19 @@
+{
+  "backend": "inprocess",
+  "max_models": 3,
+  "n_ctx": 8192,
+  "teachers": [
+    {
+      "name": "gemma-4-26B-A4B",
+      "gguf": "C:/AI/Models/google_gemma-4-26B-A4B-it-Q4_K_M.gguf"
+    },
+    {
+      "name": "Qwen2.5-14B-Instruct",
+      "gguf": "C:/AI/Models/Qwen2.5-14B-Instruct-Q4_K_M.gguf"
+    },
+    {
+      "name": "Mistral-7B-Instruct-v0.3",
+      "gguf": "C:/AI/Models/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf"
+    }
+  ]
+}

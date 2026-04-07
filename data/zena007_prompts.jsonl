@@ -1,0 +1,629 @@
+{"id": "tr-id2pt-0440", "prompt": "Translate the following text from Indonesian to Portuguese. First produce the Indonesian version from this English original, then translate it to Portuguese.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-fr2pt-0386", "prompt": "Translate the following text from French to Portuguese. First produce the French version from this English original, then translate it to Portuguese.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-de2hu-0417", "prompt": "Translate the following text from German to Hungarian. First produce the German version from this English original, then translate it to Hungarian.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-en-0524", "prompt": "Help me write a birthday message for my grandmother who turns 80."}
+{"id": "chat-id-0592", "prompt": "[Respond in Indonesian]\n\nTulis surat lamaran kerja untuk posisi pengembang perangkat lunak."}
+{"id": "tr-en2es-0013", "prompt": "Translate the following English text to Spanish:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-hu-0542", "prompt": "[Respond in Hungarian]\n\nÍrj egy hivatalos levelet, amelyben munkát keresel."}
+{"id": "tr-pt2en-0352", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-pt2en-0248", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2he-0139", "prompt": "Translate the following English text to Hebrew:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "tr-es2en-0341", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-id2en-0359", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-fr2en-0348", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-detect-0487", "prompt": "Identify the language of this text and translate it to English:\n\n\"Comment allez-vous aujourd'hui?\""}
+{"id": "tr-es2en-0269", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2fr-0212", "prompt": "Translate the following English text to French:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "tr-en2es-0165", "prompt": "Translate the following English text to Spanish:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "chat-sys-0625", "prompt": "You are a multilingual assistant. A user writes in Romanian but wants the answer in French. Always respond in the language they request, not the language they write in.\n\nUser: Bună! Poți să-mi recomanzi un restaurant bun în Paris? Răspunde în franceză."}
+{"id": "chat-ro-0536", "prompt": "[Respond in Romanian]\n\nRecomandă-mi 5 cărți clasice din literatura română și de ce merită citite."}
+{"id": "tr-en2ro-0185", "prompt": "Translate the following English text to Romanian:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "tr-id2es-0444", "prompt": "Translate the following text from Indonesian to Spanish. First produce the Indonesian version from this English original, then translate it to Spanish.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-pt2en-0288", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2fr-0156", "prompt": "Translate the following English text to French:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "tr-id2en-0351", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-en2id-0063", "prompt": "Translate the following English text to Indonesian:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-pt2fr-0464", "prompt": "Translate the following text from Portuguese to French. First produce the Portuguese version from this English original, then translate it to French.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-ro2hu-0361", "prompt": "Translate the following text from Romanian to Hungarian. First produce the Romanian version from this English original, then translate it to Hungarian.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2ro-0137", "prompt": "Translate the following English text to Romanian:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "tr-detect-0478", "prompt": "Identify the language of this text and translate it to English:\n\n\"היום יום יפה.\""}
+{"id": "tr-detect-0483", "prompt": "Identify the language of this text and translate it to English:\n\n\"Hoje é um lindo dia.\""}
+{"id": "tr-en2es-0053", "prompt": "Translate the following English text to Spanish:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-en2fr-0132", "prompt": "Translate the following English text to French:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-en2fr-0220", "prompt": "Translate the following English text to French:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-en2pt-0088", "prompt": "Translate the following English text to Portuguese:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-en2de-0070", "prompt": "Translate the following English text to German:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2pt-0216", "prompt": "Translate the following English text to Portuguese:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "chat-es-0576", "prompt": "[Respond in Spanish]\n\nRecomienda 5 libros clásicos de la literatura en español."}
+{"id": "tr-pt2en-0304", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-de2en-0246", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "chat-es-0577", "prompt": "[Respond in Spanish]\n\n¿Cómo puedo mejorar mi español escrito? Dame 10 consejos."}
+{"id": "tr-id2en-0263", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-pt-0606", "prompt": "[Respond in Portuguese]\n\nRecomenda 5 clássicos da literatura portuguesa."}
+{"id": "tr-en2ro-0009", "prompt": "Translate the following English text to Romanian:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2id-0231", "prompt": "Translate the following English text to Indonesian:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-detect-0476", "prompt": "Identify the language of this text and translate it to English:\n\n\"Astăzi este o zi frumoasă.\""}
+{"id": "tr-en2pt-0016", "prompt": "Translate the following English text to Portuguese:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-de2en-0358", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2fr-0076", "prompt": "Translate the following English text to French:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-he2de-0454", "prompt": "Translate the following text from Hebrew to German. First produce the Hebrew version from this English original, then translate it to German.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "chat-es-0573", "prompt": "[Respond in Spanish]\n\n¿Cuál es la diferencia entre ahorro e inversión?"}
+{"id": "tr-fr2en-0308", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2id-0119", "prompt": "Translate the following English text to Indonesian:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2id-0015", "prompt": "Translate the following English text to Indonesian:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-pt2en-0256", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-de2he-0425", "prompt": "Translate the following text from German to Hebrew. First produce the German version from this English original, then translate it to Hebrew.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2fr-0188", "prompt": "Translate the following English text to French:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "chat-de-0581", "prompt": "[Respond in German]\n\nWas sind die 5 besten Sehenswürdigkeiten in Berlin?"}
+{"id": "chat-es-0572", "prompt": "[Respond in Spanish]\n\nEscribe una carta de presentación para solicitar un trabajo."}
+{"id": "chat-pt-0607", "prompt": "[Respond in Portuguese]\n\nComo posso melhorar o meu português escrito? Dá-me 10 dicas."}
+{"id": "tr-en2es-0173", "prompt": "Translate the following English text to Spanish:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-he2en-0259", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-de-0588", "prompt": "[Respond in German]\n\nSchreibe ein Rezept für traditionelles Wiener Schnitzel."}
+{"id": "tr-pt2en-0280", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-id2en-0255", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-fr-0562", "prompt": "[Respond in French]\n\nÉcris une lettre de motivation pour un poste de développeur web."}
+{"id": "ocr-fix-0502", "prompt": "Fix OCR errors in this table and format it correctly.\n\n```\n| Name    | Score | Grad3 |\n| A1ice   |  92   |   A   |\n| B0b     |  85   |   B   |\n| CharIie |  78   |   C+  |\n```"}
+{"id": "tr-en2he-0187", "prompt": "Translate the following English text to Hebrew:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "tr-es2de-0408", "prompt": "Translate the following text from Spanish to German. First produce the Spanish version from this English original, then translate it to German.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2pt-0184", "prompt": "Translate the following English text to Portuguese:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "tr-en2pt-0120", "prompt": "Translate the following English text to Portuguese:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-fr2es-0382", "prompt": "Translate the following text from French to Spanish. First produce the French version from this English original, then translate it to Spanish.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "ocr-fix-0492", "prompt": "Fix OCR errors in this text. The original is clean English.\n\n```\nTh3 qu1ck br0wn f0x jumps 0ver th3 1azy d0g.\n```"}
+{"id": "tr-en2hu-0210", "prompt": "Translate the following English text to Hungarian:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "tr-ro2en-0337", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-en2de-0006", "prompt": "Translate the following English text to German:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-de2hu-0416", "prompt": "Translate the following text from German to Hungarian. First produce the German version from this English original, then translate it to Hungarian.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2he-0019", "prompt": "Translate the following English text to Hebrew:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-hu-0544", "prompt": "[Respond in Hungarian]\n\nSegíts írni egy köszönőbeszédet az érettségi ünnepségre."}
+{"id": "tr-en2fr-0228", "prompt": "Translate the following English text to French:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-fr2es-0383", "prompt": "Translate the following text from French to Spanish. First produce the French version from this English original, then translate it to Spanish.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-en-0529", "prompt": "Write a short bedtime story about a brave little robot."}
+{"id": "tr-en2he-0219", "prompt": "Translate the following English text to Hebrew:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-en2he-0043", "prompt": "Translate the following English text to Hebrew:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2ro-0129", "prompt": "Translate the following English text to Romanian:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "chat-es-0574", "prompt": "[Respond in Spanish]\n\nAyúdame a escribir un discurso para la graduación de mi hija."}
+{"id": "tr-fr2de-0394", "prompt": "Translate the following text from French to German. First produce the French version from this English original, then translate it to German.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2es-0093", "prompt": "Translate the following English text to Spanish:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-en2id-0191", "prompt": "Translate the following English text to Indonesian:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "tr-fr2es-0384", "prompt": "Translate the following text from French to Spanish. First produce the French version from this English original, then translate it to Spanish.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2es-0133", "prompt": "Translate the following English text to Spanish:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-en2de-0022", "prompt": "Translate the following English text to German:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-es-0579", "prompt": "[Respond in Spanish]\n\n¿Cuáles son los derechos laborales básicos en España?"}
+{"id": "ocr-fix-0496", "prompt": "Fix the OCR recognition errors in this recipe.\n\n```\nR3cipe: Choco1ate Cake\nlngredients:\n- 2 cups f1our\n- 1 cup su9ar\n- 3/4 cup cocoa p0wder\n- 2 tsp bak1ng powder\n```"}
+{"id": "tr-ro2he-0378", "prompt": "Translate the following text from Romanian to Hebrew. First produce the Romanian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2es-0117", "prompt": "Translate the following English text to Spanish:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2ro-0097", "prompt": "Translate the following English text to Romanian:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-id2pt-0438", "prompt": "Translate the following text from Indonesian to Portuguese. First produce the Indonesian version from this English original, then translate it to Portuguese.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-hu-0541", "prompt": "[Respond in Hungarian]\n\nMelyek a legjobb látnivalók Budapesten? Készíts egy 3 napos útvonaltervet."}
+{"id": "tr-hu2en-0306", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2fr-0084", "prompt": "Translate the following English text to French:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-en2de-0078", "prompt": "Translate the following English text to German:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2he-0075", "prompt": "Translate the following English text to Hebrew:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2es-0101", "prompt": "Translate the following English text to Spanish:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-ro2de-0372", "prompt": "Translate the following text from Romanian to German. First produce the Romanian version from this English original, then translate it to German.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-hu2ro-0434", "prompt": "Translate the following text from Hungarian to Romanian. First produce the Hungarian version from this English original, then translate it to Romanian.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-es2de-0407", "prompt": "Translate the following text from Spanish to German. First produce the Spanish version from this English original, then translate it to German.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2es-0141", "prompt": "Translate the following English text to Spanish:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "chat-x-en2he-0615", "prompt": "Explain the history of Jerusalem in 3 paragraphs. Respond in Hebrew."}
+{"id": "tr-en2he-0107", "prompt": "Translate the following English text to Hebrew:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-de2en-0294", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-de2en-0254", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-id2es-0445", "prompt": "Translate the following text from Indonesian to Spanish. First produce the Indonesian version from this English original, then translate it to Spanish.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2ro-0073", "prompt": "Translate the following English text to Romanian:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2pt-0208", "prompt": "Translate the following English text to Portuguese:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "tr-en2id-0023", "prompt": "Translate the following English text to Indonesian:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-hu2en-0314", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2id-0087", "prompt": "Translate the following English text to Indonesian:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-en2hu-0202", "prompt": "Translate the following English text to Hungarian:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "tr-ro2he-0379", "prompt": "Translate the following text from Romanian to Hebrew. First produce the Romanian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "ocr-task-0513", "prompt": "OCR from an Indonesian official letter. Fix errors:\n\n```\nSURAT RESM1\nKepada: Bapak Ahm4d Suryad1\nPerihaI: Permohonan lzin Usaha\nTanggaI: 5 Apr1I 2O26\nDengan h0rmat, kami memberi tahukan bahwa permohonan Anda teIah disetujui.\n```"}
+{"id": "tr-en2ro-0025", "prompt": "Translate the following English text to Romanian:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "chat-ro-0533", "prompt": "[Respond in Romanian]\n\nCare este diferența dintre un cont de economii și un depozit la termen?"}
+{"id": "ocr-fix-0504", "prompt": "This text was produced by handwriting OCR. Fix all recognition errors.\n\n```\nI woold lke to schedoule a meetting for nextt Tuersday at 3 PM to discoss the projeckt.\n```"}
+{"id": "chat-hu-0543", "prompt": "[Respond in Hungarian]\n\nMi a különbség az éghajlatváltozás és az időjárás között?"}
+{"id": "tr-en2de-0238", "prompt": "Translate the following English text to German:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-en2hu-0178", "prompt": "Translate the following English text to Hungarian:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "tr-en2fr-0196", "prompt": "Translate the following English text to French:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-en2ro-0201", "prompt": "Translate the following English text to Romanian:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "tr-de2en-0262", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2es-0077", "prompt": "Translate the following English text to Spanish:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-de2en-0326", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "chat-ro-0535", "prompt": "[Respond in Romanian]\n\nExplică procesul electoral din România pe scurt."}
+{"id": "tr-hu2ro-0435", "prompt": "Translate the following text from Hungarian to Romanian. First produce the Hungarian version from this English original, then translate it to Romanian.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-multi-0475", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-he2en-0355", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "ocr-fix-0493", "prompt": "This invoice text has OCR scanning errors. Fix all character recognition mistakes.\n\n```\nlnvoice #2847 - Total Arnount: $1,247.89 - Due Oate: March 15, 2O26\n```"}
+{"id": "tr-es2en-0357", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-id2en-0295", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-detect-0488", "prompt": "Identify the language of this text and translate it to English:\n\n\"¿Cómo estás hoy?\""}
+{"id": "tr-hu2en-0242", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2fr-0148", "prompt": "Translate the following English text to French:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "tr-he2de-0453", "prompt": "Translate the following text from Hebrew to German. First produce the Hebrew version from this English original, then translate it to German.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-he2de-0451", "prompt": "Translate the following text from Hebrew to German. First produce the Hebrew version from this English original, then translate it to German.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-he2de-0455", "prompt": "Translate the following text from Hebrew to German. First produce the Hebrew version from this English original, then translate it to German.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "ocr-fix-0505", "prompt": "Fix the handwriting OCR errors in this medical prescription.\n\n```\nPatiennt Name: Michaeel Johnsonn\nDiagnosis: Acutte bronchittis\nPrescripption: Amoxiciliin 500mg, 3x daiily for 7 dayss\n```"}
+{"id": "tr-multi-0467", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-he2en-0347", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "ocr-task-0511", "prompt": "OCR output from a Portuguese newspaper article. Fix errors:\n\n```\nLISB0A - O govern0 anunciou h0je um n0vo pacote de medidas econ0micas para estimuIar o crescirnento. O Primeir0 Ministr0 afirmou que as rnedidas entrar4o em vig0r a partir de jurho.\n```"}
+{"id": "tr-id2en-0319", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2ro-0089", "prompt": "Translate the following English text to Romanian:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-hu2en-0330", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-en2id-0183", "prompt": "Translate the following English text to Indonesian:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "tr-fr2en-0252", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-ro2hu-0362", "prompt": "Translate the following text from Romanian to Hungarian. First produce the Romanian version from this English original, then translate it to Hungarian.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2es-0149", "prompt": "Translate the following English text to Spanish:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "tr-en2id-0199", "prompt": "Translate the following English text to Indonesian:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-en2he-0067", "prompt": "Translate the following English text to Hebrew:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-es2en-0317", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "chat-id-0590", "prompt": "[Respond in Indonesian]\n\nJelaskan bagaimana kecerdasan buatan bekerja dengan cara yang sederhana."}
+{"id": "chat-he-0558", "prompt": "[Respond in Hebrew]\n\nכתוב מתכון לחומוס ביתי מושלם."}
+{"id": "tr-en2hu-0138", "prompt": "Translate the following English text to Hungarian:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "chat-de-0582", "prompt": "[Respond in German]\n\nSchreibe ein Bewerbungsschreiben für eine Stelle als Ingenieur."}
+{"id": "tr-en2he-0131", "prompt": "Translate the following English text to Hebrew:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-pt2en-0320", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "chat-fr-0567", "prompt": "[Respond in French]\n\nComment améliorer son français écrit? Donne 10 conseils pratiques."}
+{"id": "tr-en2hu-0018", "prompt": "Translate the following English text to Hungarian:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-id2pt-0436", "prompt": "Translate the following text from Indonesian to Portuguese. First produce the Indonesian version from this English original, then translate it to Portuguese.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-es2pt-0403", "prompt": "Translate the following text from Spanish to Portuguese. First produce the Spanish version from this English original, then translate it to Portuguese.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-id2pt-0437", "prompt": "Translate the following text from Indonesian to Portuguese. First produce the Indonesian version from this English original, then translate it to Portuguese.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-he-0556", "prompt": "[Respond in Hebrew]\n\nהמלץ על 5 ספרים בעברית שכדאי לקרוא."}
+{"id": "tr-en2ro-0169", "prompt": "Translate the following English text to Romanian:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-en2ro-0193", "prompt": "Translate the following English text to Romanian:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-multi-0472", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-en2he-0059", "prompt": "Translate the following English text to Hebrew:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-en2de-0222", "prompt": "Translate the following English text to German:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "chat-x-ro2fr-0621", "prompt": "Prezintă pe scurt cultura română. Răspunde în franceză."}
+{"id": "chat-hu-0548", "prompt": "[Respond in Hungarian]\n\nÍrj egy rövid mesét egy bátор kis sárkányról."}
+{"id": "tr-de2hu-0420", "prompt": "Translate the following text from German to Hungarian. First produce the German version from this English original, then translate it to Hungarian.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2ro-0057", "prompt": "Translate the following English text to Romanian:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-de2en-0310", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "ocr-task-0510", "prompt": "OCR output from a Hungarian government form. Fix all errors and translate to English:\n\n```\nMagyar K0ztarsasag\nSzem3lyi igazoIvany\nN3v: Nagy lstvan\nSzuIetesi d4tum: 1985. oktober 22.\nLakc1m: Budapest, Kossuth Lajos t3r 5.\nAIlampo1garsag: magyar\n```"}
+{"id": "tr-fr2en-0332", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-fr2es-0381", "prompt": "Translate the following text from French to Spanish. First produce the French version from this English original, then translate it to Spanish.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2fr-0180", "prompt": "Translate the following English text to French:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "tr-pt2fr-0461", "prompt": "Translate the following text from Portuguese to French. First produce the Portuguese version from this English original, then translate it to French.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-hu2en-0266", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-es2en-0309", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2fr-0172", "prompt": "Translate the following English text to French:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-en2hu-0194", "prompt": "Translate the following English text to Hungarian:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-ro2en-0241", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2es-0189", "prompt": "Translate the following English text to Spanish:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "tr-de2en-0342", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "chat-pt-0603", "prompt": "[Respond in Portuguese]\n\nQual é a diferença entre poupança e investimento?"}
+{"id": "tr-en2hu-0106", "prompt": "Translate the following English text to Hungarian:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-en2de-0046", "prompt": "Translate the following English text to German:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2fr-0236", "prompt": "Translate the following English text to French:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-en2es-0061", "prompt": "Translate the following English text to Spanish:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-en2pt-0040", "prompt": "Translate the following English text to Portuguese:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-detect-0491", "prompt": "Identify the language of this text and translate it to English:\n\n\"Como você está hoje?\""}
+{"id": "tr-en2id-0159", "prompt": "Translate the following English text to Indonesian:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "ocr-fix-0500", "prompt": "Fix OCR errors in this Spanish text and provide the English translation.\n\n```\n¡Bienvenid0 a Madri6! Esper4mos que disfrut3 de su cstancia cn nuestra ciudad.\n```"}
+{"id": "tr-ro2fr-0367", "prompt": "Translate the following text from Romanian to French. First produce the Romanian version from this English original, then translate it to French.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-fr2en-0340", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-en2he-0091", "prompt": "Translate the following English text to Hebrew:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-en2he-0027", "prompt": "Translate the following English text to Hebrew:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2he-0171", "prompt": "Translate the following English text to Hebrew:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-en2pt-0064", "prompt": "Translate the following English text to Portuguese:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-en2id-0175", "prompt": "Translate the following English text to Indonesian:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-he2en-0267", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "ocr-fix-0501", "prompt": "Fix OCR errors in this Hebrew text and provide the English translation.\n\n```\nשלום! ברוכיW הבאיW לירושליW. אנו מקוויW שתהנו מהביקור.\n```"}
+{"id": "tr-pt2ro-0457", "prompt": "Translate the following text from Portuguese to Romanian. First produce the Portuguese version from this English original, then translate it to Romanian.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-x-ro2en-0610", "prompt": "Poți să-mi explici ce este machine learning? Răspunde în engleză."}
+{"id": "chat-fr-0565", "prompt": "[Respond in French]\n\nExplique le système de santé français en quelques paragraphes."}
+{"id": "tr-detect-0486", "prompt": "Identify the language of this text and translate it to English:\n\n\"?מה שלומך\""}
+{"id": "tr-de2he-0422", "prompt": "Translate the following text from German to Hebrew. First produce the German version from this English original, then translate it to Hebrew.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-de2he-0424", "prompt": "Translate the following text from German to Hebrew. First produce the German version from this English original, then translate it to Hebrew.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2id-0111", "prompt": "Translate the following English text to Indonesian:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-he2en-0283", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "chat-he-0557", "prompt": "[Respond in Hebrew]\n\nאיך אפשר לשפר את הזיכרון? תן 10 טיפים."}
+{"id": "tr-en2de-0150", "prompt": "Translate the following English text to German:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "chat-id-0594", "prompt": "[Respond in Indonesian]\n\nBantu saya menulis pidato untuk wisuda adik saya."}
+{"id": "tr-en2de-0214", "prompt": "Translate the following English text to German:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "chat-x-en2hu-0613", "prompt": "Describe the process of making Hungarian goulash. Respond in Hungarian."}
+{"id": "tr-fr2en-0316", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-pt2en-0360", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2ro-0177", "prompt": "Translate the following English text to Romanian:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "tr-en2fr-0020", "prompt": "Translate the following English text to French:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2es-0029", "prompt": "Translate the following English text to Spanish:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2he-0003", "prompt": "Translate the following English text to Hebrew:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2pt-0144", "prompt": "Translate the following English text to Portuguese:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "tr-ro2en-0281", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2es-0181", "prompt": "Translate the following English text to Spanish:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "chat-ro-0530", "prompt": "[Respond in Romanian]\n\nExplică-mi cum funcționează inteligența artificială pe înțelesul unui copil."}
+{"id": "tr-en2hu-0114", "prompt": "Translate the following English text to Hungarian:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "ocr-know-0514", "prompt": "What are the most common OCR errors when scanning documents with mixed Latin and Hebrew scripts? How should a post-processor handle right-to-left text?"}
+{"id": "tr-id2en-0303", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-id2en-0327", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "chat-en-0523", "prompt": "What's the difference between machine learning and deep learning?"}
+{"id": "tr-en2hu-0034", "prompt": "Translate the following English text to Hungarian:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2de-0198", "prompt": "Translate the following English text to German:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-de2en-0350", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-detect-0477", "prompt": "Identify the language of this text and translate it to English:\n\n\"A mai napja szép napja.\""}
+{"id": "ocr-know-0516", "prompt": "How should an OCR post-processor handle tables and structured data from scanned invoices? What heuristics help reconstruct column alignment?"}
+{"id": "tr-en2id-0071", "prompt": "Translate the following English text to Indonesian:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2es-0213", "prompt": "Translate the following English text to Spanish:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "tr-id2es-0442", "prompt": "Translate the following text from Indonesian to Spanish. First produce the Indonesian version from this English original, then translate it to Spanish.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2he-0163", "prompt": "Translate the following English text to Hebrew:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "tr-en2pt-0024", "prompt": "Translate the following English text to Portuguese:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2de-0014", "prompt": "Translate the following English text to German:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-pt2en-0336", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "chat-de-0584", "prompt": "[Respond in German]\n\nHilf mir, eine Rede für die Hochzeit meines Bruders zu schreiben."}
+{"id": "tr-hu2he-0428", "prompt": "Translate the following text from Hungarian to Hebrew. First produce the Hungarian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-he2de-0452", "prompt": "Translate the following text from Hebrew to German. First produce the Hebrew version from this English original, then translate it to German.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-id-0591", "prompt": "[Respond in Indonesian]\n\nApa 5 tempat terbaik untuk dikunjungi di Indonesia?"}
+{"id": "tr-en2hu-0130", "prompt": "Translate the following English text to Hungarian:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-hu2he-0429", "prompt": "Translate the following text from Hungarian to Hebrew. First produce the Hungarian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-fr2ro-0396", "prompt": "Translate the following text from French to Romanian. First produce the French version from this English original, then translate it to Romanian.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "chat-fr-0561", "prompt": "[Respond in French]\n\nQuels sont les 5 meilleurs musées à visiter à Paris?"}
+{"id": "tr-en2fr-0108", "prompt": "Translate the following English text to French:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-en2ro-0145", "prompt": "Translate the following English text to Romanian:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "tr-en2fr-0140", "prompt": "Translate the following English text to French:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "tr-hu2ro-0432", "prompt": "Translate the following text from Hungarian to Romanian. First produce the Hungarian version from this English original, then translate it to Romanian.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "ocr-fix-0495", "prompt": "Correct all OCR errors in this legal document text.\n\n```\nRENTAL AGREEMFNT\nThis agr33ment is made b3tween th3 LandIord and Tenant on this 5th day 0f ApriI, 2O26.\n```"}
+{"id": "tr-en2fr-0060", "prompt": "Translate the following English text to French:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-id2en-0279", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2es-0069", "prompt": "Translate the following English text to Spanish:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2de-0054", "prompt": "Translate the following English text to German:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-hu2en-0322", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-de2en-0286", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2he-0155", "prompt": "Translate the following English text to Hebrew:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "chat-pt-0608", "prompt": "[Respond in Portuguese]\n\nEscreve uma receita de bacalhau à Brás passo a passo."}
+{"id": "tr-de2en-0318", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2hu-0146", "prompt": "Translate the following English text to Hungarian:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "tr-en2de-0190", "prompt": "Translate the following English text to German:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "tr-en2de-0126", "prompt": "Translate the following English text to German:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-ro2en-0313", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2he-0179", "prompt": "Translate the following English text to Hebrew:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "tr-pt2fr-0462", "prompt": "Translate the following text from Portuguese to French. First produce the Portuguese version from this English original, then translate it to French.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-fr2ro-0397", "prompt": "Translate the following text from French to Romanian. First produce the French version from this English original, then translate it to Romanian.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-en-0528", "prompt": "Explain how blockchain technology works and its real-world applications beyond cryptocurrency."}
+{"id": "tr-hu2en-0346", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-fr2en-0276", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-id2en-0287", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2fr-0052", "prompt": "Translate the following English text to French:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-ro2en-0289", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-en2es-0005", "prompt": "Translate the following English text to Spanish:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2de-0038", "prompt": "Translate the following English text to German:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-hu2en-0298", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "chat-he-0551", "prompt": "[Respond in Hebrew]\n\nמהם 5 המקומות הכי שווים לביקור בירושלים?"}
+{"id": "tr-en2hu-0154", "prompt": "Translate the following English text to Hungarian:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "tr-detect-0481", "prompt": "Identify the language of this text and translate it to English:\n\n\"Heute ist ein schöner Tag.\""}
+{"id": "tr-en2he-0203", "prompt": "Translate the following English text to Hebrew:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "tr-he2en-0339", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-multi-0466", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-es2en-0325", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "chat-id-0595", "prompt": "[Respond in Indonesian]\n\nJelaskan sistem pendidikan di Indonesia secara singkat."}
+{"id": "tr-en2de-0134", "prompt": "Translate the following English text to German:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-en2hu-0162", "prompt": "Translate the following English text to Hungarian:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "tr-fr2en-0268", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-hu2en-0290", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-he2en-0299", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "chat-fr-0564", "prompt": "[Respond in French]\n\nAide-moi à écrire un discours pour le mariage de ma sœur."}
+{"id": "tr-he2en-0315", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2es-0021", "prompt": "Translate the following English text to Spanish:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-detect-0490", "prompt": "Identify the language of this text and translate it to English:\n\n\"Bagaimana kabar Anda hari ini?\""}
+{"id": "tr-multi-0469", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-fr2en-0292", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-hu2he-0427", "prompt": "Translate the following text from Hungarian to Hebrew. First produce the Hungarian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-pt2ro-0459", "prompt": "Translate the following text from Portuguese to Romanian. First produce the Portuguese version from this English original, then translate it to Romanian.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2ro-0121", "prompt": "Translate the following English text to Romanian:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-es2de-0410", "prompt": "Translate the following text from Spanish to German. First produce the Spanish version from this English original, then translate it to German.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-ro2en-0305", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-pt2ro-0456", "prompt": "Translate the following text from Portuguese to Romanian. First produce the Portuguese version from this English original, then translate it to Romanian.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "chat-x-fr2de-0616", "prompt": "Explique-moi la différence entre le français et l'allemand. Réponds en allemand."}
+{"id": "tr-en2hu-0042", "prompt": "Translate the following English text to Hungarian:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-es2en-0261", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-es2id-0413", "prompt": "Translate the following text from Spanish to Indonesian. First produce the Spanish version from this English original, then translate it to Indonesian.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "ocr-task-0509", "prompt": "You are an OCR post-processor. Extract and correct the invoice data from this OCR scan:\n\n```\nlNV0lCE #2O26-OO42\nBiII To: Acme Corp0ration\n123 Business Blvd, Suite 4OO\nNew Y0rk, NY 1OOO1\n\nltem        Qty   Unit Price  T0tal\nWidget A     1O    $12.5O    $125.OO\nWidget B      5    $24.99    $124.95\nService C     1   $199.OO    $199.OO\n\nSubt0tal:                    $448.95\nTax (8.5%):                   $38.16\nT0TAL:                       $487.11\n```"}
+{"id": "tr-detect-0479", "prompt": "Identify the language of this text and translate it to English:\n\n\"Aujourd'hui est une belle journée.\""}
+{"id": "ocr-know-0517", "prompt": "What are best practices for OCR post-processing of handwritten text vs. printed text? How do error patterns differ?"}
+{"id": "tr-es2en-0245", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-fr2en-0300", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-fr2en-0356", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-ro2en-0329", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-en2ro-0161", "prompt": "Translate the following English text to Romanian:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "tr-ro2he-0376", "prompt": "Translate the following text from Romanian to Hebrew. First produce the Romanian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-de2en-0278", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "chat-x-en2ro-0611", "prompt": "Explain the Romanian healthcare system. Respond in Romanian."}
+{"id": "chat-fr-0569", "prompt": "[Respond in French]\n\nQuels sont les droits fondamentaux des citoyens en France?"}
+{"id": "tr-en2pt-0112", "prompt": "Translate the following English text to Portuguese:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-en2pt-0152", "prompt": "Translate the following English text to Portuguese:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "ocr-fix-0503", "prompt": "Fix OCR errors in this email header.\n\n```\nDate: 2O26-O4-O5\nFrom: john.doe@exarnple.corn\nTo: jane.srnith@cornpany.corn\nSubject: Q1 FinanciaI Rep0rt\n```"}
+{"id": "tr-en2pt-0080", "prompt": "Translate the following English text to Portuguese:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-hu2en-0250", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-es-0570", "prompt": "[Respond in Spanish]\n\nExplícame cómo funciona la inteligencia artificial de forma sencilla."}
+{"id": "tr-ro2hu-0365", "prompt": "Translate the following text from Romanian to Hungarian. First produce the Romanian version from this English original, then translate it to Hungarian.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "chat-ro-0539", "prompt": "[Respond in Romanian]\n\nCare sunt drepturile consumatorului în România conform legislației europene?"}
+{"id": "ocr-task-0508", "prompt": "You are an OCR post-processor. This is OCR output from a scanned French restaurant menu. Fix errors and format properly.\n\n```\nMENU DU JOUR\nEntr3es:\n- Soupe à I'oignon gratin3e - 8,5O€\n- SaIade Nic0ise - 1O,OO€\nPIats:\n- B0euf bourguign0n - 18,5O€\n- Poulet r0ti aux herb3s - 15,OO€\nDess3rts:\n- Cr3me brûI3e - 7,5O€\n- Tarte aux pomrnes - 6,5O€\n```"}
+{"id": "ocr-fix-0494", "prompt": "Fix the OCR errors in this medical document header.\n\n```\nDr. Sarah Mirchell, M.D.\nCardioIogy Department\nSt. Mary's HospitaI\nPatient: John Srni1h, DOB: O3/15/198O\n```"}
+{"id": "tr-en2pt-0200", "prompt": "Translate the following English text to Portuguese:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "ocr-task-0507", "prompt": "You are an OCR post-processor. Given the following noisy OCR output from a scanned Romanian identity card, fix all errors and extract: Full Name, ID Number, Date of Birth, Address.\n\n```\nCarte de ldentitate\nNume: P0PESCU I0N\nCNP: 18OO315O8O123\nData nasterii: 15.O3.198O\nAdresa: Str. Libertatii nr. 42, Bucure5ti\n```"}
+{"id": "tr-en2he-0195", "prompt": "Translate the following English text to Hebrew:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-he2fr-0447", "prompt": "Translate the following text from Hebrew to French. First produce the Hebrew version from this English original, then translate it to French.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-es2id-0412", "prompt": "Translate the following text from Spanish to Indonesian. First produce the Spanish version from this English original, then translate it to Indonesian.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2de-0206", "prompt": "Translate the following English text to German:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "tr-es2pt-0401", "prompt": "Translate the following text from Spanish to Portuguese. First produce the Spanish version from this English original, then translate it to Portuguese.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-id2en-0247", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-es2pt-0402", "prompt": "Translate the following text from Spanish to Portuguese. First produce the Spanish version from this English original, then translate it to Portuguese.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-fr2de-0392", "prompt": "Translate the following text from French to German. First produce the French version from this English original, then translate it to German.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2de-0086", "prompt": "Translate the following English text to German:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-es2pt-0405", "prompt": "Translate the following text from Spanish to Portuguese. First produce the Spanish version from this English original, then translate it to Portuguese.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2pt-0048", "prompt": "Translate the following English text to Portuguese:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2pt-0008", "prompt": "Translate the following English text to Portuguese:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-fr2ro-0400", "prompt": "Translate the following text from French to Romanian. First produce the French version from this English original, then translate it to Romanian.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-de2en-0334", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "chat-sys-0628", "prompt": "You are a language tutor. A student learning Hungarian made these mistakes. Identify and correct each error, explaining the grammar rule:\n\n'Én vagyok menni a boltba holnap. A kutya az enyém van nagyon szép.'"}
+{"id": "tr-ro2he-0377", "prompt": "Translate the following text from Romanian to Hebrew. First produce the Romanian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-he2fr-0448", "prompt": "Translate the following text from Hebrew to French. First produce the Hebrew version from this English original, then translate it to French.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2he-0227", "prompt": "Translate the following English text to Hebrew:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-en2id-0039", "prompt": "Translate the following English text to Indonesian:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-fr2ro-0398", "prompt": "Translate the following text from French to Romanian. First produce the French version from this English original, then translate it to Romanian.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2es-0237", "prompt": "Translate the following English text to Spanish:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-es2pt-0404", "prompt": "Translate the following text from Spanish to Portuguese. First produce the Spanish version from this English original, then translate it to Portuguese.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "chat-en-0527", "prompt": "I need to prepare for a job interview as a software developer. What questions should I expect?"}
+{"id": "tr-fr2es-0385", "prompt": "Translate the following text from French to Spanish. First produce the French version from this English original, then translate it to Spanish.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "chat-es-0578", "prompt": "[Respond in Spanish]\n\nEscribe una receta de paella valenciana paso a paso."}
+{"id": "tr-en2de-0230", "prompt": "Translate the following English text to German:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "chat-fr-0560", "prompt": "[Respond in French]\n\nExplique-moi comment fonctionne l'intelligence artificielle simplement."}
+{"id": "tr-detect-0484", "prompt": "Identify the language of this text and translate it to English:\n\n\"Bună ziua, cum vă numiți?\""}
+{"id": "tr-en2he-0099", "prompt": "Translate the following English text to Hebrew:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "chat-de-0585", "prompt": "[Respond in German]\n\nErkläre das deutsche Gesundheitssystem kurz."}
+{"id": "tr-en2pt-0056", "prompt": "Translate the following English text to Portuguese:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-de2he-0423", "prompt": "Translate the following text from German to Hebrew. First produce the German version from this English original, then translate it to Hebrew.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-ro2de-0373", "prompt": "Translate the following text from Romanian to German. First produce the Romanian version from this English original, then translate it to German.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2id-0207", "prompt": "Translate the following English text to Indonesian:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "tr-en2pt-0032", "prompt": "Translate the following English text to Portuguese:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2he-0051", "prompt": "Translate the following English text to Hebrew:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-he2en-0331", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-id2en-0335", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "chat-id-0596", "prompt": "[Respond in Indonesian]\n\nRekomendasikan 5 buku klasik sastra Indonesia."}
+{"id": "chat-x-hu2en-0612", "prompt": "Mi az a kvantumszámítógép? Válaszolj angolul."}
+{"id": "chat-ro-0534", "prompt": "[Respond in Romanian]\n\nAjută-mă să scriu un discurs pentru nunta prietenului meu."}
+{"id": "tr-en2pt-0240", "prompt": "Translate the following English text to Portuguese:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-en2he-0211", "prompt": "Translate the following English text to Hebrew:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "tr-id2es-0443", "prompt": "Translate the following text from Indonesian to Spanish. First produce the Indonesian version from this English original, then translate it to Spanish.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2de-0182", "prompt": "Translate the following English text to German:\n\n\"Your blood test results indicate slightly elevated cholesterol levels.\""}
+{"id": "chat-id-0597", "prompt": "[Respond in Indonesian]\n\nBagaimana cara meningkatkan produktivitas kerja? Berikan 10 tips."}
+{"id": "tr-pt2fr-0463", "prompt": "Translate the following text from Portuguese to French. First produce the Portuguese version from this English original, then translate it to French.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2hu-0050", "prompt": "Translate the following English text to Hungarian:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "chat-en-0526", "prompt": "What are the health benefits of Mediterranean diet? Give me a weekly meal plan."}
+{"id": "tr-en2hu-0098", "prompt": "Translate the following English text to Hungarian:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-en2ro-0209", "prompt": "Translate the following English text to Romanian:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "chat-en-0520", "prompt": "Explain quantum computing in simple terms that a 10-year-old could understand."}
+{"id": "tr-en2es-0125", "prompt": "Translate the following English text to Spanish:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-he2en-0243", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-pt2en-0296", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-es2en-0293", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "chat-ro-0532", "prompt": "[Respond in Romanian]\n\nScrie o scrisoare oficială de demisie politicoasă în limba română."}
+{"id": "chat-hu-0546", "prompt": "[Respond in Hungarian]\n\nHogyan lehet egészségesebben élni? Adj 10 gyakorlati tanácsot."}
+{"id": "tr-id2es-0441", "prompt": "Translate the following text from Indonesian to Spanish. First produce the Indonesian version from this English original, then translate it to Spanish.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2de-0110", "prompt": "Translate the following English text to German:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-pt2ro-0458", "prompt": "Translate the following text from Portuguese to Romanian. First produce the Portuguese version from this English original, then translate it to Romanian.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-id2en-0343", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "chat-ro-0537", "prompt": "[Respond in Romanian]\n\nCum pot să îmbunătățesc productivitatea la locul de muncă? Dă-mi 10 sfaturi practice."}
+{"id": "tr-en2hu-0122", "prompt": "Translate the following English text to Hungarian:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-pt2en-0264", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-es2id-0415", "prompt": "Translate the following text from Spanish to Indonesian. First produce the Spanish version from this English original, then translate it to Indonesian.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2hu-0170", "prompt": "Translate the following English text to Hungarian:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-en2ro-0017", "prompt": "Translate the following English text to Romanian:\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2he-0035", "prompt": "Translate the following English text to Hebrew:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-de2hu-0419", "prompt": "Translate the following text from German to Hungarian. First produce the German version from this English original, then translate it to Hungarian.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "chat-x-es2pt-0617", "prompt": "¿Cuáles son las diferencias entre el español y el portugués? Responde en portugués."}
+{"id": "chat-hu-0549", "prompt": "[Respond in Hungarian]\n\nMilyen készségekre van szükség egy sikeres programozónak?"}
+{"id": "tr-ro2hu-0363", "prompt": "Translate the following text from Romanian to Hungarian. First produce the Romanian version from this English original, then translate it to Hungarian.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2es-0037", "prompt": "Translate the following English text to Spanish:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2fr-0004", "prompt": "Translate the following English text to French:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "chat-en-0525", "prompt": "Explain the causes and consequences of inflation in a modern economy."}
+{"id": "tr-de2he-0421", "prompt": "Translate the following text from German to Hebrew. First produce the German version from this English original, then translate it to Hebrew.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "ocr-know-0515", "prompt": "Explain the typical OCR confusion patterns: which characters are most commonly misread (e.g., 0/O, 1/l/I, rn/m, 5/S)? Give examples in English, French, and German."}
+{"id": "tr-fr2en-0284", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-de2en-0302", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-en2he-0011", "prompt": "Translate the following English text to Hebrew:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-en2de-0174", "prompt": "Translate the following English text to German:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "chat-de-0586", "prompt": "[Respond in German]\n\nEmpfiehl mir 5 Klassiker der deutschen Literatur."}
+{"id": "tr-en2fr-0116", "prompt": "Translate the following English text to French:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2id-0127", "prompt": "Translate the following English text to Indonesian:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-en2de-0062", "prompt": "Translate the following English text to German:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-en2pt-0232", "prompt": "Translate the following English text to Portuguese:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-ro2en-0265", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "chat-ro-0531", "prompt": "[Respond in Romanian]\n\nCare sunt cele mai frumoase locuri de vizitat în România? Fă-mi un itinerar de 7 zile."}
+{"id": "tr-detect-0485", "prompt": "Identify the language of this text and translate it to English:\n\n\"Jó napot, hogy hívják?\""}
+{"id": "chat-he-0553", "prompt": "[Respond in Hebrew]\n\nמה ההבדל בין חיסכון לבין השקעה?"}
+{"id": "tr-pt2en-0344", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-en2es-0205", "prompt": "Translate the following English text to Spanish:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "chat-id-0598", "prompt": "[Respond in Indonesian]\n\nTulis resep nasi goreng tradisional langkah demi langkah."}
+{"id": "tr-ro2fr-0366", "prompt": "Translate the following text from Romanian to French. First produce the Romanian version from this English original, then translate it to French.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2id-0103", "prompt": "Translate the following English text to Indonesian:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-hu2en-0354", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "chat-fr-0568", "prompt": "[Respond in French]\n\nÉcris une recette traditionnelle de ratatouille étape par étape."}
+{"id": "tr-fr2pt-0387", "prompt": "Translate the following text from French to Portuguese. First produce the French version from this English original, then translate it to Portuguese.\n\nEnglish original: \"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-detect-0482", "prompt": "Identify the language of this text and translate it to English:\n\n\"Hari ini adalah hari yang indah.\""}
+{"id": "tr-en2es-0109", "prompt": "Translate the following English text to Spanish:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "chat-hu-0545", "prompt": "[Respond in Hungarian]\n\nMesélj a magyar konyha legfontosabb ételeiről és a receptjükről."}
+{"id": "tr-id2en-0311", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "chat-de-0589", "prompt": "[Respond in German]\n\nWas sind die Grundrechte der Bürger in Deutschland?"}
+{"id": "tr-en2pt-0136", "prompt": "Translate the following English text to Portuguese:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-en2es-0085", "prompt": "Translate the following English text to Spanish:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "chat-sys-0627", "prompt": "You are a multilingual customer service agent. Handle this complaint in the same language the customer uses:\n\nCustomer: Ich habe vor zwei Wochen ein Produkt bestellt und es ist immer noch nicht angekommen. Die Sendungsverfolgung zeigt seit einer Woche keine Updates. Was ist passiert?"}
+{"id": "tr-fr2en-0244", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-hu2en-0338", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "chat-en-0521", "prompt": "I'm planning a trip to Japan. What are the top 5 things I should know before going?"}
+{"id": "tr-en2ro-0065", "prompt": "Translate the following English text to Romanian:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-fr2de-0393", "prompt": "Translate the following text from French to German. First produce the French version from this English original, then translate it to German.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-ro2en-0273", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "chat-es-0571", "prompt": "[Respond in Spanish]\n\n¿Cuáles son los 5 mejores lugares para visitar en España?"}
+{"id": "tr-en2fr-0036", "prompt": "Translate the following English text to French:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-de2hu-0418", "prompt": "Translate the following text from German to Hungarian. First produce the German version from this English original, then translate it to Hungarian.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-ro2en-0249", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-ro2de-0375", "prompt": "Translate the following text from Romanian to German. First produce the Romanian version from this English original, then translate it to German.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2fr-0044", "prompt": "Translate the following English text to French:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2ro-0041", "prompt": "Translate the following English text to Romanian:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-he2en-0291", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "chat-hu-0540", "prompt": "[Respond in Hungarian]\n\nMagyarázd el egyszerűen, hogyan működik a mesterséges intelligencia."}
+{"id": "tr-en2fr-0124", "prompt": "Translate the following English text to French:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-en2de-0030", "prompt": "Translate the following English text to German:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2he-0123", "prompt": "Translate the following English text to Hebrew:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "tr-en2de-0158", "prompt": "Translate the following English text to German:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "tr-es2id-0414", "prompt": "Translate the following text from Spanish to Indonesian. First produce the Spanish version from this English original, then translate it to Indonesian.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-hu2he-0426", "prompt": "Translate the following text from Hungarian to Hebrew. First produce the Hungarian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-he2fr-0450", "prompt": "Translate the following text from Hebrew to French. First produce the Hebrew version from this English original, then translate it to French.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2hu-0186", "prompt": "Translate the following English text to Hungarian:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "chat-he-0552", "prompt": "[Respond in Hebrew]\n\nכתוב מכתב רשמי לבקשת חופשה מהעבודה."}
+{"id": "tr-en2hu-0010", "prompt": "Translate the following English text to Hungarian:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-pt-0609", "prompt": "[Respond in Portuguese]\n\nQuais são os direitos fundamentais dos trabalhadores em Portugal?"}
+{"id": "tr-en2de-0166", "prompt": "Translate the following English text to German:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "tr-he2en-0307", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2ro-0001", "prompt": "Translate the following English text to Romanian:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "chat-de-0587", "prompt": "[Respond in German]\n\nWie kann ich mein Deutsch verbessern? Gib mir 10 Tipps."}
+{"id": "chat-ro-0538", "prompt": "[Respond in Romanian]\n\nScrie o rețetă tradițională românească de sarmale pas cu pas."}
+{"id": "tr-multi-0473", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-fr2ro-0399", "prompt": "Translate the following text from French to Romanian. First produce the French version from this English original, then translate it to Romanian.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "chat-he-0555", "prompt": "[Respond in Hebrew]\n\nהסבר את מערכת הבריאות בישראל בקצרה."}
+{"id": "tr-en2he-0083", "prompt": "Translate the following English text to Hebrew:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "ocr-fix-0499", "prompt": "Fix OCR errors in this German text and provide the English translation.\n\n```\nWir hei8en Sie herzl1ch wi11kommen in Ber1in. Die Stadt ist wunderschön im Frühling.\n```"}
+{"id": "tr-en2pt-0192", "prompt": "Translate the following English text to Portuguese:\n\n\"The surgical procedure was successful and the patient is recovering well.\""}
+{"id": "tr-en2id-0079", "prompt": "Translate the following English text to Indonesian:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-en2de-0102", "prompt": "Translate the following English text to German:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-pt2en-0312", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "ocr-fix-0497", "prompt": "Fix OCR errors in this French text and provide the English translation.\n\n```\nBienvenu3 à Par1s! Nous esp3rons que votre séj0ur sera agréabIe.\n```"}
+{"id": "tr-pt2en-0328", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-hu2ro-0431", "prompt": "Translate the following text from Hungarian to Romanian. First produce the Hungarian version from this English original, then translate it to Romanian.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2ro-0153", "prompt": "Translate the following English text to Romanian:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "tr-ro2en-0321", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-he2fr-0446", "prompt": "Translate the following text from Hebrew to French. First produce the Hebrew version from this English original, then translate it to French.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2id-0055", "prompt": "Translate the following English text to Indonesian:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-multi-0468", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-fr2en-0260", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2fr-0092", "prompt": "Translate the following English text to French:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "ocr-know-0519", "prompt": "What techniques can improve OCR accuracy for degraded or low-quality document scans? Discuss pre-processing and post-processing approaches."}
+{"id": "tr-ro2en-0257", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "ocr-fix-0498", "prompt": "Fix OCR errors in this Romanian text and provide the English translation.\n\n```\nBunä ziua! Bine ati veni1 la Bucure5ti. VremeA este frum0asä astäzi.\n```"}
+{"id": "tr-en2id-0135", "prompt": "Translate the following English text to Indonesian:\n\n\"The quarterly financial report shows a 12% increase in revenue.\""}
+{"id": "tr-ro2fr-0369", "prompt": "Translate the following text from Romanian to French. First produce the Romanian version from this English original, then translate it to French.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-he2fr-0449", "prompt": "Translate the following text from Hebrew to French. First produce the Hebrew version from this English original, then translate it to French.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-ro2fr-0370", "prompt": "Translate the following text from Romanian to French. First produce the Romanian version from this English original, then translate it to French.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-detect-0489", "prompt": "Identify the language of this text and translate it to English:\n\n\"Wie geht es Ihnen heute?\""}
+{"id": "tr-en2hu-0002", "prompt": "Translate the following English text to Hungarian:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-en2ro-0233", "prompt": "Translate the following English text to Romanian:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "chat-de-0583", "prompt": "[Respond in German]\n\nWas ist der Unterschied zwischen Klima und Wetter?"}
+{"id": "tr-en2id-0223", "prompt": "Translate the following English text to Indonesian:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-en2id-0151", "prompt": "Translate the following English text to Indonesian:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "chat-sys-0629", "prompt": "You are a professional translator. Translate this legal clause to ALL of these languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\n\n'The parties agree that any disputes arising from this agreement shall be resolved through binding arbitration in the jurisdiction of the complainant.'"}
+{"id": "chat-pt-0600", "prompt": "[Respond in Portuguese]\n\nExplica-me como funciona a inteligência artificial de forma simples."}
+{"id": "chat-fr-0563", "prompt": "[Respond in French]\n\nQuelle est la différence entre le réchauffement climatique et le changement climatique?"}
+{"id": "tr-en2de-0118", "prompt": "Translate the following English text to German:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2fr-0012", "prompt": "Translate the following English text to French:\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-hu2en-0258", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-detect-0480", "prompt": "Identify the language of this text and translate it to English:\n\n\"Hoy es un hermoso día.\""}
+{"id": "tr-fr2de-0391", "prompt": "Translate the following text from French to German. First produce the French version from this English original, then translate it to German.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-fr2de-0395", "prompt": "Translate the following text from French to German. First produce the French version from this English original, then translate it to German.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2hu-0066", "prompt": "Translate the following English text to Hungarian:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "chat-pt-0601", "prompt": "[Respond in Portuguese]\n\nQuais são os 5 melhores lugares para visitar em Portugal?"}
+{"id": "chat-pt-0602", "prompt": "[Respond in Portuguese]\n\nEscreve uma carta de motivação para uma vaga de programador."}
+{"id": "tr-en2es-0157", "prompt": "Translate the following English text to Spanish:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "tr-en2ro-0113", "prompt": "Translate the following English text to Romanian:\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-en2ro-0049", "prompt": "Translate the following English text to Romanian:\n\n\"Please update your password to meet the new security requirements.\""}
+{"id": "tr-en2de-0094", "prompt": "Translate the following English text to German:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "ocr-fix-0506", "prompt": "Fix OCR errors in this multilingual document.\n\n```\nThe documeut contains text in multip1e Ianguages:\nEnglish: HeI1o WorId\nFrench: Bonj0ur le M0nde\nGerman: HaI1o WeIt\n```"}
+{"id": "chat-en-0522", "prompt": "Write a professional email declining a job offer politely."}
+{"id": "tr-en2de-0142", "prompt": "Translate the following English text to German:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "chat-he-0554", "prompt": "[Respond in Hebrew]\n\nעזור לי לכתוב נאום לבר מצווה של הבן שלי."}
+{"id": "chat-de-0580", "prompt": "[Respond in German]\n\nErkläre mir einfach, wie künstliche Intelligenz funktioniert."}
+{"id": "tr-es2de-0409", "prompt": "Translate the following text from Spanish to German. First produce the Spanish version from this English original, then translate it to German.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-id2pt-0439", "prompt": "Translate the following text from Indonesian to Portuguese. First produce the Indonesian version from this English original, then translate it to Portuguese.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-de2en-0270", "prompt": "First translate this English text to German, then translate the German result back to English. Show both the German translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-es2en-0253", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "chat-x-es2en-0624", "prompt": "Explica la importancia de las energías renovables. Responde en inglés."}
+{"id": "tr-pt2en-0272", "prompt": "First translate this English text to Portuguese, then translate the Portuguese result back to English. Show both the Portuguese translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2he-0147", "prompt": "Translate the following English text to Hebrew:\n\n\"The board of directors has scheduled an emergency meeting for tomorrow.\""}
+{"id": "tr-multi-0470", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-es2de-0406", "prompt": "Translate the following text from Spanish to German. First produce the Spanish version from this English original, then translate it to German.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "ocr-task-0512", "prompt": "OCR from a Hebrew document. Fix errors and translate to English:\n\n```\nמכתב רשמ1\nלכבוד: מר דוד כ0הן\nנושA: בקשה לחידוש רישי0ן\nתאר1ך: 5 באפר1ל 2026\nאנו מאשר1ם את בקשתך לחידוש הרישי0ן.\n```"}
+{"id": "tr-en2hu-0218", "prompt": "Translate the following English text to Hungarian:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-he2en-0323", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-en2ro-0217", "prompt": "Translate the following English text to Romanian:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-en2fr-0068", "prompt": "Translate the following English text to French:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-he2en-0275", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-es2id-0411", "prompt": "Translate the following text from Spanish to Indonesian. First produce the Spanish version from this English original, then translate it to Indonesian.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-fr2en-0324", "prompt": "First translate this English text to French, then translate the French result back to English. Show both the French translation and the back-translation.\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "chat-x-de2fr-0618", "prompt": "Beschreibe die Europäische Union in einfachen Worten. Antworte auf Französisch."}
+{"id": "tr-en2he-0235", "prompt": "Translate the following English text to Hebrew:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-en2hu-0058", "prompt": "Translate the following English text to Hungarian:\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-es2en-0333", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-en2ro-0225", "prompt": "Translate the following English text to Romanian:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-es2en-0277", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-fr2pt-0389", "prompt": "Translate the following text from French to Portuguese. First produce the French version from this English original, then translate it to Portuguese.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-multi-0474", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2pt-0168", "prompt": "Translate the following English text to Portuguese:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "chat-sys-0626", "prompt": "You are a translation quality evaluator. Rate this translation from 1-10 and explain any errors:\n\nOriginal (English): 'The early bird catches the worm.'\nTranslation (Romanian): 'Pasărea matinală prinde viermele.'\n\nIs this translation natural? What would a native speaker say instead?"}
+{"id": "chat-hu-0547", "prompt": "[Respond in Hungarian]\n\nMagyarázd el a fotoszintézis folyamatát egyszerűen."}
+{"id": "tr-en2pt-0176", "prompt": "Translate the following English text to Portuguese:\n\n\"Please take this medication twice daily with food for seven days.\""}
+{"id": "tr-en2hu-0074", "prompt": "Translate the following English text to Hungarian:\n\n\"The database migration completed successfully with zero data loss.\""}
+{"id": "tr-hu2en-0274", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2id-0215", "prompt": "Translate the following English text to Indonesian:\n\n\"The autumn leaves danced in the wind like golden butterflies.\""}
+{"id": "tr-ro2hu-0364", "prompt": "Translate the following text from Romanian to Hungarian. First produce the Romanian version from this English original, then translate it to Hungarian.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-ro2he-0380", "prompt": "Translate the following text from Romanian to Hebrew. First produce the Romanian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2id-0167", "prompt": "Translate the following English text to Indonesian:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "tr-ro2de-0374", "prompt": "Translate the following text from Romanian to German. First produce the Romanian version from this English original, then translate it to German.\n\nEnglish original: \"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-pt2fr-0465", "prompt": "Translate the following text from Portuguese to French. First produce the Portuguese version from this English original, then translate it to French.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "chat-id-0599", "prompt": "[Respond in Indonesian]\n\nApa hak-hak dasar pekerja di Indonesia?"}
+{"id": "chat-id-0593", "prompt": "[Respond in Indonesian]\n\nApa perbedaan antara tabungan dan investasi?"}
+{"id": "tr-en2pt-0104", "prompt": "Translate the following English text to Portuguese:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "chat-x-he2en-0614", "prompt": "מה זה שינוי אקלימי? ענה באנגלית."}
+{"id": "tr-en2hu-0082", "prompt": "Translate the following English text to Hungarian:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-ro2en-0297", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "tr-en2hu-0234", "prompt": "Translate the following English text to Hungarian:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-en2id-0047", "prompt": "Translate the following English text to Indonesian:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2pt-0072", "prompt": "Translate the following English text to Portuguese:\n\n\"Click the blue button to confirm your email address and activate your account.\""}
+{"id": "tr-en2es-0197", "prompt": "Translate the following English text to Spanish:\n\n\"The defendant pleaded not guilty to all charges brought against them.\""}
+{"id": "tr-ro2de-0371", "prompt": "Translate the following text from Romanian to German. First produce the Romanian version from this English original, then translate it to German.\n\nEnglish original: \"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-es2en-0301", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"The neural network achieved 95% accuracy on the validation dataset.\""}
+{"id": "chat-fr-0566", "prompt": "[Respond in French]\n\nRecommande-moi 5 livres classiques de la littérature française."}
+{"id": "tr-en2ro-0081", "prompt": "Translate the following English text to Romanian:\n\n\"It's raining cats and dogs outside, you should take an umbrella.\""}
+{"id": "tr-fr2pt-0388", "prompt": "Translate the following text from French to Portuguese. First produce the French version from this English original, then translate it to Portuguese.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2pt-0128", "prompt": "Translate the following English text to Portuguese:\n\n\"We are pleased to inform you that your application has been approved.\""}
+{"id": "chat-he-0550", "prompt": "[Respond in Hebrew]\n\nהסבר לי מהי בינה מלאכותית בצורה פשוטה."}
+{"id": "tr-multi-0471", "prompt": "Translate this English text into ALL of the following languages: Romanian, Hungarian, Hebrew, French, Spanish, German, Indonesian, Portuguese.\nFormat each translation as: [Language]: translation\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2es-0045", "prompt": "Translate the following English text to Spanish:\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-id2en-0271", "prompt": "First translate this English text to Indonesian, then translate the Indonesian result back to English. Show both the Indonesian translation and the back-translation.\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-ro2en-0353", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Every cloud has a silver lining if you look hard enough.\""}
+{"id": "tr-ro2fr-0368", "prompt": "Translate the following text from Romanian to French. First produce the Romanian version from this English original, then translate it to French.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "tr-en2fr-0100", "prompt": "Translate the following English text to French:\n\n\"The early bird catches the worm, but the second mouse gets the cheese.\""}
+{"id": "tr-fr2pt-0390", "prompt": "Translate the following text from French to Portuguese. First produce the French version from this English original, then translate it to Portuguese.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2id-0095", "prompt": "Translate the following English text to Indonesian:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "chat-x-fr2ro-0623", "prompt": "Décris la cuisine française. Réponds en roumain."}
+{"id": "tr-ro2en-0345", "prompt": "First translate this English text to Romanian, then translate the Romanian result back to English. Show both the Romanian translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-en2es-0221", "prompt": "Translate the following English text to Spanish:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-en2pt-0160", "prompt": "Translate the following English text to Portuguese:\n\n\"We regret to inform you that the position has been filled by another candidate.\""}
+{"id": "chat-x-pt2es-0620", "prompt": "Explica a história de Portugal. Responde em espanhol."}
+{"id": "tr-es2en-0349", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "chat-x-id2en-0619", "prompt": "Apa itu demokratisasi? Jawab dalam bahasa Inggris."}
+{"id": "tr-en2fr-0164", "prompt": "Translate the following English text to French:\n\n\"The patient presents with acute chest pain radiating to the left arm.\""}
+{"id": "tr-en2id-0007", "prompt": "Translate the following English text to Indonesian:\n\n\"The weather is beautiful today, let's go for a walk in the park.\""}
+{"id": "tr-es2en-0285", "prompt": "First translate this English text to Spanish, then translate the Spanish result back to English. Show both the Spanish translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "chat-pt-0604", "prompt": "[Respond in Portuguese]\n\nAjuda-me a escrever um discurso para o casamento do meu amigo."}
+{"id": "tr-pt2ro-0460", "prompt": "Translate the following text from Portuguese to Romanian. First produce the Portuguese version from this English original, then translate it to Romanian.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-en2hu-0226", "prompt": "Translate the following English text to Hungarian:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-hu2he-0430", "prompt": "Translate the following text from Hungarian to Hebrew. First produce the Hungarian version from this English original, then translate it to Hebrew.\n\nEnglish original: \"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "chat-x-hu2de-0622", "prompt": "Mesélj a magyar történelemről. Válaszolj németül."}
+{"id": "tr-en2fr-0204", "prompt": "Translate the following English text to French:\n\n\"This agreement shall be governed by the laws of the respective jurisdiction.\""}
+{"id": "chat-es-0575", "prompt": "[Respond in Spanish]\n\nExplica el sistema educativo en España brevemente."}
+{"id": "tr-en2fr-0028", "prompt": "Translate the following English text to French:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "ocr-know-0518", "prompt": "Describe a strategy for OCR post-processing of multilingual documents containing English, Romanian, Hungarian, and Hebrew text. How do you handle script switching?"}
+{"id": "tr-en2id-0239", "prompt": "Translate the following English text to Indonesian:\n\n\"The total cost including tax and shipping comes to $1,247.89.\""}
+{"id": "tr-en2pt-0224", "prompt": "Translate the following English text to Portuguese:\n\n\"She whispered softly, knowing that some secrets are better left untold.\""}
+{"id": "tr-en2pt-0096", "prompt": "Translate the following English text to Portuguese:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "tr-en2id-0031", "prompt": "Translate the following English text to Indonesian:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2ro-0033", "prompt": "Translate the following English text to Romanian:\n\n\"Happy birthday! I hope all your wishes come true this year.\""}
+{"id": "tr-hu2ro-0433", "prompt": "Translate the following text from Hungarian to Romanian. First produce the Hungarian version from this English original, then translate it to Romanian.\n\nEnglish original: \"I would like to order two coffees and one tea, please.\""}
+{"id": "chat-pt-0605", "prompt": "[Respond in Portuguese]\n\nExplica o sistema de saúde em Portugal resumidamente."}
+{"id": "tr-en2hu-0090", "prompt": "Translate the following English text to Hungarian:\n\n\"Rome wasn't built in a day, so be patient with your progress.\""}
+{"id": "chat-he-0559", "prompt": "[Respond in Hebrew]\n\nמהם הזכויות הבסיסיות של עובד בישראל?"}
+{"id": "tr-en2ro-0105", "prompt": "Translate the following English text to Romanian:\n\n\"Actions speak louder than words when it comes to building trust.\""}
+{"id": "tr-en2id-0143", "prompt": "Translate the following English text to Indonesian:\n\n\"Please find attached the signed contract for your review and records.\""}
+{"id": "tr-en2es-0229", "prompt": "Translate the following English text to Spanish:\n\n\"The meeting is scheduled for March 15th, 2026 at 3:30 PM.\""}
+{"id": "tr-he2en-0251", "prompt": "First translate this English text to Hebrew, then translate the Hebrew result back to English. Show both the Hebrew translation and the back-translation.\n\n\"Could you please help me find the nearest pharmacy?\""}
+{"id": "tr-hu2en-0282", "prompt": "First translate this English text to Hungarian, then translate the Hungarian result back to English. Show both the Hungarian translation and the back-translation.\n\n\"The server encountered an internal error while processing your request.\""}
+{"id": "tr-en2hu-0026", "prompt": "Translate the following English text to Hungarian:\n\n\"My flight has been delayed by three hours due to bad weather.\""}
+{"id": "tr-en2he-0115", "prompt": "Translate the following English text to Hebrew:\n\n\"Every cloud has a silver lining if you look hard enough.\""}

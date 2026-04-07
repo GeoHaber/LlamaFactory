@@ -81,6 +81,11 @@ def create_chat_box(
                 query = gr.Textbox(show_label=False, lines=8)
                 submit_btn = gr.Button(variant="primary")
 
+                with gr.Accordion("Coordinator Trace", open=False):
+                    planner_trace = gr.Markdown(value="")
+                    coder_trace = gr.Markdown(value="")
+                    logician_trace = gr.Markdown(value="")
+
             with gr.Column(scale=1):
                 max_new_tokens = gr.Slider(minimum=8, maximum=8192, value=1024, step=1)
                 top_p = gr.Slider(minimum=0.01, maximum=1.0, value=0.7, step=0.01)
@@ -114,9 +119,9 @@ def create_chat_box(
             escape_html,
             enable_thinking,
         ],
-        [chatbot, messages],
+        [chatbot, messages, planner_trace, coder_trace, logician_trace],
     )
-    clear_btn.click(lambda: ([], []), outputs=[chatbot, messages])
+    clear_btn.click(lambda: ([], [], "", "", ""), outputs=[chatbot, messages, planner_trace, coder_trace, logician_trace])
 
     return (
         chatbot,
@@ -139,5 +144,8 @@ def create_chat_box(
             escape_html=escape_html,
             enable_thinking=enable_thinking,
             clear_btn=clear_btn,
+            planner_trace=planner_trace,
+            coder_trace=coder_trace,
+            logician_trace=logician_trace,
         ),
     )

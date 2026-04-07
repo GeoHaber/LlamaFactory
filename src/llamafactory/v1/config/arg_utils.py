@@ -94,7 +94,10 @@ def get_plugin_config(config: PluginArgument) -> PluginConfig | None:
         return None
 
     if isinstance(config, str) and config.startswith("{"):
-        config = json.loads(config)
+        try:
+            config = json.loads(config)
+        except json.JSONDecodeError as exc:
+            raise ValueError("Plugin configuration must be valid JSON.") from exc
 
     config = _convert_str_dict(config)
     if "name" not in config:

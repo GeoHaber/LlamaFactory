@@ -34,6 +34,57 @@ if TYPE_CHECKING:
     from ..engine import Engine
 
 
+def _make_train_help(lang: str) -> str:
+    if lang == "zh":
+        return (
+            "### 训练菜单帮助（简单版）\n\n"
+            "- **training_stage**：训练阶段（SFT/DPO 等）。\n"
+            "  为什么：不同阶段目标和损失函数不同。\n"
+            "  怎么用：先确认你当前任务属于哪个阶段。\n\n"
+            "- **dataset_dir / dataset**：训练数据来源。\n"
+            "  为什么：直接决定训练内容质量。\n"
+            "  怎么用：确保数据字段和模板匹配。\n\n"
+            "- **learning_rate / epochs / batch_size / grad_accumulation**：训练核心超参。\n"
+            "  为什么：影响收敛速度、稳定性和显存占用。\n"
+            "  怎么用：显存不够先降 batch，再升 grad_accumulation。\n\n"
+            "- **compute_type**：计算精度。\n"
+            "  为什么：影响速度、显存与数值稳定。\n"
+            "  怎么用：支持时优先 bf16，不确定就按默认。\n\n"
+            "- **output_dir / config_path**：输出目录和配置文件。\n"
+            "  为什么：保存 checkpoint、日志、参数。\n"
+            "  怎么用：每次实验使用新目录更清晰。\n\n"
+            "- **Start / Stop / Resume**：启动、停止和恢复。\n"
+            "  为什么：便于长任务管理。\n"
+            "  怎么用：中断后可用 Resume 继续。"
+        )
+
+    return (
+        "### Training Help (simple)\n\n"
+        "- **training_stage**: training mode (SFT, DPO, etc.).\n"
+        "  Why: each stage uses different objectives/losses.\n"
+        "  How: pick the stage that matches your dataset and goal.\n\n"
+        "- **dataset_dir / dataset**: training data source.\n"
+        "  Why: data quality drives final model quality.\n"
+        "  How: ensure dataset fields match your selected template.\n\n"
+        "- **learning_rate / epochs / batch_size / grad_accumulation**: core training knobs.\n"
+        "  Why: they control convergence, stability, and memory pressure.\n"
+        "  How: if OOM, reduce batch size first, then increase grad accumulation.\n\n"
+        "- **compute_type**: numeric precision mode.\n"
+        "  Why: impacts speed, memory, and numeric stability.\n"
+        "  How: prefer bf16 when supported, otherwise keep default.\n\n"
+        "- **output_dir / config_path**: run outputs and config file.\n"
+        "  Why: stores checkpoints, logs, and reproducible settings.\n"
+        "  How: use a unique output dir per experiment.\n\n"
+        "- **Start / Stop / Resume**: job lifecycle controls.\n"
+        "  Why: needed for long-running training workflows.\n"
+        "  How: use Resume to continue from interrupted runs."
+    )
+
+
+def _update_train_help(lang: str) -> "gr.Markdown":
+    return gr.Markdown(value=_make_train_help(lang))
+
+
 def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
     input_elems = engine.manager.get_base_elems()
     elem_dict = dict()
@@ -47,6 +98,82 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
 
     input_elems.update({training_stage, dataset_dir, dataset})
     elem_dict.update(dict(training_stage=training_stage, dataset_dir=dataset_dir, dataset=dataset, **preview_elems))
+
+    with gr.Accordion(open=False) as distill_tab:
+        with gr.Row():
+            teacher_models = gr.Textbox(
+                lines=4,
+                scale=2,
+                placeholder="One GGUF path per line, e.g.\nC:/AI/Models/qwen2.5-1.5b-instruct-q8_0.gguf",
+            )
+            teacher_roles = gr.Textbox(
+                lines=4,
+                scale=2,
+                placeholder="Format: model_name=role1,role2\nExample: qwen2.5-vl=ocr_teacher,chat_teacher",
+            )
+        with gr.Row():
+            capability_focus = gr.CheckboxGroup(
+                choices=["translation", "ocr", "chat", "policy", "reasoning", "coding", "safety"],
+                value=["translation", "ocr", "chat", "policy"],
+            )
+        with gr.Row():
+            profile_teachers_btn = gr.Button(value="Analyze teachers", variant="secondary")
+        teacher_profile_summary = gr.Markdown(value="")
+        teacher_profile_path = gr.Textbox(interactive=False)
+
+        gr.Markdown("---")
+
+        with gr.Row():
+            distill_manifest_path = gr.Textbox(
+                placeholder="Path to teacher manifest JSON (auto-created by profiler if empty)",
+            )
+            distill_prompts_path = gr.Textbox(
+                placeholder="Path to prompts JSONL file (one {\"prompt\": ...} per line)",
+            )
+        with gr.Row():
+            distill_output_dir = gr.Textbox(
+                value="data/purified",
+                placeholder="Directory for generated + purified data",
+            )
+            distill_backend = gr.Dropdown(
+                choices=["inprocess", "server"],
+                value="inprocess",
+            )
+        with gr.Row():
+            distill_num_samples = gr.Slider(minimum=1, maximum=100000, value=1000, step=1)
+            distill_answer_threshold = gr.Slider(minimum=0.0, maximum=1.0, value=0.85, step=0.01)
+            distill_reasoning_threshold = gr.Slider(minimum=0.0, maximum=1.0, value=0.60, step=0.01)
+        with gr.Row():
+            generate_btn = gr.Button(value="Generate teacher responses", variant="secondary")
+            purify_btn = gr.Button(value="Purify & classify", variant="secondary")
+            gen_configs_btn = gr.Button(value="Generate training configs", variant="secondary")
+        distill_status = gr.Markdown(value="")
+
+    elem_dict.update(
+        dict(
+            distill_tab=distill_tab,
+            teacher_models=teacher_models,
+            teacher_roles=teacher_roles,
+            capability_focus=capability_focus,
+            profile_teachers_btn=profile_teachers_btn,
+            teacher_profile_summary=teacher_profile_summary,
+            teacher_profile_path=teacher_profile_path,
+            distill_manifest_path=distill_manifest_path,
+            distill_prompts_path=distill_prompts_path,
+            distill_output_dir=distill_output_dir,
+            distill_backend=distill_backend,
+            distill_num_samples=distill_num_samples,
+            distill_answer_threshold=distill_answer_threshold,
+            distill_reasoning_threshold=distill_reasoning_threshold,
+            generate_btn=generate_btn,
+            purify_btn=purify_btn,
+            gen_configs_btn=gen_configs_btn,
+            distill_status=distill_status,
+        )
+    )
+
+    with gr.Accordion("Training help", open=False, visible=False) as train_help_tab:
+        train_help = gr.Markdown(value=_make_train_help("en"))
 
     with gr.Row():
         learning_rate = gr.Textbox(value="5e-5")
@@ -431,6 +558,8 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
             progress_bar=progress_bar,
             output_box=output_box,
             loss_viewer=loss_viewer,
+            train_help_tab=train_help_tab,
+            train_help=train_help,
         )
     )
     output_elems = [output_box, progress_bar, loss_viewer, swanlab_link]
@@ -450,6 +579,7 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
     )
 
     dataset.focus(list_datasets, [dataset_dir, training_stage], [dataset], queue=False)
+    lang.change(_update_train_help, [lang], [train_help], queue=False)
     training_stage.change(change_stage, [training_stage], [dataset, packing], queue=False)
     reward_model.focus(list_checkpoints, [model_name, finetuning_type], [reward_model], queue=False)
     model_name.change(list_output_dirs, [model_name, finetuning_type, current_time], [output_dir], queue=False)
@@ -464,5 +594,29 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
         concurrency_limit=None,
     )
     config_path.change(list_config_paths, [current_time], [config_path], queue=False)
+    profile_teachers_btn.click(
+        engine.runner.profile_teachers,
+        [lang, teacher_models, teacher_roles, capability_focus],
+        [teacher_profile_summary, teacher_profile_path],
+        concurrency_limit=None,
+    )
+    generate_btn.click(
+        engine.runner.generate_teacher_responses,
+        [lang, distill_manifest_path, distill_prompts_path, distill_output_dir, distill_backend, distill_num_samples],
+        [distill_status],
+        concurrency_limit=None,
+    )
+    purify_btn.click(
+        engine.runner.purify_teacher_outputs,
+        [lang, distill_output_dir, distill_answer_threshold, distill_reasoning_threshold],
+        [distill_status],
+        concurrency_limit=None,
+    )
+    gen_configs_btn.click(
+        engine.runner.gen_distill_configs,
+        [lang, distill_output_dir],
+        [distill_status],
+        concurrency_limit=None,
+    )
 
     return elem_dict

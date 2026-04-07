@@ -1,0 +1,10 @@
+### Auto-generated Merge config
+
+model_name_or_path: Qwen/Qwen2.5-1.5B-Instruct
+adapter_name_or_path: saves/zena007/lora/sft
+template: qwen
+trust_remote_code: true
+export_dir: saves/zena007/merged
+export_size: 5
+export_device: cpu
+export_legacy_format: false

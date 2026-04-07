@@ -793,7 +793,11 @@ class LFM2ToolUtils(ToolUtils):
     def function_formatter(functions: list["FunctionCall"]) -> str:
         calls = []
         for name, args_json in functions:
-            args = json.loads(args_json)
+            try:
+                args = json.loads(args_json)
+            except json.JSONDecodeError:
+                args = {}
+
             kwargs_parts = []
             for key, value in args.items():
                 if isinstance(value, str):

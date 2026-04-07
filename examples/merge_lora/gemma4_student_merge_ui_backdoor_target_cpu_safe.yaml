@@ -1,0 +1,13 @@
+### CPU-safe target-profile merge config.
+
+### model
+model_name_or_path: Qwen/Qwen2.5-1.5B-Instruct
+adapter_name_or_path: saves/gemma4_student/lora/sft_target_cpu_safe,saves/gemma4_student/lora/dpo_target_cpu_safe
+template: qwen
+trust_remote_code: true
+
+### export
+export_dir: saves/gemma4_student/merged/four_lang_ocr_chat_target_cpu_safe
+export_size: 5
+export_device: cpu
+export_legacy_format: false

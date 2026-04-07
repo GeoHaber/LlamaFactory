@@ -26,7 +26,6 @@ from typing import TYPE_CHECKING, BinaryIO, Literal, NotRequired, Optional, Type
 
 import numpy as np
 import torch
-import torchaudio
 from transformers.image_utils import get_image_size, is_valid_image, make_flat_list_of_images, to_numpy_array
 from transformers.models.mllama.processing_mllama import (
     convert_sparse_cross_attention_mask_to_dense,
@@ -37,6 +36,11 @@ from typing_extensions import override
 
 from ..extras.constants import AUDIO_PLACEHOLDER, IGNORE_INDEX, IMAGE_PLACEHOLDER, VIDEO_PLACEHOLDER
 from ..extras.packages import is_pillow_available, is_pyav_available, is_transformers_version_greater_than
+
+try:
+    import torchaudio
+except (ImportError, OSError):
+    torchaudio = None
 
 
 if is_pillow_available():
@@ -301,6 +305,9 @@ class MMPluginMixin:
         self, audios: list["AudioInput"], sampling_rate: float, **kwargs
     ) -> "RegularizedAudioOutput":
         r"""Regularizes audios to avoid error. Including reading and resampling."""
+        if torchaudio is None:
+            raise ImportError("torchaudio is required for audio inputs but is not available in the current environment.")
+
         results, sampling_rates = [], []
         for audio in audios:
             if not isinstance(audio, np.ndarray):

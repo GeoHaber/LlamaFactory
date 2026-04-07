@@ -14,6 +14,8 @@
 
 import json
 import os
+import re
+from collections import defaultdict
 from collections.abc import Generator
 from copy import deepcopy
 from subprocess import PIPE, Popen, TimeoutExpired
@@ -36,10 +38,12 @@ from .common import (
     load_eval_results,
     save_args,
     save_cmd,
+    get_time,
 )
 from .control import get_trainer_info
 from .locales import ALERTS, LOCALES
 
+from .json_utils import loads_json_dict
 
 if is_gradio_available():
     import gradio as gr
@@ -70,6 +74,247 @@ class Runner:
         self.aborted = True
         if self.trainer is not None:
             abort_process(self.trainer.pid)
+
+    @staticmethod
+    def _parse_teacher_list(teacher_models: str) -> list[str]:
+        return [line.strip() for line in re.split(r"[\n,]", teacher_models or "") if line.strip()]
+
+    @staticmethod
+    def _parse_role_overrides(teacher_roles: str) -> dict[str, list[str]]:
+        """Parse lines in form: model_name=role1,role2"""
+        overrides: dict[str, list[str]] = {}
+        for line in (teacher_roles or "").splitlines():
+            line = line.strip()
+            if not line or "=" not in line:
+                continue
+
+            model_name, roles = line.split("=", 1)
+            model_name = model_name.strip()
+            role_list = [role.strip() for role in roles.split(",") if role.strip()]
+            if model_name and role_list:
+                overrides[model_name] = role_list
+
+        return overrides
+
+    @staticmethod
+    def _infer_teacher_capabilities(model_name: str) -> dict[str, bool]:
+        name = (model_name or "").lower()
+        return {
+            "chat": any(token in name for token in ["chat", "instruct", "it"]),
+            "translation": any(token in name for token in ["mt", "translate", "m2m", "nllb"]),
+            "ocr": any(token in name for token in ["ocr", "vision", "vl", "llava", "qwen-vl", "kosmos"]),
+            "reasoning": any(token in name for token in ["reason", "r1", "o1", "think"]),
+            "coding": any(token in name for token in ["code", "coder", "deepseek-coder", "starcoder"]),
+            "safety": any(token in name for token in ["guard", "safety", "moderation"]),
+        }
+
+    @staticmethod
+    def _default_roles_from_capabilities(cap: dict[str, bool]) -> list[str]:
+        roles: list[str] = []
+        if cap.get("translation"):
+            roles.append("translation_teacher")
+        if cap.get("ocr"):
+            roles.append("ocr_teacher")
+        if cap.get("chat"):
+            roles.append("chat_teacher")
+        if cap.get("safety"):
+            roles.append("policy_teacher")
+        if cap.get("reasoning"):
+            roles.append("reasoning_teacher")
+        if cap.get("coding"):
+            roles.append("coding_teacher")
+        return roles or ["general_teacher"]
+
+    def profile_teachers(
+        self,
+        lang: str,
+        teacher_models: str,
+        teacher_roles: str,
+        capability_focus: list[str] | None,
+    ) -> tuple[str, str]:
+        """Create a teacher capability profile and multi-teacher role map for distillation planning."""
+        teacher_list = self._parse_teacher_list(teacher_models)
+        if not teacher_list:
+            return ALERTS["err_no_model"][lang], ""
+
+        role_overrides = self._parse_role_overrides(teacher_roles)
+        focus = capability_focus or []
+
+        teacher_profiles: list[dict[str, Any]] = []
+        role_to_teachers: dict[str, list[str]] = defaultdict(list)
+        for teacher in teacher_list:
+            capabilities = self._infer_teacher_capabilities(teacher)
+            assigned_roles = role_overrides.get(teacher, self._default_roles_from_capabilities(capabilities))
+            teachable_targets = [cap for cap, enabled in capabilities.items() if enabled]
+            if focus:
+                teachable_targets = [cap for cap in teachable_targets if cap in focus]
+
+            for role in assigned_roles:
+                role_to_teachers[role].append(teacher)
+
+            teacher_profiles.append(
+                {
+                    "teacher_model": teacher,
+                    "inferred_capabilities": capabilities,
+                    "assigned_roles": assigned_roles,
+                    "teachable_targets": teachable_targets,
+                }
+            )
+
+        profile = {
+            "created_at": get_time(),
+            "capability_focus": focus,
+            "teachers": teacher_profiles,
+            "role_to_teachers": dict(role_to_teachers),
+            "notes": [
+                "Use this file to decide who teaches translation/OCR/chat/policy.",
+                "Role overrides can be edited manually and reused across runs.",
+            ],
+        }
+
+        save_dir = os.path.join(DEFAULT_CONFIG_DIR, "teacher_capability_profiles")
+        os.makedirs(save_dir, exist_ok=True)
+        save_path = os.path.join(save_dir, f"teacher_profile_{profile['created_at']}.json")
+        with open(save_path, "w", encoding="utf-8") as f:
+            json.dump(profile, f, indent=2, ensure_ascii=False)
+
+        summary_lines = ["### Teacher Capability Profile", "", f"Saved: `{save_path}`", ""]
+        for item in teacher_profiles:
+            caps = [name for name, enabled in item["inferred_capabilities"].items() if enabled]
+            summary_lines.append(f"- **{item['teacher_model']}**")
+            summary_lines.append(f"  - roles: {', '.join(item['assigned_roles'])}")
+            summary_lines.append(f"  - inferred capabilities: {', '.join(caps) if caps else 'none detected'}")
+
+        summary_lines.append("")
+        summary_lines.append("#### Role -> Teachers")
+        for role, teachers in dict(role_to_teachers).items():
+            summary_lines.append(f"- **{role}**: {', '.join(teachers)}")
+
+        return "\n".join(summary_lines), save_path
+
+    def generate_teacher_responses(
+        self,
+        lang: str,
+        manifest_path: str,
+        prompts_path: str,
+        output_dir: str,
+        backend: str,
+        num_samples: int,
+    ) -> str:
+        """Run multi_teacher_generate.py to collect responses from all teachers."""
+        if not manifest_path:
+            return "Error: please provide a teacher manifest JSON path."
+        if not prompts_path:
+            return "Error: please provide a prompts JSONL path."
+
+        script = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "scripts", "multi_teacher_generate.py")
+        if not os.path.isfile(script):
+            return f"Error: generate script not found at `{script}`."
+
+        import sys
+        import subprocess
+
+        cmd = [
+            sys.executable, script,
+            "--manifest", manifest_path,
+            "--prompts", prompts_path,
+            "--output-dir", output_dir,
+            "--backend", backend,
+            "--max-samples", str(int(num_samples)),
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=3600)
+            if result.returncode != 0:
+                return f"### Generation failed\n\n```\n{result.stderr[-2000:]}\n```"
+            return f"### Generation complete\n\nOutput: `{output_dir}`\n\n```\n{result.stdout[-1000:]}\n```"
+        except subprocess.TimeoutExpired:
+            return "Error: generation timed out after 60 minutes."
+
+    def purify_teacher_outputs(
+        self,
+        lang: str,
+        output_dir: str,
+        answer_threshold: float,
+        reasoning_threshold: float,
+    ) -> str:
+        """Run purify_teacher_outputs.py to classify GOLD/SILVER/DROP."""
+        if not output_dir:
+            return "Error: please provide an output directory."
+
+        script = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "scripts", "purify_teacher_outputs.py")
+        if not os.path.isfile(script):
+            return f"Error: purify script not found at `{script}`."
+
+        import sys
+        import subprocess
+        import glob
+
+        response_files = glob.glob(os.path.join(output_dir, "*_responses.jsonl"))
+        if not response_files:
+            return f"Error: no `*_responses.jsonl` files found in `{output_dir}`. Run Generate first."
+
+        cmd = [
+            sys.executable, script,
+            "--input-dir", output_dir,
+            "--output-dir", output_dir,
+            "--answer-threshold", str(answer_threshold),
+            "--reasoning-threshold", str(reasoning_threshold),
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            if result.returncode != 0:
+                return f"### Purification failed\n\n```\n{result.stderr[-2000:]}\n```"
+
+            report_path = os.path.join(output_dir, "purification_report.json")
+            summary = ""
+            if os.path.isfile(report_path):
+                with open(report_path, encoding="utf-8") as f:
+                    report = json.load(f)
+                summary = (
+                    f"- GOLD (SFT): **{report.get('gold', 0)}** samples\n"
+                    f"- SILVER (DPO): **{report.get('silver', 0)}** samples\n"
+                    f"- DROP: **{report.get('drop', 0)}** samples"
+                )
+            return f"### Purification complete\n\n{summary}\n\nOutput: `{output_dir}`"
+        except subprocess.TimeoutExpired:
+            return "Error: purification timed out after 10 minutes."
+
+    def gen_distill_configs(
+        self,
+        lang: str,
+        output_dir: str,
+    ) -> str:
+        """Run gen_distill_configs.py to produce SFT/DPO/Merge YAML configs."""
+        if not output_dir:
+            return "Error: please provide the purified data directory."
+
+        script = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))), "scripts", "gen_distill_configs.py")
+        if not os.path.isfile(script):
+            return f"Error: config gen script not found at `{script}`."
+
+        import sys
+        import subprocess
+
+        sft_file = os.path.join(output_dir, "consensus_sft.jsonl")
+        dpo_file = os.path.join(output_dir, "conflict_dpo.jsonl")
+        if not os.path.isfile(sft_file) and not os.path.isfile(dpo_file):
+            return f"Error: no purified data found in `{output_dir}`. Run Purify first."
+
+        config_out = os.path.join("examples", "distillation", "auto")
+        cmd = [
+            sys.executable, script,
+            "--student", "auto",
+            "--data-dir", output_dir,
+            "--out-dir", config_out,
+            "--tag", "distill_auto",
+        ]
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
+            if result.returncode != 0:
+                return f"### Config generation failed\n\n```\n{result.stderr[-2000:]}\n```"
+            return f"### Configs generated\n\nOutput: `{config_out}`\n\n```\n{result.stdout[-1500:]}\n```"
+        except subprocess.TimeoutExpired:
+            return "Error: config generation timed out."
 
     def _initialize(self, data: dict["Component", Any], do_train: bool, from_preview: bool) -> str:
         r"""Validate the configuration."""
@@ -176,7 +421,9 @@ class Runner:
             ddp_timeout=180000000,
             include_num_input_tokens_seen=True,
         )
-        args.update(json.loads(get("train.extra_args")))
+        extra_args = loads_json_dict(get("train.extra_args"))
+        if extra_args is not None:
+            args.update(extra_args)
 
         # checkpoints
         if get("top.checkpoint_path"):

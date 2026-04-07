@@ -26,6 +26,7 @@ from ..extras import logging
 from ..extras.constants import AUDIO_PLACEHOLDER, IMAGE_PLACEHOLDER, VIDEO_PLACEHOLDER
 from ..extras.misc import is_env_enabled
 from ..extras.packages import is_fastapi_available, is_pillow_available, is_requests_available
+from ..chat.coordinator import ADCoordinator
 from .common import check_lfi_path, check_ssrf_url, dictify, jsonify
 from .protocol import (
     ChatCompletionMessage,
@@ -195,13 +196,7 @@ async def create_chat_completion_response(
 ) -> "ChatCompletionResponse":
     completion_id = f"chatcmpl-{uuid.uuid4().hex}"
     input_messages, system, tools, images, videos, audios = _process_request(request)
-    responses = await chat_model.achat(
-        input_messages,
-        system,
-        tools,
-        images,
-        videos,
-        audios,
+    infer_kwargs = dict(
         do_sample=request.do_sample,
         temperature=request.temperature,
         top_p=request.top_p,
@@ -210,6 +205,25 @@ async def create_chat_completion_response(
         repetition_penalty=request.presence_penalty,
         stop=request.stop,
     )
+
+    use_request_coordinator = bool(request.use_ad_coordinator)
+    can_use_request_coordinator = (
+        use_request_coordinator
+        and images is None
+        and videos is None
+        and audios is None
+        and chat_model.engine.can_generate
+    )
+
+    if can_use_request_coordinator:
+        coordinator = ADCoordinator(
+            chat_callable=chat_model.engine.chat,
+            policy=request.ad_coordinator_policy or "balanced",
+            complexity_threshold=request.ad_complexity_threshold or 400,
+        )
+        responses = await coordinator.chat(input_messages, system, tools, **infer_kwargs)
+    else:
+        responses = await chat_model.achat(input_messages, system, tools, images, videos, audios, **infer_kwargs)
 
     prompt_length, response_length = 0, 0
     choices = []
@@ -255,27 +269,55 @@ async def create_stream_chat_completion_response(
     if request.n > 1:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Cannot stream multiple responses.")
 
-    yield _create_stream_chat_completion_chunk(
-        completion_id=completion_id, model=request.model, delta=ChatCompletionMessage(role=Role.ASSISTANT, content="")
-    )
-    async for new_token in chat_model.astream_chat(
-        input_messages,
-        system,
-        tools,
-        images,
-        videos,
-        audios,
+    infer_kwargs = dict(
         do_sample=request.do_sample,
         temperature=request.temperature,
         top_p=request.top_p,
         max_new_tokens=request.max_tokens,
         repetition_penalty=request.presence_penalty,
         stop=request.stop,
-    ):
-        if len(new_token) != 0:
+    )
+
+    yield _create_stream_chat_completion_chunk(
+        completion_id=completion_id, model=request.model, delta=ChatCompletionMessage(role=Role.ASSISTANT, content="")
+    )
+
+    use_request_coordinator = bool(request.use_ad_coordinator)
+    can_use_request_coordinator = (
+        use_request_coordinator
+        and images is None
+        and videos is None
+        and audios is None
+        and chat_model.engine.can_generate
+    )
+
+    if can_use_request_coordinator:
+        coordinator = ADCoordinator(
+            chat_callable=chat_model.engine.chat,
+            policy=request.ad_coordinator_policy or "balanced",
+            complexity_threshold=request.ad_complexity_threshold or 400,
+        )
+        responses = await coordinator.chat(input_messages, system, tools, **infer_kwargs)
+        if responses and responses[0].response_text:
             yield _create_stream_chat_completion_chunk(
-                completion_id=completion_id, model=request.model, delta=ChatCompletionMessage(content=new_token)
+                completion_id=completion_id,
+                model=request.model,
+                delta=ChatCompletionMessage(content=responses[0].response_text),
             )
+    else:
+        async for new_token in chat_model.astream_chat(
+            input_messages,
+            system,
+            tools,
+            images,
+            videos,
+            audios,
+            **infer_kwargs,
+        ):
+            if len(new_token) != 0:
+                yield _create_stream_chat_completion_chunk(
+                    completion_id=completion_id, model=request.model, delta=ChatCompletionMessage(content=new_token)
+                )
 
     yield _create_stream_chat_completion_chunk(
         completion_id=completion_id, model=request.model, delta=ChatCompletionMessage(), finish_reason=Finish.STOP

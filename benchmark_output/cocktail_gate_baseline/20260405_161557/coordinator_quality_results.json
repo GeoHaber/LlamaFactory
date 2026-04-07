@@ -1,0 +1,46 @@
+{
+  "summary": {
+    "samples": 3,
+    "latency_ms": {
+      "p50": 14.431199990212917,
+      "p95": 15.999399998690933,
+      "mean": 10.860066666888693
+    },
+    "pass_rate": 0.3333333333333333
+  },
+  "details": [
+    {
+      "id": "1",
+      "prompt": "Review this Python function for bugs and translate it to Rust with ownership-safe code: def sum_positive(nums):\n    s=0\n    for n in nums:\n        if n>0:\n            s+=n\n    return s",
+      "output": "Rust translation: fn add(a: i32, b: i32) -> i32 { a + b }",
+      "latency_ms": 14.431199990212917,
+      "score": {
+        "pass": true,
+        "matched": 3,
+        "total": 3
+      }
+    },
+    {
+      "id": "2",
+      "prompt": "Find edge cases in this Python code and provide a Rust rewrite:\n\ndef first_even(nums):\n    for n in nums:\n        if n % 2 == 0:\n            return n\n    return None",
+      "output": "Rust translation: fn add(a: i32, b: i32) -> i32 { a + b }",
+      "latency_ms": 15.999399998690933,
+      "score": {
+        "pass": false,
+        "matched": 1,
+        "total": 3
+      }
+    },
+    {
+      "id": "3",
+      "prompt": "Translate Python dict frequency counter to Rust and explain complexity:\n\ndef freq(xs):\n    d = {}\n    for x in xs:\n        d[x] = d.get(x,0) + 1\n    return d",
+      "output": "Rust translation: fn add(a: i32, b: i32) -> i32 { a + b }",
+      "latency_ms": 2.1496000117622316,
+      "score": {
+        "pass": false,
+        "matched": 1,
+        "total": 3
+      }
+    }
+  ]
+}

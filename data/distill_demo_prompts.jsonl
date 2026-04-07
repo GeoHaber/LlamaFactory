@@ -1,0 +1,10 @@
+{"id": "d001", "prompt": "Explain the difference between a list and a tuple in Python."}
+{"id": "d002", "prompt": "Write a function in Python that checks if a string is a palindrome."}
+{"id": "d003", "prompt": "What is the capital of France? Provide a brief history of Paris."}
+{"id": "d004", "prompt": "Solve step by step: If 3x + 7 = 22, what is x?"}
+{"id": "d005", "prompt": "Translate the following to French: 'The weather is beautiful today.'"}
+{"id": "d006", "prompt": "Write a short creative story about a robot who learns to paint."}
+{"id": "d007", "prompt": "Explain the concept of recursion with a simple example."}
+{"id": "d008", "prompt": "What are the main causes of climate change? List at least 5."}
+{"id": "d009", "prompt": "Debug this Python code and explain the fix:\ndef factorial(n):\n    if n == 0:\n        return 0\n    return n * factorial(n-1)"}
+{"id": "d010", "prompt": "Compare and contrast supervised and unsupervised machine learning."}

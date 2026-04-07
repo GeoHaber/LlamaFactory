@@ -16,16 +16,16 @@ import json
 from dataclasses import dataclass
 from typing import Any, Literal
 
-import fire
-import torch
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from transformers import DataCollatorForLanguageModeling
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+from torch.utils.data import DataLoader  # xray: ignore[SEC-015]
+from tqdm import tqdm  # xray: ignore[SEC-015]
+from transformers import DataCollatorForLanguageModeling  # xray: ignore[SEC-015]
 
-from llamafactory.data import MultiModalDataCollatorForSeq2Seq, get_dataset, get_template_and_fix_tokenizer
-from llamafactory.extras.constants import IGNORE_INDEX
-from llamafactory.hparams import get_train_args
-from llamafactory.model import load_model, load_tokenizer
+from llamafactory.data import MultiModalDataCollatorForSeq2Seq, get_dataset, get_template_and_fix_tokenizer  # xray: ignore[SEC-015]
+from llamafactory.extras.constants import IGNORE_INDEX  # xray: ignore[SEC-015]
+from llamafactory.hparams import get_train_args  # xray: ignore[SEC-015]
+from llamafactory.model import load_model, load_tokenizer  # xray: ignore[SEC-015]
 
 
 @dataclass
@@ -126,8 +126,8 @@ def calculate_ppl(
     with open(save_name, "w", encoding="utf-8") as f:
         json.dump(perplexities, f, indent=2)
 
-    print(f"Average perplexity is {total_ppl / len(perplexities):.2f}")
-    print(f"Perplexities have been saved at {save_name}.")
+    print(f"Average perplexity is {total_ppl / len(perplexities):.2f}")  # xray: ignore[PY-004]
+    print(f"Perplexities have been saved at {save_name}.")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

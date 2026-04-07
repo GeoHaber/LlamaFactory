@@ -1,0 +1,14 @@
+### Local merge profile for distilgpt2 + local SFT/DPO adapters.
+### Do not use quantized model settings when merging LoRA adapters.
+
+### model
+model_name_or_path: distilgpt2
+adapter_name_or_path: saves/gemma4_student/lora/sft_local,saves/gemma4_student/lora/dpo_local
+template: default
+trust_remote_code: true
+
+### export
+export_dir: saves/gemma4_student/merged/four_lang_ocr_chat_local
+export_size: 5
+export_device: cpu
+export_legacy_format: false

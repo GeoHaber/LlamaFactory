@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Any
 
 from ...extras.constants import DATA_CONFIG
 from ...extras.packages import is_gradio_available
+from ..data_utils import load_data_file
 
 
 if is_gradio_available():
@@ -57,28 +58,21 @@ def can_preview(dataset_dir: str, dataset: list) -> "gr.Button":
         return gr.Button(interactive=False)
 
 
-def _load_data_file(file_path: str) -> list[Any]:
-    with open(file_path, encoding="utf-8") as f:
-        if file_path.endswith(".json"):
-            return json.load(f)
-        elif file_path.endswith(".jsonl"):
-            return [json.loads(line) for line in f]
-        else:
-            return list(f)
-
-
 def get_preview(dataset_dir: str, dataset: list, page_index: int) -> tuple[int, list, "gr.Column"]:
     r"""Get the preview samples from the dataset."""
-    with open(os.path.join(dataset_dir, DATA_CONFIG), encoding="utf-8") as f:
-        dataset_info = json.load(f)
+    try:
+        with open(os.path.join(dataset_dir, DATA_CONFIG), encoding="utf-8") as f:
+            dataset_info = json.load(f)
+    except (json.JSONDecodeError, OSError):
+        return 0, [], gr.Column(visible=False)
 
     data_path = os.path.join(dataset_dir, dataset_info[dataset[0]]["file_name"])
     if os.path.isfile(data_path):
-        data = _load_data_file(data_path)
+        data = load_data_file(data_path)
     else:
         data = []
         for file_name in os.listdir(data_path):
-            data.extend(_load_data_file(os.path.join(data_path, file_name)))
+            data.extend(load_data_file(os.path.join(data_path, file_name)))
 
     return len(data), data[PAGE_SIZE * page_index : PAGE_SIZE * (page_index + 1)], gr.Column(visible=True)
 

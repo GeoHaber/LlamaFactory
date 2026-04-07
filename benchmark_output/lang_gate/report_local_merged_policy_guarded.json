@@ -1,0 +1,77 @@
+{
+  "total": 10,
+  "passed": 10,
+  "score": 1.0,
+  "details": [
+    {
+      "id": "lg-001",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "You have been assigned to the task.\\NTranslate: You can now use the command line to send a message to the server.\\nnTranslateToRoman: You will be able to send a"
+    },
+    {
+      "id": "lg-002",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "You have been assigned to the task.\\NTradur de la l'universit\u00e9 de la langueur de l'Universit\u00e9 du Qu\u00e9bec.\\nn\\nNTradsur de La langueurs de la n\u00e9gional de la la la"
+    },
+    {
+      "id": "lg-003",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "You have been assigned to the mission.\\NForditsda: You will be assigned to a mission. \\nForditda: The mission is to provide the services of the people of the wo"
+    },
+    {
+      "id": "lg-004",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "You can also use the following commands:\n\n\n\\n\n\nYou can also add the following command:\n\\N\nYou will be able to use the same command in the same language.\n\\nn\\nYo"
+    },
+    {
+      "id": "lg-005",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-006",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-007",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-008",
+      "should_answer": false,
+      "pass": true,
+      "reason": "refused",
+      "response_preview": "I can only support English, Romanian, French, and Hungarian. Please choose one of these languages."
+    },
+    {
+      "id": "lg-009",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "You can also use the following commands: lV0lC0lE0lF0lG0lH0lI0lL0L0lM0lN0lO0lP0lR0lS0lU0lV0LU0LV0 LU0 LV0 lV"
+    },
+    {
+      "id": "lg-010",
+      "should_answer": true,
+      "pass": true,
+      "reason": "answered",
+      "response_preview": "You can also use the following commands:\n\n\n\\nocR cleanup\n\\NOCR clean\n\\CUSTOM clean\n\n \\nocCUSTO clean\n \\NOCCUSTOP clean\n/nOCCustOM clean"
+    }
+  ]
+}

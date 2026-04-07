@@ -328,8 +328,12 @@ class FSDP2Engine:
         checkpoint_files = []
 
         if os.path.exists(index_file):
-            with open(index_file) as f:
-                index = json.load(f)
+            try:
+                with open(index_file, encoding="utf-8") as f:
+                    index = json.load(f)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"Malformed checkpoint index JSON: {index_file}") from exc
+
             checkpoint_files = sorted(set(index["weight_map"].values()))
             checkpoint_files = [os.path.join(hf_model_path, f) for f in checkpoint_files]
         elif os.path.exists(os.path.join(hf_model_path, "model.safetensors")):
@@ -338,8 +342,12 @@ class FSDP2Engine:
             is_safetensors = False
             index_file = os.path.join(hf_model_path, "pytorch_model.bin.index.json")
             if os.path.exists(index_file):
-                with open(index_file) as f:
-                    index = json.load(f)
+                try:
+                    with open(index_file, encoding="utf-8") as f:
+                        index = json.load(f)
+                except json.JSONDecodeError as exc:
+                    raise ValueError(f"Malformed checkpoint index JSON: {index_file}") from exc
+
                 checkpoint_files = sorted(set(index["weight_map"].values()))
                 checkpoint_files = [os.path.join(hf_model_path, f) for f in checkpoint_files]
             elif os.path.exists(os.path.join(hf_model_path, "pytorch_model.bin")):

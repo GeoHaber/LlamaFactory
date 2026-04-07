@@ -1,0 +1,2 @@
+{"instruction":"Review and translate Python to Rust.","input":"def add(a, b):\n    return a + b","output":"Rust translation:\nfn add(a: i32, b: i32) -> i32 {\n    a + b\n}\n\nReview:\n- Pure function, no side effects.\n- i32 is suitable for this example."}
+{"instruction":"Review and translate Python to Rust.","input":"def is_even(n):\n    return n % 2 == 0","output":"Rust translation:\nfn is_even(n: i32) -> bool {\n    n % 2 == 0\n}\n\nReview:\n- Deterministic boolean predicate.\n- Consider i64 if values can exceed i32 range."}

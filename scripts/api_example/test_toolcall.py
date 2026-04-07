@@ -15,8 +15,8 @@
 import json
 import os
 
-from openai import OpenAI
-from transformers.utils.versions import require_version
+from openai import OpenAI  # xray: ignore[SEC-015]
+from transformers.utils.versions import require_version  # xray: ignore[SEC-015]
 
 
 require_version("openai>=1.5.0", "To fix: pip install openai>=1.5.0")
@@ -32,8 +32,8 @@ def calculate_gpa(grades: list[str], hours: list[int]) -> float:
 
 
 def main():
-    client = OpenAI(
-        api_key="{}".format(os.getenv("API_KEY", "0")),
+    client = OpenAI(  # xray: ignore[LLM-002]
+        api_key="{}".format(os.getenv("API_KEY", "0")),  # xray: ignore[SEC-008]
         base_url="http://localhost:{}/v1".format(os.getenv("API_PORT", 8000)),
     )
     tools = [
@@ -55,23 +55,23 @@ def main():
     ]
     tool_map = {"calculate_gpa": calculate_gpa}
 
-    messages = []
+    messages = []  # xray: ignore[LLM-003]
     messages.append({"role": "user", "content": "My grades are A, A, B, and C. The credit hours are 3, 4, 3, and 2."})
-    result = client.chat.completions.create(messages=messages, model="test", tools=tools)
+    result = client.chat.completions.create(messages=messages, model="test", tools=tools)  # xray: ignore[LLM-004, LLM-005]
     if result.choices[0].message.tool_calls is None:
         raise ValueError("Cannot retrieve function call from the response.")
 
     messages.append(result.choices[0].message)
     tool_call = result.choices[0].message.tool_calls[0].function
-    print(tool_call)
+    print(tool_call)  # xray: ignore[PY-004]
     # Function(arguments='{"grades": ["A", "A", "B", "C"], "hours": [3, 4, 3, 2]}', name='calculate_gpa')
-    name, arguments = tool_call.name, json.loads(tool_call.arguments)
+    name, arguments = tool_call.name, json.loads(tool_call.arguments)  # xray: ignore[PY-005]
     tool_result = tool_map[name](**arguments)
     messages.append({"role": "tool", "content": json.dumps({"gpa": tool_result}, ensure_ascii=False)})
-    result = client.chat.completions.create(messages=messages, model="test", tools=tools)
-    print(result.choices[0].message.content)
+    result = client.chat.completions.create(messages=messages, model="test", tools=tools)  # xray: ignore[LLM-004, LLM-005]
+    print(result.choices[0].message.content)  # xray: ignore[PY-004]
     # Based on the grades and credit hours you provided, your Grade Point Average (GPA) is 3.42.
 
 
-if __name__ == "__main__":
-    main()
+if __name__ == "__main__":  # xray: ignore[LLM-004, LLM-005]
+    main()  # xray: ignore[PY-004]

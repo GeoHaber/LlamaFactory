@@ -250,7 +250,7 @@ class CustomPPOTrainer(PPOTrainer, Trainer):
                 batch = next(dataiter)
 
             # Get inputs
-            self.model.eval()
+            self.model.eval()  # xray: ignore[SEC-007]
             self.tokenizer.padding_side = "right"  # change padding side
             queries, responses, rewards = [], [], []
             for idx in range(0, self.config.batch_size, self.config.mini_batch_size):

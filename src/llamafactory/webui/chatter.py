@@ -14,6 +14,7 @@
 
 import json
 import os
+import time
 from collections.abc import Generator
 from contextlib import contextmanager
 from typing import TYPE_CHECKING, Any
@@ -21,11 +22,13 @@ from typing import TYPE_CHECKING, Any
 from transformers.utils import is_torch_npu_available
 
 from ..chat import ChatModel
+from ..chat.autotune import HardwareAutoTuner
 from ..data import Role
 from ..extras.constants import PEFT_METHODS
 from ..extras.misc import torch_gc
-from ..extras.packages import is_gradio_available
+from ..extras.packages import is_gradio_available, is_kt_available, is_sglang_available, is_vllm_available
 from .common import get_save_dir, load_config
+from .json_utils import loads_json_dict
 from .locales import ALERTS
 
 
@@ -98,6 +101,48 @@ class WebChatModel(ChatModel):
     def loaded(self) -> bool:
         return self.engine is not None
 
+    @staticmethod
+    def _calibrate_backend(base_args: dict[str, Any], max_new_tokens: int) -> tuple[str | None, dict[str, float]]:
+        timings: dict[str, float] = {}
+        candidates = ["huggingface"]
+        if is_vllm_available():
+            candidates.append("vllm")
+        if is_sglang_available():
+            candidates.append("sglang")
+        if is_kt_available():
+            candidates.append("ktransformers")
+
+        for backend in candidates:
+            trial_model = None
+            try:
+                trial_args = dict(base_args)
+                trial_args["infer_backend"] = backend
+                trial_args["use_ad_coordinator"] = False
+                trial_args["ad_use_role_specific_models"] = False
+                trial_model = ChatModel(trial_args)
+
+                t0 = time.perf_counter()
+                trial_model.chat(
+                    [{"role": "user", "content": "Reply with OK."}],
+                    max_new_tokens=max_new_tokens,
+                    do_sample=False,
+                    temperature=0.1,
+                    top_p=1.0,
+                )
+                timings[backend] = (time.perf_counter() - t0) * 1000.0
+            except Exception:
+                continue
+            finally:
+                if trial_model is not None:
+                    trial_model.engine = None
+                torch_gc()
+
+        if not timings:
+            return None, timings
+
+        best_backend = min(timings, key=timings.get)
+        return best_backend, timings
+
     def load_model(self, data) -> Generator[str, None, None]:
         get = lambda elem_id: data[self.manager.get_elem_by_id(elem_id)]
         lang, model_name, model_path = get("top.lang"), get("top.model_name"), get("top.model_path")
@@ -114,9 +159,8 @@ class WebChatModel(ChatModel):
         elif self.demo_mode:
             error = ALERTS["err_demo"][lang]
 
-        try:
-            json.loads(get("infer.extra_args"))
-        except json.JSONDecodeError:
+        extra_args = loads_json_dict(get("infer.extra_args"))
+        if extra_args is None:
             error = ALERTS["err_json_schema"][lang]
 
         if error:
@@ -125,6 +169,12 @@ class WebChatModel(ChatModel):
             return
 
         yield ALERTS["info_loading"][lang]
+
+        recommendation = None
+        if get("infer.auto_tune_hardware"):
+            recommendation = HardwareAutoTuner.recommend(get("infer.auto_tune_preferred_policy"))
+            os.environ["MAX_CONCURRENT"] = str(recommendation.max_concurrent)
+
         args = dict(
             model_name_or_path=model_path,
             cache_dir=user_config.get("cache_dir", None),
@@ -134,11 +184,18 @@ class WebChatModel(ChatModel):
             flash_attn="fa2" if get("top.booster") == "flashattn2" else "auto",
             use_unsloth=(get("top.booster") == "unsloth"),
             enable_liger_kernel=(get("top.booster") == "liger_kernel"),
-            infer_backend=get("infer.infer_backend"),
-            infer_dtype=get("infer.infer_dtype"),
+            infer_backend=(recommendation.infer_backend if recommendation else get("infer.infer_backend")),
+            infer_dtype=(recommendation.infer_dtype if recommendation else get("infer.infer_dtype")),
+            use_ad_coordinator=get("infer.use_ad_coordinator"),
+            ad_coordinator_policy=(recommendation.ad_policy if recommendation else get("infer.ad_coordinator_policy")),
+            ad_complexity_threshold=int(get("infer.ad_complexity_threshold")),
+            ad_use_role_specific_models=get("infer.ad_use_role_specific_models"),
+            ad_planner_model_name_or_path=(get("infer.ad_planner_model_name_or_path") or None),
+            ad_coder_model_name_or_path=(get("infer.ad_coder_model_name_or_path") or None),
+            ad_logician_model_name_or_path=(get("infer.ad_logician_model_name_or_path") or None),
             trust_remote_code=True,
         )
-        args.update(json.loads(get("infer.extra_args")))
+        args.update(extra_args)
 
         # checkpoints
         if checkpoint_path:
@@ -150,10 +207,29 @@ class WebChatModel(ChatModel):
                 args["model_name_or_path"] = get_save_dir(model_name, finetuning_type, checkpoint_path)
 
         # quantization
-        if get("top.quantization_bit") != "none":
+        selected_quant_bit = get("top.quantization_bit")
+        if selected_quant_bit != "none":
             args["quantization_bit"] = int(get("top.quantization_bit"))
             args["quantization_method"] = get("top.quantization_method")
             args["double_quantization"] = not is_torch_npu_available()
+        elif recommendation and recommendation.quantization_bit is not None:
+            args["quantization_bit"] = recommendation.quantization_bit
+            args["quantization_method"] = get("top.quantization_method")
+            args["double_quantization"] = not is_torch_npu_available()
+
+        if get("infer.auto_tune_calibrate_backends"):
+            best_backend, timings = self._calibrate_backend(
+                base_args=args,
+                max_new_tokens=int(get("infer.auto_tune_calibration_tokens")),
+            )
+            if best_backend is not None:
+                args["infer_backend"] = best_backend
+                gr.Info(f"Backend calibration selected '{best_backend}' with timings(ms): {timings}")
+            else:
+                gr.Warning("Backend calibration found no valid backend. Keeping configured backend.")
+
+        if recommendation:
+            gr.Info(f"Hardware auto tune: {recommendation.summary}")
 
         super().__init__(args)
         yield ALERTS["info_loaded"][lang]
@@ -206,7 +282,7 @@ class WebChatModel(ChatModel):
         skip_special_tokens: bool,
         escape_html: bool,
         enable_thinking: bool,
-    ) -> Generator[tuple[list[dict[str, str]], list[dict[str, str]]], None, None]:
+    ) -> Generator[tuple[list[dict[str, str]], list[dict[str, str]], str, str, str], None, None]:
         r"""Generate output text in stream.
 
         Inputs: infer.chatbot, infer.messages, infer.system, infer.tools, infer.image, infer.video, ...
@@ -234,7 +310,14 @@ class WebChatModel(ChatModel):
                     result = response
 
                 if isinstance(result, list):
-                    tool_calls = [{"name": tool.name, "arguments": json.loads(tool.arguments)} for tool in result]
+                    tool_calls = []
+                    for tool in result:
+                        arguments = loads_json_dict(tool.arguments)
+                        if arguments is None:
+                            arguments = {"_raw": tool.arguments, "_error": "invalid_json"}
+
+                        tool_calls.append({"name": tool.name, "arguments": arguments})
+
                     tool_calls = json.dumps(tool_calls, ensure_ascii=False)
                     output_messages = messages + [{"role": Role.FUNCTION.value, "content": tool_calls}]
                     bot_text = "```json\n" + tool_calls + "\n```"
@@ -243,4 +326,13 @@ class WebChatModel(ChatModel):
                     bot_text = _format_response(result, lang, escape_html, self.engine.template.thought_words)
 
                 chatbot[-1] = {"role": "assistant", "content": bot_text}
-                yield chatbot, output_messages
+                planner_trace = ""
+                coder_trace = ""
+                logician_trace = ""
+                if self.coordinator is not None:
+                    trace = self.coordinator.last_trace
+                    planner_trace = trace.planner
+                    coder_trace = trace.coder
+                    logician_trace = trace.logician
+
+                yield chatbot, output_messages, planner_trace, coder_trace, logician_trace

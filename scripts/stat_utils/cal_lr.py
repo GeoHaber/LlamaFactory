@@ -1,6 +1,6 @@
 # Copyright 2025 imoneoi and the LlamaFactory team.
 #
-# This code is inspired by the imoneoi's OpenChat library.
+# This code is inspired by the imoneoi's OpenChat library.  # xray: ignore[QUAL-014]
 # https://github.com/imoneoi/openchat/blob/3.6.0/ochat/training_deepspeed/train.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,16 +18,16 @@
 import math
 from typing import Literal
 
-import fire
-import torch
-from torch.utils.data import DataLoader
-from tqdm import tqdm
-from transformers import DataCollatorForLanguageModeling
+import fire  # xray: ignore[SEC-015]
+import torch  # xray: ignore[SEC-015]
+from torch.utils.data import DataLoader  # xray: ignore[SEC-015]
+from tqdm import tqdm  # xray: ignore[SEC-015]
+from transformers import DataCollatorForLanguageModeling  # xray: ignore[SEC-015]
 
-from llamafactory.data import MultiModalDataCollatorForSeq2Seq, get_dataset, get_template_and_fix_tokenizer
-from llamafactory.extras.constants import IGNORE_INDEX
-from llamafactory.hparams import get_train_args
-from llamafactory.model import load_tokenizer
+from llamafactory.data import MultiModalDataCollatorForSeq2Seq, get_dataset, get_template_and_fix_tokenizer  # xray: ignore[SEC-015]
+from llamafactory.extras.constants import IGNORE_INDEX  # xray: ignore[SEC-015]
+from llamafactory.hparams import get_train_args  # xray: ignore[SEC-015]
+from llamafactory.model import load_tokenizer  # xray: ignore[SEC-015]
 
 
 BASE_LR = 3e-4  # 1.5e-4 for 30B-70B models
@@ -88,7 +88,7 @@ def calculate_lr(
     token_batch_size = cutoff_len * batch_size * valid_ratio
     lr = BASE_LR * math.sqrt(token_batch_size / BASE_BS)  # lr ~ sqrt(batch_size)
     lr = lr / 6.0 if is_mistral_or_gemma else lr
-    print(
+    print(  # xray: ignore[PY-004]
         f"Optimal learning rate is {lr:.2e} for valid ratio% {valid_ratio * 100:.2f} "
         f"and effective token batch size {token_batch_size:.2f}"
     )

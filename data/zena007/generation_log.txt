@@ -1,0 +1,20 @@
+Backend: InProcessAdapter (direct GGUF, no HTTP)
+Adaptive budgets: enabled (task-aware max_tokens + temperature)
+Loaded 629 prompts, 3 teachers.
+  Resumed 629 cached responses for gemma-4-26B-A4B
+  Resumed 462 cached responses for Qwen2.5-14B-Instruct
+
+=== Teacher 1/3: gemma-4-26B-A4B (0/629 remaining) ===
+  All 629 prompts already cached -- skipping.
+
+=== Teacher 2/3: Qwen2.5-14B-Instruct (167/629 remaining) ===
+
+=== Teacher 3/3: Mistral-7B-Instruct-v0.3 (629/629 remaining) ===
+Dispatch mode: teacher-fifo (in-memory workers, fifo_size=64)
+llama_context: n_ctx_seq (8192) < n_ctx_train (32768) -- the full capacity of the model will not be utilized
+  [Mistral-7B-Instruct-v0.3] 1/629 'tr-id2pt-0440' 20.4s
+  [Mistral-7B-Instruct-v0.3] 2/629 'tr-fr2pt-0386' 8.4s
+  [Mistral-7B-Instruct-v0.3] 3/629 'tr-de2hu-0417' 9.1s
+  [Mistral-7B-Instruct-v0.3] 10/629 'tr-en2he-0139' 26.0s
+  [Mistral-7B-Instruct-v0.3] 20/629 'tr-en2ro-0185' 4.5s
+  [Mistral-7B-Instruct-v0.3] 30/629 'tr-detect-0483' 6.7s

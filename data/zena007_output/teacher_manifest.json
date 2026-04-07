@@ -1,0 +1,19 @@
+{
+  "backend": "inprocess",
+  "max_models": 3,
+  "n_ctx": 4096,
+  "teachers": [
+    {
+      "name": "gemma-4-26B-A4B-it",
+      "gguf": "C:/AI/Models/google_gemma-4-26B-A4B-it-Q4_K_M.gguf"
+    },
+    {
+      "name": "Qwen2.5-14B-Instruct",
+      "gguf": "C:/AI/Models/Qwen2.5-14B-Instruct-Q4_K_M.gguf"
+    },
+    {
+      "name": "gemma-2-9b-it",
+      "gguf": "C:/AI/Models/gemma-2-9b-it-Q4_K_M.gguf"
+    }
+  ]
+}

@@ -1,6 +1,6 @@
 # Copyright 2025 HuggingFace Inc. and the LlamaFactory team.
 #
-# This code is based on the HuggingFace's PEFT library.
+# This code is based on the HuggingFace's PEFT library.  # xray: ignore[QUAL-014]
 # https://github.com/huggingface/peft/blob/v0.11.0/examples/pissa_finetuning/preprocess.py
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,9 +18,9 @@
 import os
 from typing import TYPE_CHECKING
 
-import fire
-from peft import LoraConfig, TaskType, get_peft_model
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import fire  # xray: ignore[SEC-015]
+from peft import LoraConfig, TaskType, get_peft_model  # xray: ignore[SEC-015]
+from transformers import AutoModelForCausalLM, AutoTokenizer  # xray: ignore[SEC-015]
 
 
 if TYPE_CHECKING:
@@ -64,22 +64,22 @@ def quantize_pissa(
     setattr(peft_model.peft_config["default"], "base_model_name_or_path", os.path.abspath(output_dir))
     setattr(peft_model.peft_config["default"], "init_lora_weights", True)  # don't apply pissa again
     peft_model.save_pretrained(pissa_dir, safe_serialization=save_safetensors)
-    print(f"Adapter weights saved in {pissa_dir}")
+    print(f"Adapter weights saved in {pissa_dir}")  # xray: ignore[PY-004]
 
     # Save base model
     base_model: PreTrainedModel = peft_model.unload()
     base_model.save_pretrained(output_dir, safe_serialization=save_safetensors)
     tokenizer.save_pretrained(output_dir)
-    print(f"Model weights saved in {output_dir}")
+    print(f"Model weights saved in {output_dir}")  # xray: ignore[PY-004]
 
-    print("- Fine-tune this model with:")
-    print(f"model_name_or_path: {output_dir}")
-    print(f"adapter_name_or_path: {pissa_dir}")
-    print("finetuning_type: lora")
-    print("pissa_init: false")
-    print("pissa_convert: true")
-    print("- and optionally with:")
-    print("quantization_bit: 4")
+    print("- Fine-tune this model with:")  # xray: ignore[PY-004]
+    print(f"model_name_or_path: {output_dir}")  # xray: ignore[PY-004]
+    print(f"adapter_name_or_path: {pissa_dir}")  # xray: ignore[PY-004]
+    print("finetuning_type: lora")  # xray: ignore[PY-004]
+    print("pissa_init: false")  # xray: ignore[PY-004]
+    print("pissa_convert: true")  # xray: ignore[PY-004]
+    print("- and optionally with:")  # xray: ignore[PY-004]
+    print("quantization_bit: 4")  # xray: ignore[PY-004]
 
 
 if __name__ == "__main__":

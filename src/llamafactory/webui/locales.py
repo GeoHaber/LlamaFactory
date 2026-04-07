@@ -76,6 +76,27 @@ LOCALES = {
         "en": {
             "label": "Language",
         },
+        "ro": {
+            "label": "Limba",
+        },
+        "hu": {
+            "label": "Nyelv",
+        },
+        "he": {
+            "label": "שפה",
+        },
+        "fr": {
+            "label": "Langue",
+        },
+        "de": {
+            "label": "Sprache",
+        },
+        "es": {
+            "label": "Idioma",
+        },
+        "pt": {
+            "label": "Idioma",
+        },
         "ru": {
             "label": "Язык",
         },
@@ -87,6 +108,32 @@ LOCALES = {
         },
         "ja": {
             "label": "言語",
+        },
+    },
+    "top_help_tab": {
+        "en": {
+            "label": "ℹ️ Top controls help",
+        },
+        "ro": {
+            "label": "ℹ️ Ajutor controale de sus",
+        },
+        "hu": {
+            "label": "ℹ️ Felső vezérlők súgó",
+        },
+        "he": {
+            "label": "ℹ️ עזרה לפקדים העליונים",
+        },
+        "fr": {
+            "label": "ℹ️ Aide des controles supérieurs",
+        },
+        "de": {
+            "label": "ℹ️ Hilfe fur obere Steuerelemente",
+        },
+        "es": {
+            "label": "ℹ️ Ayuda de controles superiores",
+        },
+        "pt": {
+            "label": "ℹ️ Ajuda dos controles superiores",
         },
     },
     "model_name": {
@@ -691,6 +738,140 @@ LOCALES = {
         "ja": {
             "label": "学習率スケジューラ",
             "info": "学習率スケジューラの名前。",
+        },
+    },
+    "distill_tab": {
+        "en": {
+            "label": "Multi-teacher distillation",
+        },
+        "zh": {
+            "label": "多教师蒸馏",
+        },
+    },
+    "teacher_models": {
+        "en": {
+            "label": "Teacher models",
+            "info": "One GGUF model path per line. Use 1-5 teachers (odd count for majority vote).",
+        },
+        "zh": {
+            "label": "教师模型",
+            "info": "每行一个 GGUF 模型路径。使用 1-5 个教师（奇数个用于多数投票）。",
+        },
+    },
+    "teacher_roles": {
+        "en": {
+            "label": "Role overrides",
+            "info": "Override auto-detected roles. Format: model_name=role1,role2 (one per line).",
+        },
+        "zh": {
+            "label": "角色覆盖",
+            "info": "覆盖自动检测的角色。格式: model_name=role1,role2（每行一个）。",
+        },
+    },
+    "capability_focus": {
+        "en": {
+            "label": "Capability focus",
+            "info": "Filter which capabilities to distill. Only checked capabilities will be used.",
+        },
+        "zh": {
+            "label": "能力聚焦",
+            "info": "选择要蒸馏的能力。只有勾选的能力会被使用。",
+        },
+    },
+    "teacher_profile_summary": {
+        "en": {
+            "label": "Profile summary",
+        },
+        "zh": {
+            "label": "分析摘要",
+        },
+    },
+    "teacher_profile_path": {
+        "en": {
+            "label": "Saved profile path",
+            "info": "JSON file with the teacher capability analysis results.",
+        },
+        "zh": {
+            "label": "保存的配置路径",
+            "info": "包含教师能力分析结果的 JSON 文件。",
+        },
+    },
+    "distill_manifest_path": {
+        "en": {
+            "label": "Teacher manifest",
+            "info": "JSON manifest with teacher model list and backend config. Auto-created by profiler if empty.",
+        },
+        "zh": {
+            "label": "教师清单",
+            "info": "包含教师模型列表和后端配置的 JSON 清单。如为空则由分析器自动创建。",
+        },
+    },
+    "distill_prompts_path": {
+        "en": {
+            "label": "Prompts file",
+            "info": "JSONL file with one {\"prompt\": \"...\"} per line for teacher generation.",
+        },
+        "zh": {
+            "label": "提示词文件",
+            "info": "JSONL 文件，每行一个 {\"prompt\": \"...\"}，用于教师生成。",
+        },
+    },
+    "distill_output_dir": {
+        "en": {
+            "label": "Distill output dir",
+            "info": "Directory for generated responses, purified data (GOLD/SILVER/DROP), and training configs.",
+        },
+        "zh": {
+            "label": "蒸馏输出目录",
+            "info": "存放生成的响应、净化数据（GOLD/SILVER/DROP）和训练配置的目录。",
+        },
+    },
+    "distill_backend": {
+        "en": {
+            "label": "Backend",
+            "info": "inprocess = direct GGUF loading (fast, uses zen_core_libs). server = HTTP llama-server.",
+        },
+        "zh": {
+            "label": "后端",
+            "info": "inprocess = 直接 GGUF 加载（快速，使用 zen_core_libs）。server = HTTP llama-server。",
+        },
+    },
+    "distill_num_samples": {
+        "en": {
+            "label": "Max samples",
+            "info": "Maximum number of prompts to generate responses for per teacher.",
+        },
+        "zh": {
+            "label": "最大样本数",
+            "info": "每个教师生成响应的最大提示词数量。",
+        },
+    },
+    "distill_answer_threshold": {
+        "en": {
+            "label": "Answer threshold",
+            "info": "N-gram similarity threshold for consensus (GOLD). Higher = stricter agreement. Default: 0.85.",
+        },
+        "zh": {
+            "label": "答案阈值",
+            "info": "共识（GOLD）的 N-gram 相似度阈值。越高 = 越严格。默认: 0.85。",
+        },
+    },
+    "distill_reasoning_threshold": {
+        "en": {
+            "label": "Reasoning threshold",
+            "info": "Similarity threshold for reasoning alignment check. Default: 0.60.",
+        },
+        "zh": {
+            "label": "推理阈值",
+            "info": "推理对齐检查的相似度阈值。默认: 0.60。",
+        },
+    },
+    "distill_status": {
+        "en": {
+            "label": "Distillation status",
+        },
+        "zh": {
+            "label": "蒸馏状态",
         },
     },
     "extra_tab": {
@@ -2470,6 +2651,23 @@ LOCALES = {
             "label": "推論データタイプ",
         },
     },
+    "auto_optimize_btn": {
+        "en": {
+            "value": "Auto optimize",
+        },
+        "ru": {
+            "value": "Автооптимизация",
+        },
+        "zh": {
+            "value": "自动优化",
+        },
+        "ko": {
+            "value": "자동 최적화",
+        },
+        "ja": {
+            "value": "自動最適化",
+        },
+    },
     "load_btn": {
         "en": {
             "value": "Load model",
@@ -2759,10 +2957,61 @@ LOCALES = {
             "value": "履歴をクリア",
         },
     },
+    "train_help_tab": {
+        "en": {
+            "label": "ℹ️ Training help",
+        },
+        "ru": {
+            "label": "Справка по обучению",
+        },
+        "zh": {
+            "label": "训练帮助",
+        },
+        "ko": {
+            "label": "학습 도움말",
+        },
+        "ja": {
+            "label": "学習ヘルプ",
+        },
+    },
+    "eval_help_tab": {
+        "en": {
+            "label": "ℹ️ Evaluation help",
+        },
+        "ru": {
+            "label": "Справка по оценке",
+        },
+        "zh": {
+            "label": "评估帮助",
+        },
+        "ko": {
+            "label": "평가 도움말",
+        },
+        "ja": {
+            "label": "評価ヘルプ",
+        },
+    },
+    "infer_help_tab": {
+        "en": {
+            "label": "ℹ️ Inference help",
+        },
+        "ru": {
+            "label": "Справка по инференсу",
+        },
+        "zh": {
+            "label": "推理帮助",
+        },
+        "ko": {
+            "label": "추론 도움말",
+        },
+        "ja": {
+            "label": "推論ヘルプ",
+        },
+    },
     "export_size": {
         "en": {
             "label": "Max shard size (GB)",
-            "info": "The maximum size for a model file.",
+            "info": "What: max size of each saved model chunk. Why: smaller chunks are easier to move/upload. How: keep default unless your filesystem or upload target has strict file-size limits.",
         },
         "ru": {
             "label": "Максимальный размер фрагмента (ГБ)",
@@ -2784,7 +3033,7 @@ LOCALES = {
     "export_quantization_bit": {
         "en": {
             "label": "Export quantization bit.",
-            "info": "Quantizing the exported model.",
+            "info": "What: quantization level for normal model export. Why: lower bits reduce size and RAM, but may reduce quality. How: use `none` for best quality, or choose lower bits only when you need a smaller model.",
         },
         "ru": {
             "label": "Экспорт бита квантования",
@@ -2806,7 +3055,7 @@ LOCALES = {
     "export_quantization_dataset": {
         "en": {
             "label": "Export quantization dataset",
-            "info": "The calibration dataset used for quantization.",
+            "info": "What: calibration dataset path used during quantization. Why: helps preserve model behavior after quantization. How: only needed when quantization is enabled.",
         },
         "ru": {
             "label": "Экспорт набора данных для квантования",
@@ -2828,7 +3077,7 @@ LOCALES = {
     "export_device": {
         "en": {
             "label": "Export device",
-            "info": "Which device should be used to export model.",
+            "info": "What: device used to run export. Why: affects speed and memory pressure. How: choose `cpu` for reliability, or `auto` to let the system decide.",
         },
         "ru": {
             "label": "Экспорт устройство",
@@ -2850,7 +3099,7 @@ LOCALES = {
     "export_legacy_format": {
         "en": {
             "label": "Export legacy format",
-            "info": "Do not use safetensors to save the model.",
+            "info": "What: save model in older format instead of safetensors. Why: only for compatibility with old tooling. How: leave off unless a downstream tool explicitly requires legacy format.",
         },
         "ru": {
             "label": "Экспорт в устаревший формат",
@@ -2872,7 +3121,7 @@ LOCALES = {
     "export_dir": {
         "en": {
             "label": "Export dir",
-            "info": "Directory to save exported model.",
+            "info": "What: output folder for exported model files. Why: controls where artifacts are written. How: pick a path with enough free disk space.",
         },
         "ru": {
             "label": "Каталог экспорта",
@@ -2894,7 +3143,7 @@ LOCALES = {
     "export_hub_model_id": {
         "en": {
             "label": "HF Hub ID (optional)",
-            "info": "Repo ID for uploading model to Hugging Face hub.",
+            "info": "What: target Hugging Face repository ID. Why: enables direct upload during export. How: leave empty for local-only export.",
         },
         "ru": {
             "label": "HF Hub ID (опционально)",
@@ -2928,6 +3177,328 @@ LOCALES = {
         },
         "ja": {
             "value": "エクスポート",
+        },
+    },
+    "export_help_tab": {
+        "en": {
+            "label": "ℹ️ Export help",
+        },
+        "ru": {
+            "label": "Справка по экспорту",
+        },
+        "zh": {
+            "label": "导出帮助",
+        },
+        "ko": {
+            "label": "내보내기 도움말",
+        },
+        "ja": {
+            "label": "エクスポートヘルプ",
+        },
+    },
+    "gguf_tab": {
+        "en": {
+            "label": "GGUF export",
+        },
+        "ru": {
+            "label": "Экспорт GGUF",
+        },
+        "zh": {
+            "label": "GGUF 导出",
+        },
+        "ko": {
+            "label": "GGUF 내보내기",
+        },
+        "ja": {
+            "label": "GGUF エクスポート",
+        },
+    },
+    "gguf_help_tab": {
+        "en": {
+            "label": "ℹ️ GGUF help",
+        },
+        "ru": {
+            "label": "Справка по GGUF",
+        },
+        "zh": {
+            "label": "GGUF 帮助",
+        },
+        "ko": {
+            "label": "GGUF 도움말",
+        },
+        "ja": {
+            "label": "GGUF ヘルプ",
+        },
+    },
+    "gguf_advanced_tab": {
+        "en": {
+            "label": "Advanced quantization",
+        },
+        "ru": {
+            "label": "Расширенное квантование",
+        },
+        "zh": {
+            "label": "高级量化",
+        },
+        "ko": {
+            "label": "고급 양자화",
+        },
+        "ja": {
+            "label": "高度な量子化",
+        },
+    },
+    "gguf_export_dir": {
+        "en": {
+            "label": "GGUF merge export dir",
+            "info": "What: temporary merged HF-model folder before GGUF conversion. Why: converter needs a merged full model. How: keep default unless you want a custom workspace path.",
+        },
+        "ru": {
+            "label": "Каталог экспорта GGUF",
+            "info": "Каталог для объединенной HF модели перед конвертацией в GGUF.",
+        },
+        "zh": {
+            "label": "GGUF 合并导出目录",
+            "info": "转换 GGUF 前，先导出合并后的 HF 模型目录。",
+        },
+        "ko": {
+            "label": "GGUF 병합 내보내기 디렉토리",
+            "info": "GGUF 변환 전에 병합된 HF 모델을 저장할 디렉토리.",
+        },
+        "ja": {
+            "label": "GGUF マージ出力ディレクトリ",
+            "info": "GGUF 変換前にマージした HF モデルを保存するディレクトリ。",
+        },
+    },
+    "gguf_use_detected_template": {
+        "en": {
+            "label": "Auto-detect template",
+            "info": "What: auto-select chat template from model family. Why: wrong template can break prompt formatting. How: keep enabled unless you know you need a manual template.",
+        },
+        "ru": {
+            "label": "Автоопределение шаблона",
+            "info": "Использовать шаблон, определенный по семейству выбранной модели.",
+        },
+        "zh": {
+            "label": "自动识别模板",
+            "info": "GGUF 导出时根据模型家族自动选择模板。",
+        },
+        "ko": {
+            "label": "템플릿 자동 감지",
+            "info": "GGUF 내보내기 시 선택된 모델 패밀리로 템플릿을 자동 선택합니다.",
+        },
+        "ja": {
+            "label": "テンプレート自動検出",
+            "info": "GGUF エクスポート時に選択モデルのファミリーからテンプレートを自動選択します。",
+        },
+    },
+    "gguf_detected_template": {
+        "en": {
+            "label": "Detected template",
+            "info": "What: template chosen by auto-detection. Why: template controls message formatting at inference time. How: review it, and override only if your model docs say so.",
+        },
+        "ru": {
+            "label": "Определенный шаблон",
+            "info": "Шаблон, определенный по пути выбранной модели.",
+        },
+        "zh": {
+            "label": "识别到的模板",
+            "info": "根据当前模型路径自动识别的模板。",
+        },
+        "ko": {
+            "label": "감지된 템플릿",
+            "info": "선택한 모델 경로에서 자동 추론된 템플릿.",
+        },
+        "ja": {
+            "label": "検出されたテンプレート",
+            "info": "選択したモデルパスから自動推定されたテンプレート。",
+        },
+    },
+    "gguf_llama_cpp_dir": {
+        "en": {
+            "label": "llama.cpp dir",
+            "info": "What: path to your llama.cpp repo/build tools. Why: conversion and quantization commands run from here. How: point to the folder that has `convert_hf_to_gguf.py` and a built `llama-quantize` binary.",
+        },
+        "ru": {
+            "label": "Каталог llama.cpp",
+            "info": "Каталог с convert_hf_to_gguf.py и исполняемым файлом llama-quantize.",
+        },
+        "zh": {
+            "label": "llama.cpp 目录",
+            "info": "包含 convert_hf_to_gguf.py 和 llama-quantize 可执行文件的目录。",
+        },
+        "ko": {
+            "label": "llama.cpp 디렉토리",
+            "info": "convert_hf_to_gguf.py 및 llama-quantize 실행 파일이 있는 디렉토리.",
+        },
+        "ja": {
+            "label": "llama.cpp ディレクトリ",
+            "info": "convert_hf_to_gguf.py と llama-quantize 実行ファイルを含むディレクトリ。",
+        },
+    },
+    "gguf_outfile": {
+        "en": {
+            "label": "GGUF output file",
+            "info": "What: final GGUF file path. Why: this is the model file you load in llama.cpp-style runtimes. How: keep suggested name unless you have your own naming convention.",
+        },
+        "ru": {
+            "label": "Выходной файл GGUF",
+            "info": "Путь к целевому .gguf файлу.",
+        },
+        "zh": {
+            "label": "GGUF 输出文件",
+            "info": "目标 .gguf 文件路径。",
+        },
+        "ko": {
+            "label": "GGUF 출력 파일",
+            "info": "대상 .gguf 파일 경로.",
+        },
+        "ja": {
+            "label": "GGUF 出力ファイル",
+            "info": "出力先 .gguf ファイルのパス。",
+        },
+    },
+    "gguf_quantization": {
+        "en": {
+            "label": "GGUF quantization",
+            "info": "What: exact GGUF quantization type. Why: changes memory use, speed, and quality. How: use presets first, and raw types only if you need precise control.",
+        },
+        "ru": {
+            "label": "Квантование GGUF",
+            "info": "Формат квантования для итогового GGUF файла.",
+        },
+        "zh": {
+            "label": "GGUF 量化格式",
+            "info": "最终 GGUF 文件的量化格式。",
+        },
+        "ko": {
+            "label": "GGUF 양자화",
+            "info": "최종 GGUF 파일의 양자화 형식.",
+        },
+        "ja": {
+            "label": "GGUF 量子化",
+            "info": "最終 GGUF ファイルの量子化形式。",
+        },
+    },
+    "gguf_preset": {
+        "en": {
+            "label": "GGUF preset",
+            "info": "What: easy profile (`quality`, `balanced`, `fastest`). Why: safer than low-level quant names. How: start with `balanced`, move to `quality` for better output, or `fastest` for lower RAM.",
+        },
+        "ru": {
+            "label": "Профиль GGUF",
+            "info": "Выберите профиль качества вместо сырых названий квантования.",
+        },
+        "zh": {
+            "label": "GGUF 预设",
+            "info": "使用质量预设，而不是直接选择原始量化名称。",
+        },
+        "ko": {
+            "label": "GGUF 프리셋",
+            "info": "원시 양자화 이름 대신 품질 프리셋을 선택합니다.",
+        },
+        "ja": {
+            "label": "GGUF プリセット",
+            "info": "生の量子化名ではなく品質プリセットを選択します。",
+        },
+    },
+    "gguf_use_raw_quantization": {
+        "en": {
+            "label": "Use raw quantization override",
+            "info": "What: manual override for exact quantization type. Why: useful for advanced tuning or reproducibility. How: leave off unless you already know the exact type you want.",
+        },
+        "ru": {
+            "label": "Использовать ручной тип квантования",
+            "info": "Переопределить профиль и вручную выбрать точный тип GGUF.",
+        },
+        "zh": {
+            "label": "使用原始量化覆盖",
+            "info": "覆盖预设并手动选择精确 GGUF 量化类型。",
+        },
+        "ko": {
+            "label": "원시 양자화 수동 지정",
+            "info": "프리셋을 무시하고 정확한 GGUF 유형을 직접 선택합니다.",
+        },
+        "ja": {
+            "label": "生の量子化を手動指定",
+            "info": "プリセットを上書きして正確な GGUF タイプを手動選択します。",
+        },
+    },
+    "gguf_raw_quantization": {
+        "en": {
+            "label": "Raw GGUF type",
+            "info": "What: direct low-level GGUF quantization choice. Why: gives full control over size/quality trade-offs. How: use only when raw override is enabled.",
+        },
+        "ru": {
+            "label": "Тип GGUF (ручной)",
+            "info": "Точный тип квантования GGUF (для продвинутых пользователей).",
+        },
+        "zh": {
+            "label": "原始 GGUF 类型",
+            "info": "精确的 GGUF 量化类型（高级用户）。",
+        },
+        "ko": {
+            "label": "원시 GGUF 타입",
+            "info": "정확한 GGUF 양자화 타입 (고급 사용자용).",
+        },
+        "ja": {
+            "label": "生の GGUF タイプ",
+            "info": "正確な GGUF 量子化タイプ（上級者向け）。",
+        },
+    },
+    "gguf_quantization_help": {
+        "en": {
+            "label": "Quantization help",
+        },
+        "ru": {
+            "label": "Справка по квантованию",
+        },
+        "zh": {
+            "label": "量化说明",
+        },
+        "ko": {
+            "label": "양자화 도움말",
+        },
+        "ja": {
+            "label": "量子化ヘルプ",
+        },
+    },
+    "gguf_skip_merge": {
+        "en": {
+            "label": "Skip merge/export (GGUF-only)",
+            "info": "What: skip LoRA merge/export and run only conversion+quantization. Why: much faster when merged HF export already exists. How: enable only if your merge export dir already contains a valid merged model.",
+        },
+        "ru": {
+            "label": "Пропустить merge/export (только GGUF)",
+            "info": "Использовать существующий каталог merged HF и выполнить только конвертацию/квантование GGUF.",
+        },
+        "zh": {
+            "label": "跳过合并导出（仅 GGUF）",
+            "info": "使用已有的 HF 合并目录，仅执行 GGUF 转换/量化。",
+        },
+        "ko": {
+            "label": "병합/내보내기 건너뛰기 (GGUF 전용)",
+            "info": "기존 병합 HF 디렉토리를 사용하고 GGUF 변환/양자화만 실행합니다.",
+        },
+        "ja": {
+            "label": "マージ/エクスポートをスキップ（GGUFのみ）",
+            "info": "既存の merged HF ディレクトリを使い、GGUF 変換/量子化のみ実行します。",
+        },
+    },
+    "gguf_btn": {
+        "en": {
+            "value": "Export GGUF",
+        },
+        "ru": {
+            "value": "Экспорт GGUF",
+        },
+        "zh": {
+            "value": "导出 GGUF",
+        },
+        "ko": {
+            "value": "GGUF 내보내기",
+        },
+        "ja": {
+            "value": "GGUF をエクスポート",
         },
     },
     "device_memory": {
@@ -3025,6 +3596,48 @@ ALERTS = {
         "zh": "量化模型前请先合并适配器。",
         "ko": "모델을 양자화하기 전에 어댑터를 병합하십시오.",
         "ja": "モデルを量子化する前にアダプターをマージしてください。",
+    },
+    "err_no_llama_cpp_dir": {
+        "en": "Please provide llama.cpp dir.",
+        "ru": "Пожалуйста, укажите каталог llama.cpp.",
+        "zh": "请填写 llama.cpp 目录。",
+        "ko": "llama.cpp 디렉토리를 제공하십시오.",
+        "ja": "llama.cpp ディレクトリを入力してください。",
+    },
+    "err_no_gguf_outfile": {
+        "en": "Please provide GGUF output file.",
+        "ru": "Пожалуйста, укажите выходной файл GGUF.",
+        "zh": "请填写 GGUF 输出文件路径。",
+        "ko": "GGUF 출력 파일 경로를 제공하십시오.",
+        "ja": "GGUF 出力ファイルのパスを入力してください。",
+    },
+    "err_no_template": {
+        "en": "Template is required.",
+        "ru": "Требуется шаблон.",
+        "zh": "模板不能为空。",
+        "ko": "템플릿이 필요합니다.",
+        "ja": "テンプレートが必要です。",
+    },
+    "err_no_powershell": {
+        "en": "PowerShell executable was not found.",
+        "ru": "Исполняемый файл PowerShell не найден.",
+        "zh": "未找到 PowerShell 可执行文件。",
+        "ko": "PowerShell 실행 파일을 찾을 수 없습니다.",
+        "ja": "PowerShell 実行ファイルが見つかりません。",
+    },
+    "err_no_gguf_script": {
+        "en": "GGUF export script was not found.",
+        "ru": "Скрипт экспорта GGUF не найден.",
+        "zh": "未找到 GGUF 导出脚本。",
+        "ko": "GGUF 내보내기 스크립트를 찾을 수 없습니다.",
+        "ja": "GGUF エクスポートスクリプトが見つかりません。",
+    },
+    "err_gguf_windows_only": {
+        "en": "GGUF one-click export in WebUI currently supports Windows only.",
+        "ru": "One-click экспорт GGUF в WebUI сейчас поддерживается только на Windows.",
+        "zh": "WebUI 一键 GGUF 导出目前仅支持 Windows。",
+        "ko": "WebUI 원클릭 GGUF 내보내기는 현재 Windows만 지원합니다.",
+        "ja": "WebUI のワンクリック GGUF エクスポートは現在 Windows のみ対応です。",
     },
     "err_failed": {
         "en": "Failed.",
@@ -3172,6 +3785,20 @@ ALERTS = {
         "zh": "模型导出完成。",
         "ko": "모델이 내보내졌습니다.",
         "ja": "モデルのエクスポートが完了しました。",
+    },
+    "info_gguf_exporting": {
+        "en": "Exporting GGUF model...",
+        "ru": "Экспорт GGUF модели...",
+        "zh": "正在导出 GGUF 模型……",
+        "ko": "GGUF 모델 내보내기 중...",
+        "ja": "GGUF モデルをエクスポート中...",
+    },
+    "info_gguf_exported": {
+        "en": "GGUF model exported.",
+        "ru": "GGUF модель экспортирована.",
+        "zh": "GGUF 模型导出完成。",
+        "ko": "GGUF 모델 내보내기가 완료되었습니다.",
+        "ja": "GGUF モデルのエクスポートが完了しました。",
     },
     "info_swanlab_link": {
         "en": "### SwanLab Link\n",

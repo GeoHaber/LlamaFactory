@@ -212,7 +212,10 @@ def save_cmd(args: dict[str, Any]) -> str:
 def load_eval_results(path: os.PathLike) -> str:
     r"""Get scores after evaluation."""
     with open(path, encoding="utf-8") as f:
-        result = json.dumps(json.load(f), indent=4)
+        try:
+            result = json.dumps(json.load(f), indent=4)
+        except json.JSONDecodeError:
+            return "```text\nMalformed JSON in evaluation output.\n```\n"
 
     return f"```json\n{result}\n```\n"
 

@@ -98,6 +98,9 @@ class ChatCompletionRequest(BaseModel):
     model: str
     messages: list[ChatMessage]
     tools: list[FunctionAvailable] | None = None
+    use_ad_coordinator: bool | None = None
+    ad_coordinator_policy: Literal["fast", "balanced", "quality"] | None = None
+    ad_complexity_threshold: int | None = None
     do_sample: bool | None = None
     temperature: float | None = None
     top_p: float | None = None

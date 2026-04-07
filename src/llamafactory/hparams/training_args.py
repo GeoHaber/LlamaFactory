@@ -60,7 +60,10 @@ class RayArguments:
         self.use_ray = use_ray()
 
         if isinstance(self.ray_init_kwargs, str) and self.ray_init_kwargs.startswith("{"):
-            self.ray_init_kwargs = _convert_str_dict(json.loads(self.ray_init_kwargs))
+            try:
+                self.ray_init_kwargs = _convert_str_dict(json.loads(self.ray_init_kwargs))
+            except json.JSONDecodeError as exc:
+                raise ValueError("`ray_init_kwargs` must be a valid JSON object string.") from exc
 
 
 @dataclass
