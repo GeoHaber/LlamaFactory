@@ -168,7 +168,7 @@ def build_profile(
 
 def print_profile(profile: dict) -> None:
     """Print a human-readable teacher profile report."""
-    print(f"\n=== Teacher Quality Profile ===")  # xray: ignore[PY-004]
+    print("\n=== Teacher Quality Profile ===")  # xray: ignore[PY-004]
     print(f"Teachers: {profile['teacher_count']}  |  Prompts: {profile['total_prompts']}")  # xray: ignore[PY-004]
 
     for t in profile["teachers"]:

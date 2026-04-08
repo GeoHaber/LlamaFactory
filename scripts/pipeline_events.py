@@ -89,7 +89,7 @@ class PipelineLogger:
             self._file.close()
             self._file = None
 
-    def __enter__(self) -> "PipelineLogger":
+    def __enter__(self) -> PipelineLogger:
         return self
 
     def __exit__(self, *args: object) -> None:

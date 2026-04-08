@@ -48,6 +48,7 @@ import sys
 import time
 from pathlib import Path
 
+
 try:
     import yaml
 
@@ -203,8 +204,8 @@ def _synthesize_forge_results(
 _QUALITATIVE_EVAL_SCRIPT = r'''
 import json, sys, collections
 from pathlib import Path
-import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+import torch  # xray: ignore[SEC-015]
+from transformers import AutoModelForCausalLM, AutoTokenizer  # xray: ignore[SEC-015]
 
 merged_dir = sys.argv[1]
 probe_path = sys.argv[2]
@@ -348,7 +349,7 @@ examples:
     # ── Stage 2: Purify ──────────────────────────────────────────────────
     report_path = f"{purified_dir}/purification_report.json"
     if _file_nonempty(report_path):
-        print(f"[SKIP] Purification: report already exists")  # xray: ignore[PY-004]
+        print("[SKIP] Purification: report already exists")  # xray: ignore[PY-004]
         steps_skipped += 1
     else:
         purify_cmd = [
@@ -380,7 +381,7 @@ examples:
 
     # ── Stage 4: Config gen ──────────────────────────────────────────────
     if _file_nonempty(sft_cfg) and _file_nonempty(merge_cfg):
-        print(f"[SKIP] Config gen: configs already exist")  # xray: ignore[PY-004]
+        print("[SKIP] Config gen: configs already exist")  # xray: ignore[PY-004]
         steps_skipped += 1
     else:
         cfg_cmd = [
@@ -429,11 +430,11 @@ examples:
                 and _is_training_complete(sft_adapter_dir_check)
             )
             if sft_done:
-                print(f"[SKIP] SFT: training complete (all steps finished)")  # xray: ignore[PY-004]
+                print("[SKIP] SFT: training complete (all steps finished)")  # xray: ignore[PY-004]
                 steps_skipped += 1
             elif _file_nonempty(sft_cfg):
                 if _find_latest_checkpoint(sft_adapter_dir_check) is not None:
-                    print(f"[RESUME] SFT: incomplete training detected — resuming from checkpoint")  # xray: ignore[PY-004]
+                    print("[RESUME] SFT: incomplete training detected — resuming from checkpoint")  # xray: ignore[PY-004]
                 code = _run_step("SFT Training", [
                     py, "-m", "llamafactory.cli", "train", sft_cfg,
                 ], dry_run=dry)
@@ -488,14 +489,14 @@ examples:
     # ── Stage 7: Synthesize forge results (sequential mode) ──────────────
     forge_results_path = Path(f"saves/{tag}/forge_results.jsonl")
     if not args.use_forge and not _file_nonempty(forge_results_path):
-        print(f"\n[STAGE 7] Synthesize forge results for evaluation")
+        print("\n[STAGE 7] Synthesize forge results for evaluation")
         if dry:
             print("  (dry-run — skipped)")
         elif effective_adapter:
             _synthesize_forge_results(tag, args.student_model, sft_adapter_dir, forge_results_path)
             steps_run += 1
         else:
-            print(f"  WARNING: No adapter found — cannot synthesize forge results")
+            print("  WARNING: No adapter found — cannot synthesize forge results")
     elif _file_nonempty(forge_results_path):
         print(f"[SKIP] Forge results: {forge_results_path} already exists")
         steps_skipped += 1
@@ -514,7 +515,7 @@ examples:
         print(f"[SKIP] Evaluation: no eval probes at {eval_probes}")
         steps_skipped += 1
     elif not _file_nonempty(forge_results_path):
-        print(f"[SKIP] Evaluation: no forge_results.jsonl")
+        print("[SKIP] Evaluation: no forge_results.jsonl")
         steps_skipped += 1
     else:
         eval_cmd = [
@@ -565,7 +566,7 @@ examples:
         print(f"[SKIP] GGUF export: {gguf_results} already exists")
         steps_skipped += 1
     elif not _file_nonempty(champion_path):
-        print(f"[SKIP] GGUF export: no champion.txt (run eval first)")
+        print("[SKIP] GGUF export: no champion.txt (run eval first)")
         steps_skipped += 1
     else:
         gguf_cmd = [
@@ -594,7 +595,7 @@ examples:
         print(f"[SKIP] Qualitative eval: no merged model at {merged_dir}")
         steps_skipped += 1
     elif not _file_nonempty(eval_probes):
-        print(f"[SKIP] Qualitative eval: no eval probes")
+        print("[SKIP] Qualitative eval: no eval probes")
         steps_skipped += 1
     else:
         # Pick representative probes (up to 3 per category, max 12 total)
@@ -617,7 +618,7 @@ examples:
                         gen_preview = s.get("generated", "")[:60]
                         print(f"    [{s.get('category', '?')}] {prompt_preview}...")
                         print(f"      → {gen_preview}...")
-                except Exception:
+                except (json.JSONDecodeError, KeyError, OSError):
                     pass
         steps_run += 1
 
@@ -638,7 +639,7 @@ examples:
     ]
     found = [(label, path) for path, label in artifacts if _file_nonempty(path)]
     if found:
-        print(f"\nArtifacts:")
+        print("\nArtifacts:")
         for label, path in found:
             print(f"  {label}: {path}")
     print(f"{'='*60}")  # xray: ignore[PY-004]

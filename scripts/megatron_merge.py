@@ -19,7 +19,10 @@ import os
 
 import fire  # xray: ignore[SEC-015]
 import torch  # xray: ignore[SEC-015]
-from mcore_adapter.models.converter.post_converter import convert_checkpoint_to_hf, convert_checkpoint_to_mca  # xray: ignore[SEC-015]
+from mcore_adapter.models.converter.post_converter import (  # xray: ignore[SEC-015]
+    convert_checkpoint_to_hf,
+    convert_checkpoint_to_mca,
+)
 from mcore_adapter.training_args import DistributingParallelArguments  # xray: ignore[SEC-015]
 from mcore_adapter.utils import get_logger  # xray: ignore[SEC-015]
 from transformers import AutoConfig  # xray: ignore[SEC-015]

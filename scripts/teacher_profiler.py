@@ -37,11 +37,9 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import importlib
 import json
 import re
 import sys
-import time
 from pathlib import Path
 
 
@@ -72,21 +70,68 @@ NAME_RULES: dict[str, list[str]] = {
     "translation": ["mt", "translate", "m2m", "nllb", "madlad", "tower"],
     "ocr": ["ocr", "vision", "vl", "llava", "qwen-vl", "kosmos", "minicpm-v", "paligemma"],
     "safety": ["guard", "safety", "moderation", "llamaguard", "shieldgemma"],
-    "creative": ["creative", "story", "writer", "gemma-2"],
+    "creative": ["creative", "story", "writer", "gemma-2", "gemma-4"],
+}
+
+# Well-known general-purpose model families — realistic baseline scores.
+# Instruct/chat models from these families are capable of most tasks even
+# when the filename doesn't include a capability keyword.
+FAMILY_BASELINES: dict[str, dict[str, float]] = {
+    # Gemma 4: strong chat, translation, creative, decent reasoning/math
+    "gemma-4": {"chat": 1.0, "reasoning": 0.75, "translation": 0.80,
+                "creative": 0.80, "math": 0.65, "safety": 0.60,
+                "coding": 0.50, "ocr": 0.0},
+    # Gemma 2: same profile, slightly lower reasoning
+    "gemma-2": {"chat": 1.0, "reasoning": 0.65, "translation": 0.75,
+                "creative": 0.75, "math": 0.55, "safety": 0.60,
+                "coding": 0.45, "ocr": 0.0},
+    # Qwen 2.5 Instruct: excellent all-rounder, strong coding + translation
+    "qwen2.5": {"chat": 1.0, "reasoning": 0.80, "coding": 0.85,
+                "translation": 0.85, "math": 0.80, "creative": 0.65,
+                "safety": 0.55, "ocr": 0.0},
+    # Mistral Instruct: solid chat, translation, moderate reasoning
+    "mistral": {"chat": 1.0, "reasoning": 0.65, "translation": 0.75,
+                "creative": 0.60, "math": 0.55, "coding": 0.65,
+                "safety": 0.50, "ocr": 0.0},
+    # DeepSeek: strong reasoning/coding
+    "deepseek": {"chat": 0.90, "reasoning": 0.90, "coding": 0.85,
+                 "math": 0.85, "translation": 0.55, "creative": 0.50,
+                 "safety": 0.45, "ocr": 0.0},
+    # LLaMA 3: strong all-rounder
+    "llama-3": {"chat": 1.0, "reasoning": 0.75, "coding": 0.70,
+                "translation": 0.65, "math": 0.65, "creative": 0.65,
+                "safety": 0.55, "ocr": 0.0},
+    # Phi-3/4: strong reasoning/math
+    "phi": {"chat": 0.90, "reasoning": 0.80, "coding": 0.75,
+            "math": 0.80, "translation": 0.55, "creative": 0.55,
+            "safety": 0.55, "ocr": 0.0},
 }
 
 
 def infer_capabilities_by_name(model_path: str) -> dict[str, float]:
-    """Return capability scores (0.0 or 1.0) based on filename keywords."""
+    """Return capability scores (0.0–1.0) based on filename keywords + known family baselines."""
     name = Path(model_path).stem.lower().replace("_", "-")
-    scores: dict[str, float] = {}
-    for cap, keywords in NAME_RULES.items():
-        hit = any(kw in name for kw in keywords)
-        scores[cap] = 1.0 if hit else 0.0
 
-    # If nothing detected, assume it's a general chat model
+    # Try family baseline first
+    scores: dict[str, float] = {}
+    for family, baseline in FAMILY_BASELINES.items():
+        if family in name:
+            scores = dict(baseline)
+            break
+
+    # Overlay keyword boosts (keyword hit → set to 1.0 if not already higher)
+    for cap, keywords in NAME_RULES.items():
+        if any(kw in name for kw in keywords):
+            scores[cap] = max(scores.get(cap, 0.0), 1.0)
+
+    # Zero-fill missing caps
+    for cap in CAPABILITIES:
+        scores.setdefault(cap, 0.0)
+
+    # If nothing at all detected, treat as generic chat model
     if not any(v > 0 for v in scores.values()):
-        scores["chat"] = 0.5  # low-confidence default
+        scores["chat"] = 0.5
+
     return scores
 
 
@@ -390,8 +435,8 @@ def main() -> int:
         print(f"  {t_info['name']}  ({t_info['method']})")  # xray: ignore[PY-004]
         for cap in CAPABILITIES:
             score = t_info["capabilities"].get(cap, 0)
-            bar = "█" * int(score * 10) + "░" * (10 - int(score * 10))
-            marker = " ★" if cap in t_info["top_capabilities"] else ""
+            bar = "#" * int(score * 10) + "." * (10 - int(score * 10))
+            marker = " *" if cap in t_info["top_capabilities"] else ""
             print(f"    {cap:>12s}  {bar} {score:.2f}{marker}")  # xray: ignore[PY-004]
         print()  # xray: ignore[PY-004]
 

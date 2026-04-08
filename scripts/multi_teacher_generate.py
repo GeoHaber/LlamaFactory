@@ -85,171 +85,11 @@ import sys
 import threading
 import time
 from collections import deque
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
-
-# ---------------------------------------------------------------------------
-# RAM-pressure throttle (zen_core_libs–inspired memory-budget pattern)
-# ---------------------------------------------------------------------------
-
-class RAMPressureThrottle:
-    """Background monitor that pauses worker threads when system RAM is low.
-
-    Uses a threading.Event as the gate — workers call ``wait_if_ok()`` before
-    each inference call.  When available RAM drops below *pause_below_pct* the
-    gate closes; it re-opens once RAM climbs above *resume_above_pct*.
-
-    This 2-threshold (hysteresis) design prevents rapid pause/resume cycling
-    when memory sits right at the boundary.
-
-    Safe for 7-8 concurrent GGUF-resident teachers on a 96 GB box.
-    """
-
-    def __init__(
-        self,
-        pause_below_pct: float = 12.0,
-        resume_above_pct: float = 22.0,
-        poll_interval: float = 3.0,
-    ) -> None:
-        self._pause_pct = pause_below_pct
-        self._resume_pct = resume_above_pct
-        self._poll_s = poll_interval
-        self._gate = threading.Event()
-        self._gate.set()  # open = workers can proceed
-        self._stop = threading.Event()
-        self._thread: threading.Thread | None = None
-        self._paused_since: float | None = None
-        self.pauses = 0
-        self.total_paused_s = 0.0
-        self._available_pct: float = 100.0
-
-    # -- public API used by workers ---------------------------------------
-
-    def wait_if_ok(self, timeout: float = 120.0) -> bool:
-        """Block until RAM is OK (or timeout).  Returns True when cleared."""
-        return self._gate.wait(timeout=timeout)
-
-    @property
-    def is_paused(self) -> bool:
-        return not self._gate.is_set()
-
-    @property
-    def available_pct(self) -> float:
-        return self._available_pct
-
-    def stats(self) -> dict:
-        return {
-            "pauses": self.pauses,
-            "total_paused_s": round(self.total_paused_s, 1),
-            "available_pct": round(self._available_pct, 1),
-            "is_paused": self.is_paused,
-        }
-
-    # -- lifecycle --------------------------------------------------------
-
-    def start(self) -> None:
-        if self._thread is not None:
-            return
-        self._thread = threading.Thread(target=self._loop, daemon=True, name="ram-throttle")
-        self._thread.start()
-
-    def stop(self) -> None:
-        self._stop.set()
-        self._gate.set()  # unblock any waiters
-        if self._thread is not None:
-            self._thread.join(timeout=5.0)
-
-    # -- internal ---------------------------------------------------------
-
-    def _loop(self) -> None:
-        try:
-            import psutil
-        except ImportError:  # xray: ignore[QUAL-002]
-            # Without psutil the throttle is a no-op (gate stays open).
-            return
-
-        while not self._stop.is_set():
-            mem = psutil.virtual_memory()
-            self._available_pct = mem.available / mem.total * 100.0
-
-            if self._available_pct < self._pause_pct and self._gate.is_set():
-                self._gate.clear()
-                self._paused_since = time.monotonic()
-                self.pauses += 1
-                print(  # xray: ignore[PY-004]
-                    f"\n  !! RAM throttle: {self._available_pct:.1f}% available "
-                    f"(< {self._pause_pct}%) -- pausing workers",
-                    flush=True,
-                )
-
-            elif self._available_pct >= self._resume_pct and not self._gate.is_set():
-                if self._paused_since is not None:
-                    self.total_paused_s += time.monotonic() - self._paused_since
-                    self._paused_since = None
-                self._gate.set()
-                print(  # xray: ignore[PY-004]
-                    f"\n  >> RAM recovered: {self._available_pct:.1f}% available "
-                    f"(>= {self._resume_pct}%) -- resuming workers",
-                    flush=True,
-                )
-
-            self._stop.wait(self._poll_s)
-
-        # Final bookkeeping
-        if self._paused_since is not None:
-            self.total_paused_s += time.monotonic() - self._paused_since
-
-
-# ---------------------------------------------------------------------------
-# SPSC ring buffer — hardware-style FIFO, lock-free hot path
-# ---------------------------------------------------------------------------
-
-class SPSCRingBuffer:
-    """Lock-free Single-Producer Single-Consumer ring buffer.
-
-    Pre-allocated circular array with separate read/write indices.  CPython's
-    GIL guarantees that integer stores are atomic, so one producer thread and
-    one consumer thread can operate WITHOUT any mutex, semaphore, or condition
-    variable.
-
-    Deposit  = O(1): write slot, advance ``_write_idx``
-    Retrieve = O(1): read slot,  advance ``_read_idx``
-    """
-
-    __slots__ = ("_buf", "_cap", "_write_idx", "_read_idx")
-
-    def __init__(self, capacity: int = 256) -> None:
-        self._cap = capacity
-        self._buf: list = [None] * capacity
-        self._write_idx = 0   # modified ONLY by producer
-        self._read_idx = 0    # modified ONLY by consumer
-
-    def put(self, item) -> bool:
-        """Producer: deposit *item*.  Returns ``False`` if buffer is full."""
-        nxt = (self._write_idx + 1) % self._cap
-        if nxt == self._read_idx:
-            return False
-        self._buf[self._write_idx] = item
-        self._write_idx = nxt          # store-release (GIL-atomic)
-        return True
-
-    def get(self):
-        """Consumer: retrieve next item.  Returns ``None`` if empty."""
-        if self._read_idx == self._write_idx:
-            return None
-        item = self._buf[self._read_idx]
-        self._buf[self._read_idx] = None   # allow GC of payload
-        self._read_idx = (self._read_idx + 1) % self._cap
-        return item
-
-    @property
-    def is_empty(self) -> bool:
-        return self._read_idx == self._write_idx
-
-    @property
-    def count(self) -> int:
-        return (self._write_idx - self._read_idx) % self._cap
+# ── zen_core_libs — single source of truth for shared infrastructure ──────────
+from zen_core_libs.common.system import RAMPressureThrottle, SPSCRingBuffer  # xray: ignore[SEC-015]
 
 
 # ---------------------------------------------------------------------------
@@ -561,7 +401,6 @@ def _make_inprocess_backend(manifest: dict):
         llm_mod = importlib.import_module("zen_core_libs.llm")
     except ModuleNotFoundError:  # xray: ignore[QUAL-002]
         # Try adding the parent repo to path — walk up to find zen_core_libs
-        import os
         zcl_path = os.environ.get("ZEN_CORE_LIBS", "")
         if not zcl_path:
             # Search upward from the script's location
@@ -962,7 +801,7 @@ examples:
         ring_buffers: dict[str, SPSCRingBuffer] = {
             t_name: SPSCRingBuffer(fifo_depth) for t_name in active_teachers
         }
-        worker_done: dict[str, bool] = {t_name: False for t_name in active_teachers}
+        worker_done: dict[str, bool] = dict.fromkeys(active_teachers, False)
 
         # Per-teacher throughput tracking (rolling window)
         _WINDOW = 30
@@ -1029,7 +868,7 @@ examples:
             thread is the sole writer for all of them.
             """
             nonlocal total_calls
-            done_counts: dict[str, int] = {t: 0 for t in active_teachers}
+            done_counts: dict[str, int] = dict.fromkeys(active_teachers, 0)
             n_items = {t: len(work_lists[t]) for t in active_teachers}
 
             while True:

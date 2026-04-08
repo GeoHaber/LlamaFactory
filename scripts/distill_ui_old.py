@@ -30,10 +30,10 @@ import json
 import os
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import gradio as gr  # xray: ignore[SEC-015]
+
 
 # ---------------------------------------------------------------------------
 # Paths

@@ -46,6 +46,7 @@ import threading
 import time
 from pathlib import Path
 
+
 # ── SPSC ring buffer import with fallback ────────────────────────────────
 
 try:
@@ -327,7 +328,7 @@ def _eval_gguf_teacher(
                     "ppl": round(math.exp(min(pseudo_loss, 20)), 2),
                     "category": category,
                 })
-            except Exception as exc:  # xray: ignore[QUAL-011]
+            except Exception:  # xray: ignore[QUAL-011]
                 eval_results.append({
                     "id": sid, "loss": 5.0, "ppl": 148.41,
                     "category": category,
@@ -583,7 +584,7 @@ examples:
     quick_ok = [r for r in quick_results if r["ok"] and r["avg_loss"] is not None]  # xray: ignore[PY-004]
     quick_ok.sort(key=lambda r: r["avg_loss"])
 
-    print(f"\n  Quick Quiz Rankings:")  # xray: ignore[PY-004]
+    print("\n  Quick Quiz Rankings:")  # xray: ignore[PY-004]
     for i, r in enumerate(quick_ok, 1):
         adv = " → ADVANCE" if i <= args.top_k else "   eliminated"
         print(f"    #{i} {r['variant_id']}: avg_loss={r['avg_loss']}{adv}")  # xray: ignore[PY-004]
@@ -632,7 +633,7 @@ examples:
             print(f"WARNING: Teacher manifest not found: {manifest_path}")  # xray: ignore[PY-004]
         elif teacher_baseline_path.exists():
             # ── Cache hit: reuse previously-computed teacher baseline (Musk fix) ──  # xray: ignore[PY-004]
-            print(f"\n--- GRADUATION EXAM (cached teacher baseline) ---")  # xray: ignore[PY-004]
+            print("\n--- GRADUATION EXAM (cached teacher baseline) ---")  # xray: ignore[PY-004]
             teacher_baseline = json.loads(teacher_baseline_path.read_text(encoding="utf-8"))  # xray: ignore[PY-005]
             print(f"  Teacher baseline (cached): avg_loss={teacher_baseline['avg_loss']}")  # xray: ignore[PY-004]
             for cat, loss in teacher_baseline.get("category_scores", {}).items():  # xray: ignore[QUAL-005]
@@ -661,19 +662,23 @@ examples:
             except NameError:  # xray: ignore[QUAL-002]
                 print("  WARNING: zen_core_libs.llm.eval not available — skipping graduation report")  # xray: ignore[PY-004]
         else:
-            print(f"\n--- GRADUATION EXAM ---")  # xray: ignore[PY-004]
+            print("\n--- GRADUATION EXAM ---")  # xray: ignore[PY-004]
             # Load teacher manifest (supports both structured JSON and JSONL)
             teacher_infos = []
             gguf_teachers = []
             manifest_text = manifest_path.read_text(encoding="utf-8")
             manifest_stripped = manifest_text.strip()
-            if manifest_stripped.startswith("{"):
-                # Structured JSON manifest with "teachers" array
-                manifest_data = json.loads(manifest_stripped)
-                entries = manifest_data.get("teachers", [])
-            else:
-                # JSONL format — one entry per line
-                entries = [json.loads(line) for line in manifest_stripped.splitlines() if line.strip()]
+            try:
+                if manifest_stripped.startswith("{"):
+                    # Structured JSON manifest with "teachers" array
+                    manifest_data = json.loads(manifest_stripped)
+                    entries = manifest_data.get("teachers", [])
+                else:
+                    # JSONL format — one entry per line
+                    entries = [json.loads(line) for line in manifest_stripped.splitlines() if line.strip()]
+            except json.JSONDecodeError as exc:
+                print(f"ERROR: malformed teacher manifest: {exc}")
+                entries = []
             for entry in entries:
                 # Support both "model_path" (HF) and "gguf" (GGUF) teacher formats
                 model_path = entry.get("model_path", entry.get("gguf", ""))

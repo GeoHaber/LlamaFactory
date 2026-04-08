@@ -38,6 +38,7 @@ import sys
 import time
 from pathlib import Path
 
+
 try:
     import optuna
 except ImportError:
@@ -191,7 +192,7 @@ examples:
 
     rank_choices = [int(r.strip()) for r in args.rank_choices.split(",")]
 
-    print(f"=== Bayesian Hyperparameter Search ===")
+    print("=== Bayesian Hyperparameter Search ===")
     print(f"Model:      {model}")
     print(f"Trials:     {args.n_trials}")
     print(f"LR range:   [{args.lr_min}, {args.lr_max}]")
@@ -243,7 +244,7 @@ examples:
     print(f"\n{'='*60}")
     print(f"  Best trial: #{study.best_trial.number}")
     print(f"  Best loss:  {study.best_trial.value:.4f}")
-    print(f"  Best params:")
+    print("  Best params:")
     for k, v in study.best_trial.params.items():
         print(f"    {k}: {v}")
     print(f"{'='*60}")

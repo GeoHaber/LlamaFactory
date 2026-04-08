@@ -92,8 +92,8 @@ def create_infer_tab(engine: "Engine") -> dict[str, "Component"]:
         auto_tune_calibration_tokens = gr.Slider(minimum=1, maximum=32, value=4, step=1)
 
     with gr.Row():
-        infer_backend = gr.Dropdown(choices=["huggingface", "vllm", "sglang", "ktransformers"], value="huggingface")
-        infer_dtype = gr.Dropdown(choices=["auto", "float16", "bfloat16", "float32"], value="auto")
+        infer_backend = gr.Dropdown(choices=["huggingface", "vllm", "sglang", "ktransformers"], value="huggingface", info="Runtime backend. HuggingFace is safest; vllm/sglang are faster.")
+        infer_dtype = gr.Dropdown(choices=["auto", "float16", "bfloat16", "float32"], value="auto", info="Numerical precision. Auto picks the best for your hardware.")
         extra_args = gr.Textbox(value='{"vllm_enforce_eager": true}')
 
     with gr.Row():

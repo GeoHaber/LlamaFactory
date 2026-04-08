@@ -13,6 +13,7 @@ import json
 import random
 from pathlib import Path
 
+
 random.seed(42)
 
 LANGS = {

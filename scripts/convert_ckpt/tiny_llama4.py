@@ -12,7 +12,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from transformers import Llama4Config, Llama4ForConditionalGeneration, Llama4TextConfig, Llama4VisionConfig  # xray: ignore[SEC-015]
+from transformers import (  # xray: ignore[SEC-015]
+    Llama4Config,
+    Llama4ForConditionalGeneration,
+    Llama4TextConfig,
+    Llama4VisionConfig,
+)
 
 
 if __name__ == "__main__":

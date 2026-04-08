@@ -45,11 +45,10 @@ Usage:
 from __future__ import annotations
 
 import argparse
-import copy
 import json
-import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+
 
 REGISTRY_PATH = Path("saves/student_registry.json")
 
@@ -114,7 +113,7 @@ def cmd_register(args: argparse.Namespace) -> int:
                 break
 
     reg = _load_registry()
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
 
     entry = {
         "model_id": model_id,
@@ -210,7 +209,7 @@ def cmd_update_eval(args: argparse.Namespace) -> int:
         print(f"ERROR: No scorecard for variant {vid} in {eval_file}")  # xray: ignore[PY-004]
         return 1
 
-    now = datetime.now(timezone.utc).isoformat()
+    now = datetime.now(UTC).isoformat()
     reg["students"][model_id]["eval_history"].append({
         "timestamp": now,
         "avg_loss": eval_entry.get("avg_loss"),
@@ -359,7 +358,7 @@ def cmd_export(args: argparse.Namespace) -> int:
         return 0
 
     lines = ["# Student Registry Report", ""]
-    lines.append(f"Generated: {datetime.now(timezone.utc).isoformat()}")
+    lines.append(f"Generated: {datetime.now(UTC).isoformat()}")
     lines.append(f"Total students: {len(students)}")
     lines.append("")
 

@@ -44,6 +44,7 @@ import threading
 import time
 from pathlib import Path
 
+
 # ── SPSC ring buffer import with fallback ────────────────────────────────
 
 try:
@@ -353,7 +354,7 @@ examples:
   # xray: ignore-next[PY-004]
     out_dir = Path(args.output_dir) if args.output_dir else Path(f"saves/{args.saves_tag or 'export'}/gguf")  # xray: ignore[PY-004]
   # xray: ignore-next[PY-004]
-    print(f"=== Slim-Down — GGUF Export ===")  # xray: ignore[PY-004]
+    print("=== Slim-Down — GGUF Export ===")  # xray: ignore[PY-004]
     print(f"Model: {model_path}")  # xray: ignore[PY-004]
     print(f"Adapter: {adapter_path or 'none'}")  # xray: ignore[PY-004]
     print(f"Quants: {', '.join(args.quants)}")  # xray: ignore[PY-004]
@@ -368,7 +369,7 @@ examples:
     if use_native:
         print(f"Backend: llama.cpp ({args.llama_cpp_path})")  # xray: ignore[PY-004]
     else:
-        print(f"Backend: LlamaFactory export CLI")  # xray: ignore[PY-004]
+        print("Backend: LlamaFactory export CLI")  # xray: ignore[PY-004]
 
     for quant in args.quants:
         buf = SPSCRingBuffer(capacity=4)
@@ -380,7 +381,7 @@ examples:
                 # Need to merge adapter first — use LlamaFactory merge then native quantize
                 merged_dir = out_dir / "merged_hf"
                 if not (merged_dir / "config.json").exists():
-                    print(f"  Merging adapter for llama.cpp export...")  # xray: ignore[PY-004]
+                    print("  Merging adapter for llama.cpp export...")  # xray: ignore[PY-004]
                     merge_yaml = out_dir / "merge_for_gguf.yaml"
                     mc = {
                         "model_name_or_path": model_path,
@@ -440,7 +441,7 @@ examples:
   # xray: ignore-next[PY-004]
     # Summary table  # xray: ignore[PY-004]
     print(f"\n{'='*70}")  # xray: ignore[PY-004]
-    print(f"  SLIM-DOWN RESULTS")  # xray: ignore[PY-004]
+    print("  SLIM-DOWN RESULTS")  # xray: ignore[PY-004]
     print(f"{'='*70}")  # xray: ignore[PY-004]
     print(f"{'Quant':<12} {'Size (MB)':>10} {'Export (s)':>11} {'tok/s':>8} {'Status'}")  # xray: ignore[PY-004]
     print(f"{'-'*70}")  # xray: ignore[PY-004]
@@ -489,7 +490,7 @@ examples:
             # Sort by size ascending → smaller is better
             ok_results.sort(key=lambda r: r["size_mb"])
             print(f"\n{'='*60}")  # xray: ignore[PY-004]
-            print(f"  PARETO FRONTIER ANALYSIS (size vs speed)")
+            print("  PARETO FRONTIER ANALYSIS (size vs speed)")
             print(f"{'='*60}")  # xray: ignore[PY-004]
 
             # Find Pareto-optimal points: no other point dominates on BOTH size and speed

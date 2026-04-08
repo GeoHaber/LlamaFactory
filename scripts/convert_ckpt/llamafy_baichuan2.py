@@ -22,7 +22,12 @@ import torch  # xray: ignore[SEC-015]
 from huggingface_hub import split_torch_state_dict_into_shards  # xray: ignore[SEC-015]
 from safetensors.torch import save_file  # xray: ignore[SEC-015]
 from tqdm import tqdm  # xray: ignore[SEC-015]
-from transformers.modeling_utils import SAFE_WEIGHTS_INDEX_NAME, SAFE_WEIGHTS_NAME, WEIGHTS_INDEX_NAME, WEIGHTS_NAME  # xray: ignore[SEC-015]
+from transformers.modeling_utils import (  # xray: ignore[SEC-015]
+    SAFE_WEIGHTS_INDEX_NAME,
+    SAFE_WEIGHTS_NAME,
+    WEIGHTS_INDEX_NAME,
+    WEIGHTS_NAME,
+)
 
 
 CONFIG_NAME = "config.json"

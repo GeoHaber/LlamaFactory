@@ -1,0 +1,91 @@
+{
+  "teachers": [
+    {
+      "name": "google_gemma-4-26B-A4B-it-Q4_K_M",
+      "gguf": "C:/AI/Models/google_gemma-4-26B-A4B-it-Q4_K_M.gguf",
+      "capabilities": {
+        "chat": 1.0,
+        "reasoning": 0.0,
+        "coding": 0.0,
+        "math": 0.0,
+        "translation": 0.0,
+        "ocr": 0.0,
+        "safety": 0.0,
+        "creative": 0.0
+      },
+      "top_capabilities": [
+        "chat"
+      ],
+      "method": "name_heuristic"
+    },
+    {
+      "name": "Qwen2.5-14B-Instruct-Q4_K_M",
+      "gguf": "C:/AI/Models/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "capabilities": {
+        "chat": 1.0,
+        "reasoning": 0.0,
+        "coding": 0.0,
+        "math": 0.0,
+        "translation": 0.0,
+        "ocr": 0.0,
+        "safety": 0.0,
+        "creative": 0.0
+      },
+      "top_capabilities": [
+        "chat"
+      ],
+      "method": "name_heuristic"
+    },
+    {
+      "name": "Mistral-7B-Instruct-v0.3.Q4_K_M",
+      "gguf": "C:/AI/Models/Mistral-7B-Instruct-v0.3.Q4_K_M.gguf",
+      "capabilities": {
+        "chat": 1.0,
+        "reasoning": 0.0,
+        "coding": 0.0,
+        "math": 0.0,
+        "translation": 0.0,
+        "ocr": 0.0,
+        "safety": 0.0,
+        "creative": 0.0
+      },
+      "top_capabilities": [
+        "chat"
+      ],
+      "method": "name_heuristic"
+    }
+  ],
+  "capability_matrix": {
+    "google_gemma-4-26B-A4B-it-Q4_K_M": {
+      "chat": 1.0,
+      "reasoning": 0.0,
+      "coding": 0.0,
+      "math": 0.0,
+      "translation": 0.0,
+      "ocr": 0.0,
+      "safety": 0.0,
+      "creative": 0.0
+    },
+    "Qwen2.5-14B-Instruct-Q4_K_M": {
+      "chat": 1.0,
+      "reasoning": 0.0,
+      "coding": 0.0,
+      "math": 0.0,
+      "translation": 0.0,
+      "ocr": 0.0,
+      "safety": 0.0,
+      "creative": 0.0
+    },
+    "Mistral-7B-Instruct-v0.3.Q4_K_M": {
+      "chat": 1.0,
+      "reasoning": 0.0,
+      "coding": 0.0,
+      "math": 0.0,
+      "translation": 0.0,
+      "ocr": 0.0,
+      "safety": 0.0,
+      "creative": 0.0
+    }
+  },
+  "routing_ready": true
+}

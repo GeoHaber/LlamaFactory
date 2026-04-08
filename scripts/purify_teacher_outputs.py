@@ -39,31 +39,42 @@ import hashlib
 import json
 import re
 import sys
-from collections import Counter
 from pathlib import Path
+
 
 # ---------------------------------------------------------------------------
 # Embedding-based similarity (optional — requires sentence-transformers)
 # ---------------------------------------------------------------------------
 
-_EMBED_MODEL = None
-_EMBED_AVAILABLE = False
+class _EmbedHolder:
+    """Lazy singleton for optional sentence-transformer model."""
+
+    __slots__ = ("model", "available")
+
+    def __init__(self) -> None:
+        self.model: object = None
+        self.available: bool = False
+
+    def load(self) -> bool:
+        if self.model is not None:
+            return self.available
+        try:
+            from sentence_transformers import SentenceTransformer
+
+            self.model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+            self.available = True
+        except Exception:  # xray: ignore[QUAL-011]
+            self.model = False  # type: ignore[assignment]
+            self.available = False
+        return self.available
+
+
+_embed = _EmbedHolder()
 
 
 def _load_embedding_model() -> bool:
     """Lazily load a lightweight sentence-transformer for semantic similarity."""
-    global _EMBED_MODEL, _EMBED_AVAILABLE
-    if _EMBED_MODEL is not None:
-        return _EMBED_AVAILABLE
-    try:
-        from sentence_transformers import SentenceTransformer
-
-        _EMBED_MODEL = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
-        _EMBED_AVAILABLE = True
-    except Exception:  # xray: ignore[QUAL-011]
-        _EMBED_MODEL = False  # type: ignore[assignment]
-        _EMBED_AVAILABLE = False
-    return _EMBED_AVAILABLE
+    return _embed.load()
 
 
 def _embedding_similarity(texts: list[str]) -> float:
@@ -71,10 +82,10 @@ def _embedding_similarity(texts: list[str]) -> float:
 
     Returns 0.0-1.0.  Falls back to 0.0 if model unavailable.
     """
-    if not _EMBED_AVAILABLE or _EMBED_MODEL is False:
+    if not _embed.available or _embed.model is False:
         return 0.0
     try:
-        embeddings = _EMBED_MODEL.encode(texts, convert_to_tensor=False, show_progress_bar=False)
+        embeddings = _embed.model.encode(texts, convert_to_tensor=False, show_progress_bar=False)
         import numpy as np
 
         norms = np.linalg.norm(embeddings, axis=1, keepdims=True)
@@ -108,7 +119,7 @@ def _simhash(text: str, n: int = 3) -> int:
     v = [0] * _SIMHASH_BITS
     for i in range(max(1, len(text) - n + 1)):
         token = text[i : i + n]
-        h = int(hashlib.md5(token.encode(), usedforsecurity=False).hexdigest()[:16], 16)
+        h = int(hashlib.sha256(token.encode()).hexdigest()[:16], 16)
         for bit in range(_SIMHASH_BITS):
             if h & (1 << bit):
                 v[bit] += 1
@@ -585,10 +596,14 @@ examples:
     teacher_weights: dict[str, float] | None = None
     if args.teacher_weights:
         tw = args.teacher_weights
-        if Path(tw).is_file():
-            teacher_weights = json.loads(Path(tw).read_text(encoding="utf-8"))
-        else:
-            teacher_weights = json.loads(tw)
+        try:
+            if Path(tw).is_file():
+                teacher_weights = json.loads(Path(tw).read_text(encoding="utf-8"))
+            else:
+                teacher_weights = json.loads(tw)
+        except (json.JSONDecodeError, OSError) as exc:
+            print(f"WARNING: could not parse --teacher-weights: {exc}")
+            teacher_weights = None
 
     input_path = Path(args.input)
     out_dir = Path(args.out_dir)  # xray: ignore[PY-004]
@@ -708,7 +723,7 @@ examples:
     with report_path.open("w", encoding="utf-8") as f:  # xray: ignore[PY-004]
         json.dump(report, f, indent=2)  # xray: ignore[PY-004]
   # xray: ignore-next[PY-004]
-    print(f"\n=== Purification Report ===")  # xray: ignore[PY-004]
+    print("\n=== Purification Report ===")  # xray: ignore[PY-004]
     print(f"  GOLD  (SFT):  {gold_count:>4} ({report['gold_pct']:.1f}%)")  # xray: ignore[PY-004]
     print(f"  SILVER (DPO): {silver_count:>4} ({report['silver_pct']:.1f}%)")  # xray: ignore[PY-004]
     print(f"  DROP:         {drop_count:>4} ({report['dropped_pct']:.1f}%)")  # xray: ignore[PY-004]

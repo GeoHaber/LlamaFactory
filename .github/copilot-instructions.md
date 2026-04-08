@@ -132,6 +132,24 @@ Or use the combined command:
 make commit     # Run pre-commit hooks
 ```
 
+#### X_Ray_LLM Code Quality Scan
+
+All scripts pass [X_Ray_LLM](https://github.com/GeoHaber/X_Ray_LLM) (78 rules, 53 files)
+with **0 HIGH, 0 MEDIUM, 0 LOW** findings. Run the scan with:
+
+```bash
+cd ../X_Ray_LLM
+python -m xray.agent "../LLM_Factory/scripts" --dry-run --exclude "distill_ui\.py" "distill_ui_old\.py"
+```
+
+Security hardening applied:
+- **XSS prevention**: `esc()` HTML sanitizer in `distill.html` — all dynamic innerHTML uses it
+- **JSON resilience**: All `json.loads()`/`json.load()` calls wrapped in `try/except`
+- **Narrow exceptions**: No bare `except Exception` — all catches specify exact error types
+- **No weak hashes**: SimHash uses SHA-256 (not MD5)
+- **No mutable globals**: Singleton patterns use `_DeanHolder`/`_EmbedHolder` classes
+- **Suppressed false-positives**: `# xray: ignore[SEC-015]` on verified pip-installed packages
+
 ### Testing
 
 - Use pytest for testing
@@ -215,9 +233,40 @@ verifies the students against the teachers.
 | `scripts/pipeline_events.py` | Logging | Structured JSON event logger for pipeline stages |
 | `scripts/orchestrate_pipeline.py` | Orchestrator | Cross-platform Python 11-stage pipeline (replaces PS1) |
 | `scripts/zenforge_cli.py` | CLI | Unified entry point (`python scripts/zenforge_cli.py <command>`) |
-| `scripts/distill_ui.py` | UI | Gradio-based distillation wizard (phase 1/2/3) |
+| `scripts/distill_ui.py` | UI | Gradio-based distillation wizard (phase 1/2/3) — **deprecated, replaced by distill_server.py** |
+| `scripts/distill_server.py` | UI | FastAPI server (port 7870) + SSE pipeline streaming + curriculum filtering |
+| `scripts/distill.html` | UI | Single-page distillation wizard (served by distill_server.py) |
 | `scripts/benchmark_multi_teacher_dispatch.py` | Bench | A/B benchmark for dispatch modes |
 | `scripts/run_zena007_end_to_end.ps1` | Orchestrator | PowerShell full pipeline (sequential or Forge Matrix) |
+
+#### Distillation Web UI (`distill_server.py` + `distill.html`)
+
+The web UI is a standalone FastAPI + vanilla HTML/JS app that replaces the earlier Gradio
+`distill_ui.py`. It provides a 3-phase wizard:
+
+1. **Staff & Faculty** — Pick Dean (Zena GGUF) + 3+ expert teachers from local model scan
+2. **Brain Architect** — Skill-first student design: pick skills (translation, coding, OCR,
+   chat, reasoning, math, summarize, creative), configure languages, system recommends
+   quality tier (OK / Good / Excellent mapping to hidden 0.5B/1.5B/3B HF models)
+3. **Teaching & Graduation** — SSE-streamed 10-stage pipeline with live progress
+
+**Curriculum filtering** is the key innovation: `_filter_prompts_by_curriculum()` filters the
+prompts JSONL file to keep only prompts matching the student's enrolled skills and languages
+before generation begins. Prompt IDs encode their category (`tr-en2es-0013` = translation
+English-to-Spanish, `chat-en-0524` = conversation, `ocr-0001` = OCR cleanup). The filtered
+file is saved as `curriculum_prompts.jsonl` and used for all downstream stages. A
+`curriculum.json` is persisted to `saves/<tag>/` for the graduation dashboard.
+
+**Server endpoints:**
+- `GET /` — serves `distill.html`
+- `GET /api/scan` — GGUF model discovery with arch/role/quant metadata
+- `POST /api/pipeline/start` — SSE stream for the full pipeline
+- `POST /api/chat` — Dean chat relay
+- `POST /api/credential-check` / `POST /api/cross-exam` — Dean examinations
+- `GET /api/progress` — generation progress polling
+- `POST /api/gen-configs` — YAML config generation
+
+**Run:** `python scripts/distill_server.py` (requires Python >= 3.14)
 
 #### The 11-Stage Pipeline
 
@@ -412,6 +461,7 @@ smoke tests. No GPU required.
 - **Web UI**: `llamafactory-cli webui` or `python src/webui.py`
 - **API Server**: `llamafactory-cli api` or `python src/api.py`
 - **Chat Interface**: `llamafactory-cli chat --model_name_or_path MODEL_PATH`
+- **Distillation Web UI**: `python scripts/distill_server.py` (port 7870, Python >= 3.14)
 - **Multi-Teacher Generation**: `python scripts/multi_teacher_generate.py --manifest MANIFEST --prompts PROMPTS --dispatch-mode teacher-fifo --fifo-size 0`
 - **Dispatch Benchmark**: `python scripts/benchmark_multi_teacher_dispatch.py --manifest MANIFEST --prompts PROMPTS --output-dir OUT`
 - **End-to-End Distillation (sequential)**: `./scripts/run_zena007_end_to_end.ps1`
@@ -459,114 +509,6 @@ The Web UI is built with Gradio in `src/llamafactory/webui/`. Key files:
 
 All visible buttons are wired to real handlers. 6 help accordions (`*_help_tab`) are
 `visible=False` -- they have `lang.change` handlers but are never shown (JS `?` icons
-serve the same purpose). No NOOP or dead handlers exist.
-
-### Testing
-
-Local test suites (no GPU required):
-
-| Suite | Command | Tests |
-|-------|---------|-------|
-| Forge auto-heal | `pytest tests/test_forge_autoheal.py -v --noconftest` | 16 |
-| Integration pipeline | `pytest tests/test_integration_pipeline.py -v --noconftest` | 35 |
-| End-to-end toy | `pytest tests/test_end_to_end_toy.py -v --noconftest` | 8 |
-| Graduation eval (zen_core_libs) | `pytest zen_core_libs/llm/tests/test_eval.py -v` | 42 |
-| **Total** | | **101** |
-
-## Common Commands
-
-- `make style` - Format code
-- `make quality` - Run linters
-- `make test` - Run tests
-- `make commit` - Install and run pre-commit hooks
-- `make license` - Check license headers
-- **Synthetic DPO**: `--synthetic-dpo` generates cross-prompt DPO pairs from GOLD samples
-  by pairing highest-confidence chosen with lowest-confidence rejected.
-- **Curriculum learning**: `--curriculum` sorts GOLD output by difficulty (easy → hard)
-  for progressive training.
-
-#### Early stopping (`gen_distill_configs.py`)
-
-`--early-stopping-patience N` (N > 0) adds `eval_strategy`, `eval_steps`, and
-`load_best_model_at_end` to SFT/DPO configs. Monitors `eval_loss` and stops when
-it doesn't improve for N eval rounds.
-
-#### Native GGUF export (`slim_down.py`)
-
-`--llama-cpp-path /path/to/llama.cpp` enables direct GGUF conversion via llama.cpp's
-`convert_hf_to_gguf.py` + `llama-quantize`. Falls back to LlamaFactory export CLI
-when not specified.
-
-#### CI/CD
-
-`.github/workflows/ci.yml` runs on push/PR: 59 tests (3 suites), ruff lint, and script
-smoke tests. No GPU required.
-
-## Key Dependencies
-
-- Python >= 3.9.0
-- PyTorch and transformers for model handling
-- datasets for data processing
-- peft for parameter-efficient fine-tuning
-- accelerate for distributed training
-- gradio for web UI
-- trl for reinforcement learning
-- psutil for RAM-pressure throttling (multi-teacher generation)
-- Optional: vllm/sglang for inference, flash-attention-2, unsloth, liger-kernel
-
-## Entry Points
-
-- **CLI Training**: `llamafactory-cli train --config examples/train_lora/llama3_lora_sft.yaml`
-- **Web UI**: `llamafactory-cli webui` or `python src/webui.py`
-- **API Server**: `llamafactory-cli api` or `python src/api.py`
-- **Chat Interface**: `llamafactory-cli chat --model_name_or_path MODEL_PATH`
-- **Multi-Teacher Generation**: `python scripts/multi_teacher_generate.py --manifest MANIFEST --prompts PROMPTS --dispatch-mode teacher-fifo --fifo-size 0`
-- **Dispatch Benchmark**: `python scripts/benchmark_multi_teacher_dispatch.py --manifest MANIFEST --prompts PROMPTS --output-dir OUT`
-- **End-to-End Distillation (sequential)**: `./scripts/run_zena007_end_to_end.ps1`
-- **End-to-End Distillation (Forge Matrix)**: `./scripts/run_zena007_end_to_end.ps1 -UseForge`
-- **Forge dry-run**: `python scripts/run_student_forge.py --matrix data/forge_matrix/zena007_matrix.yaml --tag zena007 --dry-run`
-- **Eval panel only**: `python scripts/eval_student_panel.py --saves-tag zena007 --probes data/zena007/purified/eval_probes.jsonl`
-- **Graduation dashboard**: `python scripts/graduation_dashboard.py --saves-tag zena007`
-
-## Environment Setup
-
-For development:
-```bash
-pip install -e ".[dev]"
-```
-
-## Important Notes
-
-- The project supports multiple backends: default PyTorch, vLLM, SGLang
-- Megatron-core training is supported via mcore_adapter
-- SwanLab and W&B are supported for experiment tracking
-- Docker support is available with pre-built images
-- Day-0/Day-1 support for latest cutting-edge models
-- Multi-modal support for vision and audio understanding tasks
-
-## Contribution Guidelines
-
-1. Fork the repository
-2. Create a development branch
-3. Set up development environment with `pip install -e ".[dev]"`
-4. Make changes following the style guide
-5. Run quality checks: `make style && make quality`
-6. Run tests: `make test`
-7. Submit a pull request
-
-### WebUI Architecture
-
-The Web UI is built with Gradio in `src/llamafactory/webui/`. Key files:
-
-- `interface.py` — top-level `create_ui()` assembles tabs, JS injection, Zena menu
-- `engine.py` — `Engine` class: state manager, coordinates manager/runner/chatter
-- `runner.py` — `Runner` class: training/eval subprocess lifecycle
-- `chatter.py` — `WebChatModel`: model load/unload, chat streaming
-- `control.py` — dropdown/validation handlers (model info, checkpoints, auto-tune)
-- `components/` — one file per tab (top, train, eval, infer, export, chatbot, data, footer)
-
-All visible buttons are wired to real handlers. 6 help accordions (`*_help_tab`) are
-`visible=False` — they have `lang.change` handlers but are never shown (JS `?` icons
 serve the same purpose). No NOOP or dead handlers exist.
 
 ### Testing

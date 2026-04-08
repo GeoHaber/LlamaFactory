@@ -29,6 +29,7 @@ from html import escape as _esc
 from pathlib import Path
 from typing import Any
 
+
 try:
     import gradio as gr
 except ImportError:  # xray: ignore[QUAL-002]
@@ -109,11 +110,11 @@ def _build_html(report: dict[str, Any]) -> str:
         color, label = "#dc2626", "Kill it"
 
     html = f'<div class="dash"><style>{_CSS}</style>'
-    html += f'<div class="verdict">'
+    html += '<div class="verdict">'
     html += _ring_svg(min(best_pct, 100), color)
     html += f'<p class="pct" style="color:{color}">{best_pct}%</p>'
     html += f'<p class="label" style="color:{color}">{label}</p>'
-    html += f'<p style="color:#86868b;font-size:13px;margin:4px 0 0">'
+    html += '<p style="color:#86868b;font-size:13px;margin:4px 0 0">'
     html += f'{n_grad}/{n_total} graduated &middot; threshold {threshold:.0%}</p>'
     html += "</div>"
 
@@ -218,7 +219,7 @@ def _build_html(report: dict[str, Any]) -> str:
 def _load_loss_curves(saves_tag: str) -> str:
     """Load trainer loss curves for all variants and render as HTML SVG chart."""
     try:
-        from scripts.loss_chart import build_html_chart, _read_loss_curve
+        from scripts.loss_chart import _read_loss_curve, build_html_chart
     except ImportError:
         try:
             import importlib.util
@@ -233,7 +234,7 @@ def _load_loss_curves(saves_tag: str) -> str:
                 _read_loss_curve = mod._read_loss_curve
             else:
                 return "<p>loss_chart.py not found.</p>"
-        except Exception:
+        except (ImportError, AttributeError, OSError):
             return "<p>Could not import loss_chart module.</p>"
 
     saves_dir = Path(f"saves/{saves_tag}")
@@ -341,7 +342,7 @@ def _build_live_html(results: list[dict]) -> str:
     failed = [r for r in results if not r.get("ok")]
 
     html = f'<div class="dash"><style>{_CSS}</style>'
-    html += f'<div class="verdict">'
+    html += '<div class="verdict">'
     html += f'<p class="pct" style="color:#2563eb">{len(ok)}</p>'
     html += f'<p class="label" style="color:#2563eb">completed ({len(failed)} failed)</p>'
     html += "</div>"

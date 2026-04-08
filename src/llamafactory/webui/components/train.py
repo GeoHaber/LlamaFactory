@@ -176,11 +176,11 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
         train_help = gr.Markdown(value=_make_train_help("en"))
 
     with gr.Row():
-        learning_rate = gr.Textbox(value="5e-5")
-        num_train_epochs = gr.Textbox(value="3.0")
-        max_grad_norm = gr.Textbox(value="1.0")
-        max_samples = gr.Textbox(value="100000")
-        compute_type = gr.Dropdown(choices=["bf16", "fp16", "fp32", "pure_bf16"], value="bf16")
+        learning_rate = gr.Textbox(value="5e-5", info="How big a step the model takes when updating weights. Typical: 1e-6 to 1e-3.")
+        num_train_epochs = gr.Textbox(value="3.0", info="Number of full passes through the dataset. More epochs = more learning, risk of overfitting.")
+        max_grad_norm = gr.Textbox(value="1.0", info="Clips gradients to prevent training instability from large updates.")
+        max_samples = gr.Textbox(value="100000", info="Maximum samples to use. Lower values for quick testing.")
+        compute_type = gr.Dropdown(choices=["bf16", "fp16", "fp32", "pure_bf16"], value="bf16", info="Numerical precision. bf16 recommended if supported — saves VRAM.")
 
     input_elems.update({learning_rate, num_train_epochs, max_grad_norm, max_samples, compute_type})
     elem_dict.update(
@@ -194,11 +194,11 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
     )
 
     with gr.Row():
-        cutoff_len = gr.Slider(minimum=4, maximum=131072, value=2048, step=1)
-        batch_size = gr.Slider(minimum=1, maximum=1024, value=2, step=1)
-        gradient_accumulation_steps = gr.Slider(minimum=1, maximum=1024, value=8, step=1)
-        val_size = gr.Slider(minimum=0, maximum=1, value=0, step=0.001)
-        lr_scheduler_type = gr.Dropdown(choices=[scheduler.value for scheduler in SchedulerType], value="cosine")
+        cutoff_len = gr.Slider(minimum=4, maximum=131072, value=2048, step=1, info="Max token length per example. Longer = more VRAM.")
+        batch_size = gr.Slider(minimum=1, maximum=1024, value=2, step=1, info="Samples per GPU per step. Start small, increase if memory allows.")
+        gradient_accumulation_steps = gr.Slider(minimum=1, maximum=1024, value=8, step=1, info="Simulates larger batch by accumulating gradients. Effective batch = batch_size × this.")
+        val_size = gr.Slider(minimum=0, maximum=1, value=0, step=0.001, info="Fraction of data for validation (0-1). Use 0.05-0.2 to monitor overfitting.")
+        lr_scheduler_type = gr.Dropdown(choices=[scheduler.value for scheduler in SchedulerType], value="cosine", info="How learning rate changes during training. Cosine recommended for most tasks.")
 
     input_elems.update({cutoff_len, batch_size, gradient_accumulation_steps, val_size, lr_scheduler_type})
     elem_dict.update(
@@ -213,11 +213,11 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
 
     with gr.Accordion(open=False) as extra_tab:
         with gr.Row():
-            logging_steps = gr.Slider(minimum=1, maximum=1000, value=5, step=5)
-            save_steps = gr.Slider(minimum=10, maximum=5000, value=100, step=10)
-            warmup_steps = gr.Slider(minimum=0, maximum=5000, value=0, step=1)
-            neftune_alpha = gr.Slider(minimum=0, maximum=10, value=0, step=0.1)
-            extra_args = gr.Textbox(value='{"optim": "adamw_torch"}')
+            logging_steps = gr.Slider(minimum=1, maximum=1000, value=5, step=5, info="Log metrics every N steps.")
+            save_steps = gr.Slider(minimum=10, maximum=5000, value=100, step=10, info="Save a checkpoint every N steps.")
+            warmup_steps = gr.Slider(minimum=0, maximum=5000, value=0, step=1, info="Gradually ramp up learning rate to prevent early instability.")
+            neftune_alpha = gr.Slider(minimum=0, maximum=10, value=0, step=0.1, info="NEFTune noise scale (0=off). Small noise can help regularization.")
+            extra_args = gr.Textbox(value='{"optim": "adamw_torch"}', info="Additional JSON trainer arguments. Advanced users only.")
 
         with gr.Row():
             with gr.Column():
@@ -315,10 +315,10 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
 
     with gr.Accordion(open=False) as lora_tab:
         with gr.Row():
-            lora_rank = gr.Slider(minimum=1, maximum=1024, value=8, step=1)
-            lora_alpha = gr.Slider(minimum=1, maximum=2048, value=16, step=1)
-            lora_dropout = gr.Slider(minimum=0, maximum=1, value=0, step=0.01)
-            loraplus_lr_ratio = gr.Slider(minimum=0, maximum=64, value=0, step=0.01)
+            lora_rank = gr.Slider(minimum=1, maximum=1024, value=8, step=1, info="Controls LoRA capacity. Higher = better quality, more memory. Sweet spot: 8-64.")
+            lora_alpha = gr.Slider(minimum=1, maximum=2048, value=16, step=1, info="LoRA scaling factor. Higher = stronger adapter effect. Typical: 16-32.")
+            lora_dropout = gr.Slider(minimum=0, maximum=1, value=0, step=0.01, info="Dropout rate in LoRA layers to prevent overfitting. Typical: 0.05-0.1.")
+            loraplus_lr_ratio = gr.Slider(minimum=0, maximum=64, value=0, step=0.01, info="LoRA+ learning rate ratio (0=disabled). Allows different LR for LoRA weights.")
             create_new_adapter = gr.Checkbox()
 
         with gr.Row():
@@ -360,9 +360,9 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
 
     with gr.Accordion(open=False) as rlhf_tab:
         with gr.Row():
-            pref_beta = gr.Slider(minimum=0, maximum=1, value=0.1, step=0.01)
-            pref_ftx = gr.Slider(minimum=0, maximum=10, value=0, step=0.01)
-            pref_loss = gr.Dropdown(choices=["sigmoid", "hinge", "ipo", "kto_pair", "orpo", "simpo"], value="sigmoid")
+            pref_beta = gr.Slider(minimum=0, maximum=1, value=0.1, step=0.01, info="DPO/preference loss weight. Controls strength of preference signal.")
+            pref_ftx = gr.Slider(minimum=0, maximum=10, value=0, step=0.01, info="Auxiliary SFT loss weight for preference training stability.")
+            pref_loss = gr.Dropdown(choices=["sigmoid", "hinge", "ipo", "kto_pair", "orpo", "simpo"], value="sigmoid", info="Preference loss function. Sigmoid (DPO default) works well for most cases.")
             reward_model = gr.Dropdown(multiselect=True, allow_custom_value=True)
             with gr.Column():
                 ppo_score_norm = gr.Checkbox()
@@ -527,8 +527,8 @@ def create_train_tab(engine: "Engine") -> dict[str, "Component"]:
 
             with gr.Row():
                 device_count = gr.Textbox(value=str(get_device_count() or 1), interactive=False)
-                ds_stage = gr.Dropdown(choices=["none", "2", "3"], value="none")
-                ds_offload = gr.Checkbox()
+                ds_stage = gr.Dropdown(choices=["none", "2", "3"], value="none", info="DeepSpeed ZeRO stage. Stage 2: gradient sharding. Stage 3: full model sharding. Saves VRAM.")
+                ds_offload = gr.Checkbox(info="Move some computation to CPU to save GPU memory. Slower but handles larger models.")
 
             with gr.Row():
                 resume_btn = gr.Checkbox(visible=False, interactive=False)

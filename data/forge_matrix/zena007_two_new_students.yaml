@@ -1,0 +1,28 @@
+# Student Forge Matrix — Restart with 2 new student variants
+
+tag: zena007_r2
+template: qwen
+cpu_safe: true
+max_parallel: 2
+eval_probe_split: 0.10
+
+# Reuse the same dean/teacher outputs from the existing zena007 pipeline.
+sft_data: data/zena007/purified/consensus_sft.jsonl
+dpo_data: data/zena007/purified/conflict_dpo.jsonl
+
+variants:
+  Zena_007_a:
+    model: Qwen/Qwen2.5-0.5B-Instruct
+    lora_rank: 8
+    learning_rate: 2.0e-4
+    num_train_epochs: 2
+    run_dpo: false
+    notes: "Small fast student (0.5B)"
+
+  Zena_007_b:
+    model: Qwen/Qwen2.5-3B-Instruct
+    lora_rank: 16
+    learning_rate: 2.0e-5
+    num_train_epochs: 2
+    run_dpo: true
+    notes: "Large quality student (3B) with DPO"

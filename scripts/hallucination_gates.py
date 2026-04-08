@@ -32,7 +32,6 @@ Each gate returns a GateResult with pass/fail/flag + details.
 from __future__ import annotations
 
 import json
-import math
 import re
 from dataclasses import dataclass, field
 from enum import Enum
@@ -615,8 +614,6 @@ def main() -> int:
     args = parser.parse_args()
 
     if args.input:
-        import sys
-        from pathlib import Path
 
         rows = []
         with open(args.input, encoding="utf-8") as f:

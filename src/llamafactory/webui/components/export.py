@@ -543,11 +543,11 @@ def export_gguf(
 
 def create_export_tab(engine: "Engine") -> dict[str, "Component"]:
     with gr.Row():
-        export_size = gr.Slider(minimum=1, maximum=100, value=5, step=1)
-        export_quantization_bit = gr.Dropdown(choices=["none"] + GPTQ_BITS, value="none")
-        export_quantization_dataset = gr.Textbox(value="data/c4_demo.jsonl")
-        export_device = gr.Radio(choices=["cpu", "auto"], value="cpu")
-        export_legacy_format = gr.Checkbox()
+        export_size = gr.Slider(minimum=1, maximum=100, value=5, step=1, info="Max shard size in GB. Smaller = more files but easier to transfer.")
+        export_quantization_bit = gr.Dropdown(choices=["none"] + GPTQ_BITS, value="none", info="GPTQ quantization bits. Lower = smaller model, some quality loss.")
+        export_quantization_dataset = gr.Textbox(value="data/c4_demo.jsonl", info="Calibration dataset for quantization. Required for GPTQ.")
+        export_device = gr.Radio(choices=["cpu", "auto"], value="cpu", info="Device for export. CPU is reliable; auto may be faster.")
+        export_legacy_format = gr.Checkbox(info="Use pickle instead of safetensors. Only if downstream tools need it.")
 
     with gr.Row():
         export_dir = gr.Textbox()
@@ -566,8 +566,8 @@ def create_export_tab(engine: "Engine") -> dict[str, "Component"]:
             gguf_llama_cpp_dir = gr.Dropdown(choices=_list_llama_cpp_dirs(), allow_custom_value=True)
         with gr.Row():
             gguf_outfile = gr.Textbox(value="saves/gguf_export/model_q5_k_m.gguf")
-            gguf_preset = gr.Dropdown(choices=["quality", "balanced", "fastest"], value="balanced")
-            gguf_skip_merge = gr.Checkbox(value=False)
+            gguf_preset = gr.Dropdown(choices=["quality", "balanced", "fastest"], value="balanced", info="Quality preset: quality (largest/best), balanced, fastest (smallest).")
+            gguf_skip_merge = gr.Checkbox(value=False, info="Skip merge step if merged model already exists. Faster re-exports.")
 
         gguf_quantization_help = gr.Markdown(value=_make_quantization_help("en", "balanced", GGUF_PRESET_TO_BIT["balanced"]))
         with gr.Accordion("Advanced quantization", open=False) as gguf_advanced_tab:

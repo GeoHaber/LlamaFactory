@@ -32,33 +32,16 @@ import json
 import os
 import re
 import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Iterator
 
-# ---------------------------------------------------------------------------
-# zen_core_libs import
-# ---------------------------------------------------------------------------
+# ── zen_core_libs — single source of truth for shared infrastructure ──────────
+from zen_core_libs.eval import extract_score  # xray: ignore[SEC-015]
+from zen_core_libs.llm import get_inprocess_adapter  # xray: ignore[SEC-015]
+
+
 SCRIPTS_DIR = Path(__file__).resolve().parent
 ROOT_DIR = SCRIPTS_DIR.parent
-
-
-def _ensure_zcl():
-    """Add zen_core_libs to sys.path if not already importable."""
-    try:
-        import zen_core_libs.llm  # noqa: F401
-        return
-    except ModuleNotFoundError:  # xray: ignore[QUAL-002]
-        pass
-    zcl_path = os.environ.get(
-        "ZEN_CORE_LIBS",
-        str(Path(__file__).resolve().parents[3] / "zen_core_libs"),
-    )
-    if zcl_path not in sys.path:
-        sys.path.insert(0, zcl_path)
-
-
-_ensure_zcl()
-from zen_core_libs.llm import get_inprocess_adapter  # noqa: E402  # xray: ignore[LLM-004, SEC-015]
 
 
 # ---------------------------------------------------------------------------
@@ -460,7 +443,7 @@ class ZenaDean:
         enrolled_names = list(self.teachers.keys())
 
         context = f"Currently enrolled: {enrolled_names or 'none'}\n"
-        context += f"Available GGUFs on disk:\n"
+        context += "Available GGUFs on disk:\n"
         for m in available[:20]:  # cap at 20 to fit context
             context += f"  - {m['name']} ({m['size_gb']} GB)\n"
         context += f"\nUser's goal: {goal}\n"
@@ -484,7 +467,7 @@ class ZenaDean:
             json.dump(state, f, indent=2, ensure_ascii=False)
 
     @classmethod
-    def load_state(cls, path: str | Path, **kwargs) -> "ZenaDean":
+    def load_state(cls, path: str | Path, **kwargs) -> ZenaDean:
         """Load university state from JSON."""
         with open(path, encoding="utf-8") as f:
             state = json.load(f)  # xray: ignore[PY-005]
@@ -520,14 +503,10 @@ def _parse_cross_exam_score(raw: str) -> float:
     except (json.JSONDecodeError, ValueError):  # xray: ignore[QUAL-002]
         pass
 
-    # Fallback: try extract_score from zen_core_libs  # xray: ignore[LLM-004]
-    try:
-        from zen_core_libs.eval import extract_score  # xray: ignore[LLM-004]
-        score = extract_score(raw)
-        if score is not None:
-            return round(score * 10, 1)  # normalize to 0-10
-    except ImportError:  # xray: ignore[QUAL-002]
-        pass
+    # Fallback: extract_score from zen_core_libs
+    score = extract_score(raw)
+    if score is not None:
+        return round(score * 10, 1)  # normalize to 0-10
 
     # Last resort: look for any number
     numbers = re.findall(r"\b(\d+(?:\.\d+)?)\b", raw)

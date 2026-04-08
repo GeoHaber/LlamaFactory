@@ -808,5 +808,12 @@
       "prompt": "instruction",
       "response": "output"
     }
+  },
+  "zena007_r2_forge_train_sft": {
+    "file_name": "zena007/purified/train_sft.jsonl",
+    "columns": {
+      "prompt": "instruction",
+      "response": "output"
+    }
   }
 }

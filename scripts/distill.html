@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>University of Distillation</title>
+<style>
+/* ── Reset ───────────────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;background:#0d1017;color:#e2e8f0;overflow:hidden}
+::-webkit-scrollbar{width:5px;height:5px}::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:#2d3748;border-radius:3px}::-webkit-scrollbar-thumb:hover{background:#4a5568}
+::placeholder{color:#3a4556!important;font-style:italic}
+
+/* ── App shell ───────────────────────────────────────────── */
+#app{display:flex;flex-direction:column;height:100vh}
+#topbar{display:flex;align-items:center;gap:12px;padding:9px 18px;background:#111827;border-bottom:1px solid #1e2d3d;flex-shrink:0}
+#main{display:flex;flex:1;overflow:hidden}
+#left{width:290px;min-width:220px;display:flex;flex-direction:column;border-right:1px solid #1e2d3d;background:#111827;flex-shrink:0}
+#right{flex:1;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── Top bar ─────────────────────────────────────────────── */
+.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0}
+.brand{flex:1}.brand-title{font-size:14px;font-weight:700;color:#f1f5f9}.brand-title span{color:#60a5fa}
+.brand-sub{font-size:9px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em}
+.steps{display:flex;gap:3px;align-items:center}
+.step{padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;color:#4a6180;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.step.active{background:#1e3a5f;color:#60a5fa;border-color:#1e40af}
+.step:hover:not(.active){color:#94a3b8}
+.step-sep{color:#2d3748;font-size:12px}
+
+/* ── Left panel ──────────────────────────────────────────── */
+#dean-slot{padding:10px 12px;border-bottom:1px solid #1e2d3d;flex-shrink:0}
+#dean-slot-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#4a6180;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.ds-empty{font-size:10px;color:#3a4556;font-style:italic}
+.ds-filled{display:none;align-items:center;gap:8px}
+.ds-pip{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+.ds-info{flex:1;min-width:0}
+.ds-name{font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ds-meta{font-size:9px;color:#4a6180;margin-top:1px}
+.ds-clear{background:none;border:none;color:#3a4556;cursor:pointer;font-size:16px;padding:0 2px;flex-shrink:0;line-height:1}
+.ds-clear:hover{color:#f87171}
+#teacher-strip{padding:6px 12px;border-bottom:1px solid #1e2d3d;min-height:32px;display:flex;flex-wrap:wrap;gap:4px;align-items:center;flex-shrink:0}
+.tr-pill{font-size:9px;padding:2px 7px;border-radius:10px;background:#1e3a5f40;color:#60a5fa;border:1px solid #1e40af50;cursor:pointer;display:inline-flex;align-items:center;gap:3px;transition:all .1s}
+.tr-pill:hover{background:#7f1d1d20;border-color:#7f1d1d50;color:#fca5a5}
+.tr-empty{font-size:10px;color:#3a4556;font-style:italic}
+.tc-count{font-size:9px;font-weight:700;padding:1px 6px;border-radius:10px;background:#1e3a5f;color:#60a5fa;border:1px solid #1e40af}
+/* ── Student slot (left panel) ─────────────────────────── */
+#student-slot{padding:8px 12px;border-bottom:1px solid #1e2d3d;flex-shrink:0}
+#student-slot-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#4a6180;margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.ss-empty{font-size:10px;color:#3a4556;font-style:italic}
+.ss-filled{display:none;align-items:center;gap:7px}
+.ss-icon{font-size:16px;flex-shrink:0}
+.ss-info{flex:1;min-width:0}
+.ss-name{font-size:12px;font-weight:800;color:#6ee7b7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ss-base{font-size:9px;color:#4a6180;margin-top:2px;font-family:monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ss-clear{background:none;border:none;color:#3a4556;cursor:pointer;font-size:15px;padding:0 2px;flex-shrink:0;line-height:1}
+.ss-clear:hover{color:#f87171}
+/* ── Brain Architect panel (Phase 1) ───────────────────── */
+#brain-architect{background:#061210;border:1px solid #065f46;border-radius:10px;padding:16px 18px;position:relative;overflow:hidden}
+#brain-architect::before{content:"";position:absolute;top:-60px;right:-60px;width:160px;height:160px;background:radial-gradient(circle,#10b98110 0%,transparent 70%);pointer-events:none}
+.ba-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#10b981;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.ba-layout{display:grid;grid-template-columns:1fr 220px;gap:18px;align-items:start}
+@media(max-width:740px){.ba-layout{grid-template-columns:1fr}}
+
+/* Task skill cards */
+.ba-skills{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+@media(max-width:600px){.ba-skills{grid-template-columns:repeat(2,1fr)}}
+.ba-skill{background:#0a1f1a;border:1px solid #065f4630;border-radius:8px;padding:9px 8px;cursor:pointer;transition:all .2s;text-align:center;position:relative}
+.ba-skill:hover{border-color:#10b981;background:#0d2e26}
+.ba-skill.on{border-color:#10b981;background:#052e22;box-shadow:0 0 10px #10b98118}
+.ba-skill-icon{font-size:22px;line-height:1;margin-bottom:3px}
+.ba-skill-name{font-size:9px;font-weight:700;color:#6ee7b7;text-transform:uppercase;letter-spacing:.04em}
+.ba-skill-tag{font-size:7px;color:#065f46;margin-top:2px}
+.ba-skill .ba-check{position:absolute;top:4px;right:5px;font-size:11px;color:#10b981;display:none}
+.ba-skill.on .ba-check{display:block}
+
+/* Skill config sub-panels */
+.ba-config{background:#0a1a16;border:1px solid #065f4620;border-radius:6px;padding:10px 12px;margin-bottom:12px;display:none}
+.ba-config.visible{display:block}
+.ba-config-title{font-size:9px;font-weight:700;color:#4a9e7a;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+
+/* Language pills */
+.ba-langs{display:flex;flex-wrap:wrap;gap:4px}
+.ba-lang{padding:3px 9px;border-radius:14px;font-size:9px;font-weight:700;border:1px solid #1e2d3d;background:transparent;color:#4a6180;cursor:pointer;transition:all .15s}
+.ba-lang:hover{border-color:#22d3ee;color:#22d3ee}
+.ba-lang.on{background:#083344;border-color:#22d3ee;color:#22d3ee}
+
+/* Quality recommendation panel */
+.ba-quality{background:#0a1a16;border:1px solid #065f4630;border-radius:8px;padding:14px;margin-bottom:10px}
+.ba-q-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin-bottom:10px}
+.ba-q-tiers{display:flex;flex-direction:column;gap:5px}
+.ba-q-tier{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:6px;border:1px solid #065f4620;cursor:pointer;transition:all .2s;background:#0a1f1a}
+.ba-q-tier:hover{border-color:#10b981}
+.ba-q-tier.on{border-color:#10b981;background:#052e22;box-shadow:0 0 8px #10b98115}
+.ba-q-tier.disabled{opacity:.35;cursor:not-allowed;pointer-events:none}
+.ba-q-badge{font-size:10px;font-weight:900;padding:3px 10px;border-radius:12px;flex-shrink:0;min-width:70px;text-align:center;letter-spacing:.03em}
+.ba-q-badge.ok{background:#78350f40;color:#fbbf24;border:1px solid #78350f}
+.ba-q-badge.good{background:#065f4640;color:#34d399;border:1px solid #065f46}
+.ba-q-badge.excellent{background:#1e3a5f40;color:#60a5fa;border:1px solid #1e3a5f}
+.ba-q-info{flex:1;min-width:0}
+.ba-q-neurons{font-size:11px;font-weight:700;color:#e2e8f0}
+.ba-q-detail{font-size:8px;color:#4a6180;margin-top:1px}
+
+/* Radar + specs (right col) */
+.ba-info{display:flex;flex-direction:column;gap:10px;align-items:center}
+.ba-radar-wrap{width:200px;height:200px}
+.ba-radar-wrap svg{width:100%;height:100%}
+.ba-specs{width:100%;background:#0a1a16;border:1px solid #065f4630;border-radius:6px;padding:10px 12px}
+.ba-spec-row{display:flex;justify-content:space-between;font-size:10px;color:#94a3b8;padding:3px 0;border-bottom:1px solid #065f4615}
+.ba-spec-row:last-child{border-bottom:none}
+.ba-spec-row b{color:#6ee7b7;font-weight:700}
+
+/* Enroll row */
+.ba-enroll-row{display:flex;gap:8px;align-items:flex-end;margin-top:6px}
+.ba-enroll-row .field{flex:1;margin:0}
+#chatbox{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.msg{padding:8px 11px;border-radius:8px;font-size:12px;line-height:1.55;max-width:96%;word-break:break-word}
+.msg.user{background:#1e3a5f;color:#bfdbfe;align-self:flex-end;border-bottom-right-radius:2px}
+.msg.bot{background:#161e2b;border:1px solid #1e2d3d;color:#e2e8f0;align-self:flex-start;border-bottom-left-radius:2px}
+.msg.bot code{background:#0d1017;padding:1px 4px;border-radius:3px;font-size:11px;color:#7dd3fc}
+.msg.bot strong{color:#93c5fd}
+#chat-input-row{display:flex;gap:6px;padding:9px 12px;border-top:1px solid #1e2d3d;flex-shrink:0}
+#chat-input{flex:1;background:#0d1017;border:1px solid #1e2d3d;border-radius:6px;color:#e2e8f0;padding:7px 10px;font-size:12px;outline:none;resize:none;height:36px;overflow:hidden}
+#chat-input:focus{border-color:#3b82f6}
+/* ── Training progress panel ── */
+#train-progress-panel{display:none;background:#0a1117;border:1px solid #1e2d3d;border-radius:8px;padding:12px 16px;margin:10px 0}
+#train-progress-panel .tp-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+#train-progress-panel .tp-stage{font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:.05em}
+#train-progress-panel .tp-eta{font-size:11px;color:#fbbf24;font-family:monospace}
+#train-progress-panel .tp-track{height:8px;background:#1e293b;border-radius:4px;overflow:hidden;margin-bottom:8px}
+#train-progress-panel .tp-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#60a5fa);border-radius:4px;transition:width .3s ease}
+#train-progress-panel .tp-stats{display:flex;gap:16px;flex-wrap:wrap}
+#train-progress-panel .tp-stat{font-size:10px;color:#94a3b8}
+#train-progress-panel .tp-stat b{color:#e2e8f0;font-weight:600}
+#train-progress-panel .tp-stat.loss b{color:#34d399}
+#train-progress-panel .tp-stat.epoch b{color:#a78bfa}
+#chat-send{background:#3b82f6;border:none;color:#fff;padding:0 13px;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;flex-shrink:0}
+#chat-send:hover{background:#2563eb}
+
+/* ── Tabs ─────────────────────────────────────────────────── */
+#tabs-header{display:flex;border-bottom:1px solid #1e2d3d;background:#111827;flex-shrink:0}
+.tab-btn{padding:9px 16px;font-size:11px;font-weight:700;color:#4a6180;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em;text-transform:uppercase}
+.tab-btn.active{color:#60a5fa;border-bottom-color:#3b82f6}
+.tab-btn:hover:not(.active){color:#94a3b8}
+#tabs-body{flex:1;overflow:auto;padding:14px 16px}
+.tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ── Model grid ───────────────────────────────────────────── */
+#enroll-wrap{display:flex;flex-direction:column;gap:10px}
+#enroll-toolbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#model-search{flex:1;min-width:180px;background:#0d1017;border:1px solid #1e2d3d;border-radius:6px;color:#e2e8f0;padding:7px 11px;font-size:12px;outline:none}
+#model-search:focus{border-color:#3b82f6}
+.filter-pills{display:flex;gap:4px;flex-wrap:wrap}
+.fpill{padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;border:1px solid #1e2d3d;background:transparent;color:#4a6180;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.04em}
+.fpill:hover:not(.active){color:#94a3b8;border-color:#2d3748}.fpill.active{background:#1e3a5f;border-color:#1e40af;color:#60a5fa}
+#enroll-cfg{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+#enroll-cfg .field{margin:0;flex:1;min-width:110px}
+.enroll-acts{display:flex;gap:5px;align-items:flex-end;flex-shrink:0;flex-wrap:wrap}
+.deep-label{font-size:10px;display:flex;align-items:center;gap:5px;color:#94a3b8;cursor:pointer;white-space:nowrap}
+#model-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* ── Model card ───────────────────────────────────────────── */
+.mcard{background:#111827;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;display:flex;transition:border-color .2s,background .2s,transform .1s}
+.mcard:hover{border-color:#2d4a6a;transform:translateY(-1px)}
+.mcard.is-dean{border-color:#f59e0b!important;background:#1a1505}
+.mcard.is-teacher{border-color:#3b82f6!important;background:#0d1929}
+.mcard.hidden{display:none!important}
+.mcard-bar{width:4px;flex-shrink:0}
+.mcard-body{flex:1;padding:10px 11px;min-width:0}
+
+/* card top row */
+.mcard-top{display:flex;align-items:center;gap:5px;margin-bottom:3px;flex-wrap:wrap}
+.arch-badge{font-size:8px;font-weight:800;padding:2px 6px;border-radius:4px;letter-spacing:.05em;text-transform:uppercase;flex-shrink:0}
+.mcard-name{font-size:11px;font-weight:700;color:#f1f5f9;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.role-badge{font-size:8px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;flex-shrink:0;padding:2px 5px;border-radius:3px}
+
+/* card meta */
+.mcard-meta{font-size:9px;color:#4a6180;margin-bottom:5px;font-family:"Cascadia Code","Fira Code",monospace;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* cap pills */
+.mcard-caps{display:flex;flex-wrap:wrap;gap:2px;margin-bottom:5px}
+.cp{font-size:9px;padding:1px 5px;border-radius:9px;font-weight:700;letter-spacing:.02em}
+
+/* quant bar */
+.qbar{display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.qbar-lbl{font-size:8px;color:#4a6180;width:32px;flex-shrink:0}
+.qbar-track{flex:1;height:3px;background:#1e2d3d;border-radius:2px;overflow:hidden}
+.qbar-fill{height:100%;border-radius:2px;transition:width .4s}
+.qbar-pct{font-size:8px;font-weight:700;width:24px;text-align:right;flex-shrink:0}
+
+/* card action buttons */
+.mcard-acts{display:flex;gap:4px}
+.ma{flex:1;padding:4px 0;font-size:10px;font-weight:700;border-radius:4px;border:1px solid;cursor:pointer;transition:all .15s;text-align:center;letter-spacing:.02em}
+.ma-dean{background:transparent;border-color:#78350f50;color:#78350f}
+.ma-dean:hover{background:#451a0330;border-color:#d97706;color:#fbbf24}
+.ma-dean.on{background:#451a03;border-color:#f59e0b;color:#fde68a}
+.ma-teacher{background:transparent;border-color:#1e3a5f50;color:#1e3a5f}
+.ma-teacher:hover{background:#1e3a5f30;border-color:#3b82f6;color:#93c5fd}
+.ma-teacher.on{background:#1e3a5f;border-color:#3b82f6;color:#dbeafe}
+
+/* ── Forms ────────────────────────────────────────────────── */
+.field{margin-bottom:12px}
+.field label,.field-lbl{display:block;font-size:9px;font-weight:700;color:#4a6180;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.field input,.field select,.field textarea{width:100%;background:#111827;border:1px solid #1e2d3d;border-radius:6px;color:#e2e8f0;padding:6px 10px;font-size:12px;outline:none;font-family:inherit}
+.field textarea{resize:vertical;min-height:70px;font-family:"Cascadia Code","Fira Code",monospace;font-size:11px}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#3b82f6}
+.field-row{display:flex;gap:10px}.field-row .field{flex:1;margin-bottom:0}
+input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;vertical-align:middle}
+.check-lbl{display:flex;align-items:center;gap:6px;font-size:11px;color:#94a3b8;margin-bottom:10px;cursor:pointer}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;padding:6px 14px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;border:none;transition:all .15s;letter-spacing:.02em}
+.btn-primary{background:#3b82f6;color:#fff}.btn-primary:hover{background:#2563eb}
+.btn-sm{padding:4px 10px;font-size:10px}
+.btn-ghost{background:#161e2b;color:#94a3b8;border:1px solid #1e2d3d}.btn-ghost:hover{border-color:#3b82f6;color:#60a5fa}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── Pipeline + stats ─────────────────────────────────────── */
+.section-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.section-title::after{content:"";flex:1;height:1px;background:#1e2d3d}
+.stats-bar{display:flex;gap:8px;margin:10px 0}
+.stat-box{flex:1;background:#111827;border:1px solid #1e2d3d;border-radius:6px;padding:10px;text-align:center}
+.stat-val{font-size:22px;font-weight:800;line-height:1}
+.stat-lbl{font-size:8px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.stat-box.gold .stat-val{color:#f59e0b}.stat-box.silver .stat-val{color:#94a3b8}.stat-box.drop .stat-val{color:#f87171}
+.progress-wrap{margin:8px 0}
+.prog-track{background:#161e2b;border-radius:4px;height:5px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#818cf8);border-radius:4px;transition:width .6s}
+.prog-label{font-size:9px;color:#4a6180;margin-top:3px}
+.banner{padding:8px 12px;border-radius:6px;font-size:11px;margin-top:8px}
+.banner.warn{background:#451a0320;border:1px solid #92400e60;color:#fbbf24}
+.banner.info{background:#1e3a5f20;border:1px solid #1e40af50;color:#93c5fd}
+.banner.ok{background:#0d2620;border:1px solid #06564660;color:#34d399}
+.banner.err{background:#2d0f0f;border:1px solid #7f1d1d60;color:#f87171}
+#pipeline-panel{background:#0d1017;border:1px solid #1e2d3d;border-radius:8px;overflow:hidden;margin-top:12px}
+#pipeline-stages{padding:8px 12px;border-bottom:1px solid #1e2d3d;display:flex;flex-direction:column;gap:2px}
+.stage-row{display:flex;align-items:center;gap:8px;padding:3px 6px;border-radius:4px;transition:background .2s}
+.stage-row.running{background:#161e2b;border:1px solid #1e2d3d}
+.stage-row.done{background:#05200f}.stage-row.fail{background:#200505}
+.stage-icon{font-size:11px;width:18px;text-align:center;flex-shrink:0;font-family:monospace}
+.stage-name{font-size:11px;font-weight:600;flex:1}
+.stage-msg{font-size:9px;color:#4a6180;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:260px}
+.stage-row.running .stage-name{color:#fbbf24}.stage-row.done .stage-name{color:#34d399}
+.stage-row.fail .stage-name{color:#f87171}.stage-row.skip .stage-name,.stage-row.wait .stage-name{color:#3a4a5c}
+.stage-row.skip{opacity:.55}
+#log-box{height:200px;overflow-y:auto;padding:8px 12px;font-family:"Cascadia Code","Fira Code",monospace;font-size:10px;color:#94a3b8;line-height:1.6}
+#report-box{background:#0d1017;border:1px solid #1e2d3d;border-radius:6px;padding:12px;font-family:"Cascadia Code","Fira Code",monospace;font-size:11px;white-space:pre-wrap;color:#94a3b8;max-height:400px;overflow-y:auto;margin-top:10px}
+
+/* ── Credential matrix bars ───────────────────────────────── */
+.bar-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.bar-label{font-size:9px;color:#4a6180;width:70px;text-align:right;flex-shrink:0}
+.bar-track{flex:1;height:4px;background:#1e2d3d;border-radius:2px}
+.bar-fill{height:100%;border-radius:2px;transition:width .4s}
+.bar-pct{font-size:9px;font-weight:700;color:#94a3b8;width:28px}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- TOP BAR -->
+  <div id="topbar">
+    <div class="avatar">Z</div>
+    <div class="brand">
+      <div class="brand-title">University of <span>Distillation</span></div>
+      <div class="brand-sub">Dean Zena &mdash; Multi-Teacher Knowledge Transfer</div>
+    </div>
+    <div class="steps">
+      <span class="step active" onclick="switchTab('enrollment')">1 Enrollment</span>
+      <span class="step-sep">/</span>
+      <span class="step" onclick="switchTab('teaching')">2 Teaching</span>
+      <span class="step-sep">/</span>
+      <span class="step" onclick="switchTab('graduation')">3 Graduation</span>
+      <span class="step-sep">/</span>
+      <span class="step" onclick="switchTab('exam')">4 Exam</span>
+    </div>
+  </div>
+
+  <div id="main">
+
+    <!-- LEFT: Dean + Teachers + Zena chat -->
+    <div id="left">
+
+      <!-- Dean slot -->
+      <div id="dean-slot">
+        <div id="dean-slot-lbl">
+          <span style="color:#f59e0b">&#9733;</span> Dean (judge &amp; cross-examiner)
+        </div>
+        <div class="ds-empty" id="dean-empty">No Dean selected &mdash; pick one below</div>
+        <div class="ds-filled" id="dean-filled">
+          <div class="ds-pip" id="dean-pip"></div>
+          <div class="ds-info">
+            <div class="ds-name" id="dean-name"></div>
+            <div class="ds-meta" id="dean-meta"></div>
+          </div>
+          <button class="ds-clear" onclick="clearDean()" title="Clear">&#10005;</button>
+        </div>
+      </div>
+
+      <!-- Student slot -->
+      <div id="student-slot">
+        <div id="student-slot-lbl">
+          <span style="color:#10b981">&#9670;</span> New Model Being Born
+        </div>
+        <div class="ss-empty" id="student-empty">Name your student in Phase&nbsp;1 below</div>
+        <div class="ss-filled" id="student-filled">
+          <span class="ss-icon">&#127891;</span>
+          <div class="ss-info">
+            <div class="ss-name" id="student-name-display"></div>
+            <div class="ss-base" id="student-base-display"></div>
+          </div>
+          <button class="ss-clear" onclick="clearStudent()" title="Clear">&#10005;</button>
+        </div>
+      </div>
+
+      <!-- Teacher strip -->
+      <div id="teacher-strip">
+        <span class="tr-empty" id="teacher-empty">No teachers selected</span>
+      </div>
+
+      <!-- Zena chat -->
+      <div id="chatbox">
+        <div class="msg bot">
+          Hello! I'm <strong>Zena</strong>, Dean of this University.<br><br>
+          <strong>Select me as Dean</strong> in Phase&nbsp;1, then pick your teachers.<br><br>
+          Commands: <code>status</code> &bull; <code>cross-examine</code> &bull; <code>recommend &lt;goal&gt;</code>
+        </div>
+      </div>
+      <div id="chat-input-row">
+        <textarea id="chat-input" placeholder="Message Zena..." rows="1"></textarea>
+        <button class="btn btn-primary" id="chat-send" onclick="sendChat()">Send</button>
+      </div>
+    </div>
+
+    <!-- RIGHT: tabbed wizard -->
+    <div id="right">
+      <div id="tabs-header">
+        <button class="tab-btn active" data-tab="enrollment">Phase 1 &mdash; Enrollment</button>
+        <button class="tab-btn" data-tab="teaching">Phase 2 &mdash; Teaching</button>
+        <button class="tab-btn" data-tab="graduation">Phase 3 &mdash; Graduation</button>
+        <button class="tab-btn" data-tab="exam">Phase 4 &mdash; Exam</button>
+      </div>
+      <div id="tabs-body">
+
+        <!-- ══ PHASE 1: Card-based model browser ══ -->
+        <div class="tab-pane active" id="tab-enrollment">
+          <div id="enroll-wrap">
+
+            <!-- Search + filter row -->
+            <div id="enroll-toolbar">
+              <input id="model-search" type="text" placeholder="&#128269;  Search by name, family, or capability..." oninput="filterGrid()">
+              <div class="filter-pills" id="filter-pills">
+                <button class="fpill active" data-f="all"          onclick="setFilter('all',this)">All</button>
+                <button class="fpill"         data-f="dean"         onclick="setFilter('dean',this)">Dean</button>
+                <button class="fpill"         data-f="teacher"      onclick="setFilter('teacher',this)">Teacher</button>
+                <button class="fpill"         data-f="student"      onclick="setFilter('student',this)">Student</button>
+                <button class="fpill"         data-f="coding"       onclick="setFilter('coding',this)">Coding</button>
+                <button class="fpill"         data-f="reasoning"    onclick="setFilter('reasoning',this)">Reasoning</button>
+                <button class="fpill"         data-f="multilingual" onclick="setFilter('multilingual',this)">Multilingual</button>
+                <button class="fpill"         data-f="fast"         onclick="setFilter('fast',this)">Fast/Small</button>
+              </div>
+              <button class="btn btn-ghost btn-sm" onclick="loadModels()" title="Rescan C:\AI\Models">&#8635; Rescan</button>
+            </div>
+
+            <!-- Config + action row -->
+            <div id="enroll-cfg">
+              <div class="field">
+                <label>Backend</label>
+                <select id="backend-dd">
+                  <option value="inprocess">inprocess (direct GGUF, no HTTP)</option>
+                  <option value="server">server (external llama-server)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Output directory</label>
+                <input type="text" id="output-dir" value="data/purified">
+              </div>
+              <div class="enroll-acts">
+                <label class="deep-label"><input type="checkbox" id="deep-probe"> Deep probe</label>
+                <button class="btn btn-ghost btn-sm" id="cred-btn" onclick="credCheck()">Credential Check</button>
+                <button class="btn btn-ghost btn-sm" id="cross-btn" onclick="crossExam()">Cross-Examine</button>
+              </div>
+            </div>
+
+            <div id="probe-banner" class="banner warn" style="display:none"></div>
+            <div id="enrollment-status"></div>
+
+            <!-- ── Brain Architect ──────────────────────────────── -->
+            <div id="brain-architect">
+              <div class="ba-title">&#129504; Brain Architect &mdash; What Should Your Model Know?</div>
+              <div style="font-size:10px;color:#4a9e7a;margin-bottom:14px;line-height:1.5">
+                Pick the <strong style="color:#6ee7b7">skills</strong> your model needs.
+                The system will recommend the right brain size and estimate quality for each task.
+                Teachers will <em>only</em> teach the skills you select.
+              </div>
+
+              <!-- Step 1: Skill picker -->
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin-bottom:6px">Step 1 &mdash; Select skills to teach</div>
+              <div class="ba-skills" id="ba-skills">
+                <!-- filled by JS -->
+              </div>
+
+              <!-- Step 1b: Skill-specific config (languages, etc.) -->
+              <div id="ba-skill-configs">
+                <!-- Translation languages -->
+                <div class="ba-config" id="ba-cfg-translation">
+                  <div class="ba-config-title">&#127760; Translation &mdash; Select languages</div>
+                  <div class="ba-langs" id="ba-langs"><!-- filled by JS --></div>
+                </div>
+                <!-- Coding languages -->
+                <div class="ba-config" id="ba-cfg-coding">
+                  <div class="ba-config-title">&#128187; Coding &mdash; Select languages</div>
+                  <div class="ba-langs" id="ba-code-langs"><!-- filled by JS --></div>
+                </div>
+              </div>
+
+              <!-- Step 2: Quality tier recommendation -->
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin:14px 0 6px">Step 2 &mdash; Choose quality tier</div>
+              <div id="ba-no-skills" style="font-size:10px;color:#3a4556;font-style:italic;padding:8px 0">Pick at least one skill above to see recommendations</div>
+
+              <div class="ba-layout" id="ba-layout" style="display:none">
+                <!-- Left: quality tiers -->
+                <div>
+                  <div class="ba-q-tiers" id="ba-q-tiers">
+                    <!-- filled by JS -->
+                  </div>
+                  <div style="font-size:8px;color:#065f46;margin-top:6px;font-style:italic">
+                    Quality depends on teacher expertise + training data. These are estimates for well-taught models.
+                  </div>
+                </div>
+
+                <!-- Right: radar + specs -->
+                <div class="ba-info">
+                  <div class="ba-radar-wrap">
+                    <svg id="ba-radar" viewBox="0 0 200 200"></svg>
+                  </div>
+                  <div class="ba-specs" id="ba-specs">
+                    <!-- filled by JS -->
+                  </div>
+                </div>
+              </div>
+
+              <!-- Step 3: Name + enroll -->
+              <div class="ba-enroll-row" style="margin-top:14px">
+                <div class="field">
+                  <label>Name your new model (what the world will call it)</label>
+                  <input type="text" id="student-new-name" placeholder="e.g. Zena-Translator-v1">
+                </div>
+                <button class="btn btn-primary" style="background:#10b981;flex-shrink:0;height:32px" onclick="enrollStudent()">&#43; Enroll Student</button>
+              </div>
+            </div>
+
+            <!-- Model grid (Deans + Teachers only) -->
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#4a6180;letter-spacing:.06em;margin-top:4px">Expert Models (Dean &amp; Teachers)</div>
+            <div id="model-grid">
+              <div style="grid-column:span 2;color:#3a4556;font-size:12px;padding:40px;text-align:center;letter-spacing:.05em">
+                SCANNING C:\AI\MODELS...
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- ══ PHASE 2: Teaching ══ -->
+        <div class="tab-pane" id="tab-teaching">
+          <div class="section-title">Teaching Configuration</div>
+          <div class="field">
+            <label>Prompts file (.jsonl)</label>
+            <input type="text" id="prompts-path" value="data/zena007_prompts.jsonl">
+          </div>
+          <div class="field-row" style="margin-bottom:12px">
+            <div class="field"><label>Max tokens</label><input type="number" id="max-tokens" value="512" min="64" max="4096"></div>
+            <div class="field"><label>Temperature</label><input type="number" id="temperature" value="0.7" min="0" max="2" step="0.05"></div>
+            <div class="field"><label>GOLD threshold</label><input type="number" id="answer-th" value="0.6" min="0" max="1" step="0.05"></div>
+            <div class="field"><label>SILVER threshold</label><input type="number" id="reason-th" value="0.5" min="0" max="1" step="0.05"></div>
+          </div>
+          <label class="check-lbl"><input type="checkbox" id="enable-halluc" checked> Enable hallucination gates (5-gate pipeline)</label>
+          <div style="display:flex;gap:8px;margin-bottom:14px">
+            <button class="btn btn-ghost btn-sm" onclick="refreshProgress()">&#8635; Refresh Progress</button>
+            <button class="btn btn-primary" id="run-all-btn" onclick="runPipeline()">&#9658; Run Full Pipeline (all 10 stages)</button>
+          </div>
+          <div class="stats-bar">
+            <div class="stat-box gold"><div class="stat-val" id="gold-n">0</div><div class="stat-lbl">GOLD (SFT)</div></div>
+            <div class="stat-box silver"><div class="stat-val" id="silver-n">0</div><div class="stat-lbl">SILVER (DPO)</div></div>
+            <div class="stat-box drop"><div class="stat-val" id="drop-n">0</div><div class="stat-lbl">DROP</div></div>
+          </div>
+          <div class="progress-wrap" id="gen-progress-wrap" style="display:none">
+            <div class="prog-track"><div class="prog-fill" id="gen-progress-fill" style="width:0%"></div></div>
+            <div class="prog-label" id="gen-progress-label">0 / 0 responses</div>
+          </div>
+          <div id="pipeline-panel" style="display:none">
+            <div id="pipeline-stages"></div>
+            <!-- Training progress bar -->
+            <div id="train-progress-panel">
+              <div class="tp-header">
+                <span class="tp-stage" id="tp-stage-label">SFT Training</span>
+                <span class="tp-eta" id="tp-eta"></span>
+              </div>
+              <div class="tp-track"><div class="tp-fill" id="tp-fill" style="width:0%"></div></div>
+              <div class="tp-stats">
+                <span class="tp-stat" id="tp-steps">Step <b>0</b> / <b>0</b></span>
+                <span class="tp-stat" id="tp-pct"><b>0%</b></span>
+                <span class="tp-stat loss" id="tp-loss">Loss <b>--</b></span>
+                <span class="tp-stat epoch" id="tp-epoch">Epoch <b>--</b></span>
+                <span class="tp-stat" id="tp-elapsed">Elapsed <b>--</b></span>
+                <span class="tp-stat" id="tp-lr">LR <b>--</b></span>
+              </div>
+            </div>
+            <div id="log-box"></div>
+          </div>
+        </div>
+
+        <!-- ══ PHASE 3: Graduation ══ -->
+        <div class="tab-pane" id="tab-graduation">
+          <div class="section-title">Student Configuration</div>
+          <div id="graduation-student-summary" class="banner info" style="margin-bottom:12px;display:none"></div>
+          <div class="field-row" style="margin-bottom:12px">
+            <div class="field"><label>Student base model (HuggingFace ID)</label><input type="text" id="student-model" value="Qwen/Qwen2.5-0.5B-Instruct" placeholder="auto-filled from enrollment"></div>
+            <div class="field"><label>New model name (output name)</label><input type="text" id="saves-tag" value="distill_auto" placeholder="auto-filled from enrollment"></div>
+          </div>
+          <label class="check-lbl"><input type="checkbox" id="cpu-safe" checked> CPU-safe (no bf16)</label>
+          <label class="check-lbl"><input type="checkbox" id="do-train" checked> Run training stages (SFT / DPO / Merge / GGUF)</label>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-ghost btn-sm" onclick="genConfigs()">Generate Training Configs</button>
+            <button class="btn btn-primary" onclick="runPipeline()">&#9658; Run Full Pipeline</button>
+          </div>
+          <div id="phase3-status" style="margin-top:10px;font-size:11px;color:#4a6180"></div>
+        </div>
+
+        <!-- ══ PHASE 4: Exam ══ -->
+        <div class="tab-pane" id="tab-exam">
+          <div class="section-title">Graduation Report</div>
+          <p style="font-size:11px;color:#4a6180">Results appear here after the full pipeline completes.</p>
+          <div id="report-box" style="display:none"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+const API = "";
+
+// ── HTML escape — prevents XSS in innerHTML assignments ─────────────────────
+function esc(s) {
+  if (s == null) return "";
+  const d = document.createElement("div");
+  d.appendChild(document.createTextNode(String(s)));
+  return d.innerHTML;
+}
+
+// ── Tab switching ───────────────────────────────────────────────────────────
+function switchTab(id) {
+  document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll(".tab-btn, .step").forEach(b => b.classList.remove("active"));
+  const pane = document.getElementById("tab-" + id);
+  if (pane) pane.classList.add("active");
+  document.querySelectorAll(".tab-btn").forEach(b => { if (b.dataset.tab === id) b.classList.add("active"); });
+  document.querySelectorAll(".step").forEach(s => { if ((s.getAttribute("onclick")||"").includes(id)) s.classList.add("active"); });
+}
+document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
+
+// ── Brain Architect: task-first model designer ──────────────────────────────
+// User picks SKILLS, system recommends brain size with quality tiers.
+// HF model IDs are hidden from the user — they only see quality grades.
+
+const SKILLS = [
+  { id: "translation",  icon: "\u{1F310}", name: "Translation",  tag: "Multi-language text",    complexity: 2.0 },
+  { id: "coding",       icon: "\u{1F4BB}", name: "Coding",       tag: "Write & fix code",       complexity: 2.5 },
+  { id: "ocr_cleanup",  icon: "\u{1F50D}", name: "OCR Cleanup",  tag: "Fix scanned text",       complexity: 1.0 },
+  { id: "conversation", icon: "\u{1F4AC}", name: "Chat",         tag: "Natural conversations",  complexity: 1.5 },
+  { id: "reasoning",    icon: "\u{1F9E0}", name: "Reasoning",    tag: "Logic & analysis",       complexity: 3.0 },
+  { id: "math",         icon: "\u{1F4D0}", name: "Math",         tag: "Calculations & proofs",  complexity: 2.5 },
+  { id: "summarize",    icon: "\u{1F4DD}", name: "Summarize",    tag: "Condense long text",     complexity: 1.5 },
+  { id: "creative",     icon: "\u2728",    name: "Creative",     tag: "Stories & poetry",       complexity: 1.5 },
+];
+
+// Languages for translation
+const LANGUAGES = [
+  { code: "en", name: "English",    flag: "\u{1F1EC}\u{1F1E7}" },
+  { code: "de", name: "German",     flag: "\u{1F1E9}\u{1F1EA}" },
+  { code: "fr", name: "French",     flag: "\u{1F1EB}\u{1F1F7}" },
+  { code: "es", name: "Spanish",    flag: "\u{1F1EA}\u{1F1F8}" },
+  { code: "it", name: "Italian",    flag: "\u{1F1EE}\u{1F1F9}" },
+  { code: "pt", name: "Portuguese", flag: "\u{1F1E7}\u{1F1F7}" },
+  { code: "nl", name: "Dutch",      flag: "\u{1F1F3}\u{1F1F1}" },
+  { code: "ru", name: "Russian",    flag: "\u{1F1F7}\u{1F1FA}" },
+  { code: "zh", name: "Chinese",    flag: "\u{1F1E8}\u{1F1F3}" },
+  { code: "ja", name: "Japanese",   flag: "\u{1F1EF}\u{1F1F5}" },
+  { code: "ko", name: "Korean",     flag: "\u{1F1F0}\u{1F1F7}" },
+  { code: "ar", name: "Arabic",     flag: "\u{1F1F8}\u{1F1E6}" },
+  { code: "hi", name: "Hindi",      flag: "\u{1F1EE}\u{1F1F3}" },
+  { code: "tr", name: "Turkish",    flag: "\u{1F1F9}\u{1F1F7}" },
+  { code: "pl", name: "Polish",     flag: "\u{1F1F5}\u{1F1F1}" },
+  { code: "id", name: "Indonesian", flag: "\u{1F1EE}\u{1F1E9}" },
+];
+
+// Coding languages
+const CODE_LANGS = [
+  { id: "python",     name: "Python" },
+  { id: "javascript", name: "JavaScript" },
+  { id: "typescript", name: "TypeScript" },
+  { id: "rust",       name: "Rust" },
+  { id: "cpp",        name: "C/C++" },
+  { id: "java",       name: "Java" },
+  { id: "go",         name: "Go" },
+  { id: "csharp",     name: "C#" },
+  { id: "sql",        name: "SQL" },
+  { id: "bash",       name: "Bash/Shell" },
+];
+
+// Brain tiers: hidden HF models, mapped to quality labels
+const BRAIN_TIERS = [
+  { quality: "OK",        neurons: "0.5B", hf: "Qwen/Qwen2.5-0.5B-Instruct",     gguf_mb: 350,  layers: 24, heads: 14, vocab: "152K", ctx: "32K",  maxComplexity: 3  },
+  { quality: "Good",      neurons: "1.5B", hf: "Qwen/Qwen2.5-1.5B-Instruct",     gguf_mb: 950,  layers: 28, heads: 12, vocab: "152K", ctx: "32K",  maxComplexity: 8  },
+  { quality: "Excellent", neurons: "3B",   hf: "Qwen/Qwen2.5-3B-Instruct",       gguf_mb: 1900, layers: 36, heads: 16, vocab: "152K", ctx: "32K",  maxComplexity: 15 },
+];
+
+// State
+let _selectedSkills = new Set();
+let _selectedLangs  = new Set();
+let _selectedCodeLangs = new Set();
+let _selectedTier   = null;   // index into filtered tier list
+let _availableTiers = [];     // tiers available for current skill selection
+let _selectedBrain = null;    // backward compat alias
+let _selectedBase = null;     // backward compat alias
+
+const SKILL_COLORS = {
+  translation: "#22d3ee", coding: "#34d399", ocr_cleanup: "#fb923c", conversation: "#60a5fa",
+  reasoning: "#a78bfa",   math: "#fbbf24",   summarize: "#f472b6",   creative: "#e879f9",
+};
+
+// ── Render skill picker cards ────────────────────────────────────────────────
+function renderSkills() {
+  const g = document.getElementById("ba-skills");
+  if (!g) return;
+  g.innerHTML = SKILLS.map(s =>
+    `<div class="ba-skill ${_selectedSkills.has(s.id) ? 'on' : ''}" onclick="toggleSkill('${esc(s.id)}')">
+       <span class="ba-check">\u2713</span>
+       <div class="ba-skill-icon">${esc(s.icon)}</div>
+       <div class="ba-skill-name">${esc(s.name)}</div>
+       <div class="ba-skill-tag">${esc(s.tag)}</div>
+     </div>`
+  ).join("");
+}
+
+function renderLangPills() {
+  const el = document.getElementById("ba-langs");
+  if (!el) return;
+  el.innerHTML = LANGUAGES.map(l =>
+    `<span class="ba-lang ${_selectedLangs.has(l.code) ? 'on' : ''}" onclick="toggleLang('${esc(l.code)}')">${esc(l.flag)} ${esc(l.name)}</span>`
+  ).join("");
+}
+
+function renderCodeLangPills() {
+  const el = document.getElementById("ba-code-langs");
+  if (!el) return;
+  el.innerHTML = CODE_LANGS.map(l =>
+    `<span class="ba-lang ${_selectedCodeLangs.has(l.id) ? 'on' : ''}" onclick="toggleCodeLang('${esc(l.id)}')">${esc(l.name)}</span>`
+  ).join("");
+}
+
+function toggleSkill(id) {
+  if (_selectedSkills.has(id)) _selectedSkills.delete(id);
+  else _selectedSkills.add(id);
+  renderSkills();
+  // Show/hide sub-configs
+  document.getElementById("ba-cfg-translation").classList.toggle("visible", _selectedSkills.has("translation"));
+  document.getElementById("ba-cfg-coding").classList.toggle("visible", _selectedSkills.has("coding"));
+  recalcTiers();
+}
+
+function toggleLang(code) {
+  if (_selectedLangs.has(code)) _selectedLangs.delete(code);
+  else _selectedLangs.add(code);
+  renderLangPills();
+  recalcTiers();
+}
+
+function toggleCodeLang(id) {
+  if (_selectedCodeLangs.has(id)) _selectedCodeLangs.delete(id);
+  else _selectedCodeLangs.add(id);
+  renderCodeLangPills();
+}
+
+// ── Compute complexity and available quality tiers ───────────────────────────
+function getComplexity() {
+  let c = 0;
+  for (const s of _selectedSkills) {
+    const sk = SKILLS.find(x => x.id === s);
+    if (sk) c += sk.complexity;
+  }
+  // More languages = more complexity for translation
+  if (_selectedSkills.has("translation")) {
+    c += Math.max(0, _selectedLangs.size - 2) * 0.5;
+  }
+  return c;
+}
+
+function recalcTiers() {
+  const hasSkills = _selectedSkills.size > 0;
+  document.getElementById("ba-no-skills").style.display = hasSkills ? "none" : "";
+  document.getElementById("ba-layout").style.display = hasSkills ? "grid" : "none";
+  if (!hasSkills) { _selectedTier = null; return; }
+
+  const complexity = getComplexity();
+  // Determine which tiers can handle this complexity, and quality per skill
+  _availableTiers = BRAIN_TIERS.map((tier, idx) => {
+    const ratio = tier.maxComplexity / Math.max(complexity, 0.1);
+    // Quality per selected skill
+    const perSkill = {};
+    for (const sid of _selectedSkills) {
+      const sk = SKILLS.find(x => x.id === sid);
+      let q = Math.min(100, Math.round(ratio * 60 * (sk ? 1 / Math.max(sk.complexity, 0.5) : 1)));
+      // Boost for fewer skills (specialist model)
+      if (_selectedSkills.size === 1) q = Math.min(100, Math.round(q * 1.4));
+      else if (_selectedSkills.size === 2) q = Math.min(100, Math.round(q * 1.15));
+      perSkill[sid] = Math.max(5, Math.min(95, q));
+    }
+    const avgQ = Math.round(Object.values(perSkill).reduce((a, b) => a + b, 0) / Object.values(perSkill).length);
+    const disabled = avgQ < 15;
+    return { ...tier, idx, perSkill, avgQ, disabled };
+  });
+
+  // Auto-select best non-disabled tier, or keep current
+  if (_selectedTier === null || _availableTiers[_selectedTier]?.disabled) {
+    // Pick cheapest tier where avgQ >= 40 ("Good" territory)
+    const good = _availableTiers.findIndex(t => !t.disabled && t.avgQ >= 40);
+    _selectedTier = good >= 0 ? good : _availableTiers.findIndex(t => !t.disabled);
+    if (_selectedTier < 0) _selectedTier = 0;
+  }
+
+  renderTiers();
+  renderRadar();
+  renderSpecs();
+}
+
+function renderTiers() {
+  const el = document.getElementById("ba-q-tiers");
+  if (!el) return;
+  el.innerHTML = _availableTiers.map((t, i) => {
+    const qClass = t.quality.toLowerCase();
+    const gguf = t.gguf_mb >= 1000 ? (t.gguf_mb / 1000).toFixed(1) + " GB" : t.gguf_mb + " MB";
+    const grade = t.avgQ < 25 ? "Weak for these skills" : t.avgQ < 45 ? "Workable" : t.avgQ < 65 ? "Solid results" : t.avgQ < 80 ? "Strong results" : "Best possible";
+    return `<div class="ba-q-tier ${_selectedTier === i ? 'on' : ''} ${t.disabled ? 'disabled' : ''}" onclick="pickTier(${i})">
+      <span class="ba-q-badge ${qClass}">${esc(t.quality)}</span>
+      <div class="ba-q-info">
+        <div class="ba-q-neurons">${esc(t.neurons)} brain &mdash; ~${esc(gguf)} graduate</div>
+        <div class="ba-q-detail">${esc(grade)} &bull; ${_selectedSkills.size} skill${_selectedSkills.size !== 1 ? 's' : ''} &bull; avg quality ${Number(t.avgQ)}%</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function pickTier(i) {
+  if (_availableTiers[i]?.disabled) return;
+  _selectedTier = i;
+  renderTiers();
+  renderRadar();
+  renderSpecs();
+}
+
+// ── Radar chart (only shows selected skills) ─────────────────────────────────
+function renderRadar() {
+  const svg = document.getElementById("ba-radar");
+  if (!svg) return;
+  const tier = _availableTiers[_selectedTier];
+  if (!tier) { svg.textContent = ""; return; }
+
+  const skills = [..._selectedSkills];
+  if (skills.length === 0) { svg.textContent = ""; return; }
+  const n = skills.length;
+  const cx = 100, cy = 100, R = 80;
+  const angleStep = (2 * Math.PI) / Math.max(n, 1);
+
+  let html = "";
+  // Background rings
+  [0.25, 0.5, 0.75, 1.0].forEach(frac => {
+    if (n < 3 && frac < 1) return; // only outer ring for 1-2 skills
+    const r = R * frac;
+    if (n >= 3) {
+      const pts = [];
+      for (let i = 0; i < n; i++) {
+        const a = -Math.PI / 2 + i * angleStep;
+        pts.push(`${cx + r * Math.cos(a)},${cy + r * Math.sin(a)}`);
+      }
+      html += `<polygon points="${pts.join(" ")}" fill="none" stroke="#1e2d3d" stroke-width="0.5"/>`;
+    } else {
+      html += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1e2d3d" stroke-width="0.5"/>`;
+    }
+  });
+
+  // Axes + labels
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + i * angleStep;
+    const x2 = cx + R * Math.cos(a), y2 = cy + R * Math.sin(a);
+    html += `<line x1="${cx}" y1="${cy}" x2="${x2}" y2="${y2}" stroke="#1e2d3d" stroke-width="0.3"/>`;
+    const lx = cx + (R + 16) * Math.cos(a), ly = cy + (R + 16) * Math.sin(a);
+    const sk = SKILLS.find(s => s.id === skills[i]);
+    const col = SKILL_COLORS[skills[i]] || "#6ee7b7";
+    html += `<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="central" fill="${col}" font-size="7" font-weight="700">${esc(sk ? sk.name : skills[i])}</text>`;
+  }
+
+  // Data polygon
+  if (n >= 3) {
+    const pts = [];
+    for (let i = 0; i < n; i++) {
+      const a = -Math.PI / 2 + i * angleStep;
+      const v = (tier.perSkill[skills[i]] || 0) / 100;
+      pts.push(`${cx + R * v * Math.cos(a)},${cy + R * v * Math.sin(a)}`);
+    }
+    html += `<polygon points="${pts.join(" ")}" fill="#10b98120" stroke="#10b981" stroke-width="1.5"/>`;
+  } else if (n === 2) {
+    // Draw a line between the two points
+    const pts = [];
+    for (let i = 0; i < 2; i++) {
+      const a = -Math.PI / 2 + i * angleStep;
+      const v = (tier.perSkill[skills[i]] || 0) / 100;
+      pts.push({ x: cx + R * v * Math.cos(a), y: cy + R * v * Math.sin(a) });
+    }
+    html += `<line x1="${pts[0].x}" y1="${pts[0].y}" x2="${pts[1].x}" y2="${pts[1].y}" stroke="#10b981" stroke-width="1.5" opacity="0.7"/>`;
+  }
+
+  // Dots
+  for (let i = 0; i < n; i++) {
+    const a = -Math.PI / 2 + i * angleStep;
+    const v = (tier.perSkill[skills[i]] || 0) / 100;
+    const dx = cx + R * v * Math.cos(a), dy = cy + R * v * Math.sin(a);
+    const col = SKILL_COLORS[skills[i]] || "#6ee7b7";
+    html += `<circle cx="${dx}" cy="${dy}" r="4" fill="${col}" stroke="#0d1017" stroke-width="1.5"/>`;
+    // Value label
+    html += `<text x="${dx}" y="${dy - 8}" text-anchor="middle" fill="${col}" font-size="8" font-weight="800">${tier.perSkill[skills[i]] || 0}%</text>`;
+  }
+
+  svg.innerHTML = html;
+}
+
+function renderSpecs() {
+  const el = document.getElementById("ba-specs");
+  if (!el) return;
+  const tier = _availableTiers[_selectedTier];
+  if (!tier) { el.innerHTML = ""; return; }
+  const gguf = tier.gguf_mb >= 1000 ? (tier.gguf_mb / 1000).toFixed(1) + " GB" : tier.gguf_mb + " MB";
+  const skillList = [..._selectedSkills].map(s => { const sk = SKILLS.find(x => x.id === s); return sk ? esc(sk.name) : esc(s); }).join(", ");
+  const langList = _selectedSkills.has("translation") && _selectedLangs.size > 0
+    ? [..._selectedLangs].map(c => { const l = LANGUAGES.find(x => x.code === c); return l ? esc(l.name) : esc(c); }).join(", ")
+    : "";
+  el.innerHTML = `
+    <div class="ba-spec-row"><span>Quality</span><b>${esc(tier.quality)}</b></div>
+    <div class="ba-spec-row"><span>Brain Size</span><b>${esc(tier.neurons)}</b></div>
+    <div class="ba-spec-row"><span>GGUF Graduate</span><b>~${esc(gguf)}</b></div>
+    <div class="ba-spec-row"><span>Skills</span><b>${skillList || "none"}</b></div>
+    ${langList ? `<div class="ba-spec-row"><span>Languages</span><b>${langList}</b></div>` : ""}
+    <div class="ba-spec-row"><span>Layers / Heads</span><b>${Number(tier.layers)} / ${Number(tier.heads)}</b></div>
+    <div class="ba-spec-row"><span>Context</span><b>${esc(tier.ctx)}</b></div>
+  `;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+function initBrainArchitect() {
+  renderSkills();
+  renderLangPills();
+  renderCodeLangPills();
+}
+
+// ── Model selection state ───────────────────────────────────────────────────
+window._allModels = [];
+window._dean      = null;   // full model meta object
+window._students  = [];     // array of Forge Matrix variant objects
+window._teachers  = [];     // array of model meta objects
+window._filter    = "all";
+
+const getTeacherPaths    = () => window._teachers.map(t => t.path.replace(/\\/g, "/"));
+const getDeanPath        = () => (window._dean?.path || "").replace(/\\/g, "/");
+const getStudentVariants = () => window._students;
+
+// ── Capability colour palette ───────────────────────────────────────────────
+const CAP = {
+  coding:       ["#34d399", "#052e16"],
+  reasoning:    ["#a78bfa", "#1e1b4b"],
+  math:         ["#fbbf24", "#1c0a00"],
+  multilingual: ["#22d3ee", "#083344"],
+  chinese:      ["#f472b6", "#2d0520"],
+  multimodal:   ["#60a5fa", "#0c1a2e"],
+  tools:        ["#fb923c", "#1c0a00"],
+  fast:         ["#4ade80", "#052e16"],
+  instruction:  ["#cbd5e1", "#1e293b"],
+  general:      ["#64748b", "#1e293b"],
+  safety:       ["#6ee7b7", "#022c22"],
+};
+
+// ── Role badge colours ───────────────────────────────────────────────────────
+const ROLE_BG = { dean: "#451a03", teacher: "#0c1a2e", student: "#052e16", projection: "#1e293b" };
+
+// ── Auto-scan on page load ───────────────────────────────────────────────────
+async function loadModels() {
+  const grid = document.getElementById("model-grid");
+  grid.innerHTML = '<div style="grid-column:span 2;color:#3a4556;font-size:11px;padding:40px;text-align:center;letter-spacing:.06em">SCANNING C:\\AI\\MODELS...</div>';
+  try {
+    const res = await fetch(API + "/api/scan");
+    window._allModels = await res.json();
+    renderGrid();
+  } catch(e) {
+    grid.innerHTML = `<div class="banner err" style="grid-column:span 2">Scan error: ${esc(e)}</div>`;
+  }
+}
+
+// Keep a filtered (non-projection) list and its indices into _allModels
+let _gridModels = [];
+
+function renderGrid() {
+  const grid = document.getElementById("model-grid");
+  _gridModels = window._allModels.filter(m => !m.is_projection);
+  if (!_gridModels.length) {
+    grid.innerHTML = '<div class="banner info" style="grid-column:span 2">No GGUF models found in C:\\AI\\Models. Check server logs.</div>';
+    return;
+  }
+  grid.innerHTML = _gridModels.map((m, i) => renderCard(m, i)).join("");
+  filterGrid();
+}
+
+function renderCard(m, i) {
+  const isDean    = window._dean?.path === m.path;
+  const isTeacher = window._teachers.some(t => t.path === m.path);
+  const cls = "mcard" + (isDean && isTeacher ? " is-dean is-teacher" : isDean ? " is-dean" : isTeacher ? " is-teacher" : "");
+  const caps = m.caps || ["general"];
+
+  const capHtml = caps.map(c => {
+    const [fg, bg] = CAP[c] || ["#94a3b8", "#1e293b"];
+    return `<span class="cp" style="background:${esc(bg)};color:${esc(fg)}">${esc(c)}</span>`;
+  }).join("");
+
+  const qColor = m.quant_quality >= 90 ? "#34d399"
+               : m.quant_quality >= 70 ? "#60a5fa"
+               : m.quant_quality >= 50 ? "#fbbf24" : "#f87171";
+
+  const roleBg = ROLE_BG[m.role] || "#1e293b";
+  // Use index in onclick — avoids all path escaping issues
+  const deanLbl  = isDean    ? "&#9733;&nbsp;Dean"     : "Set Dean";
+  const teachLbl = isTeacher ? "&#10003;&nbsp;Teacher" : "+ Teacher";
+
+  return `<div class="${cls}"
+      data-role="${esc(m.role)}" data-caps="${esc(caps.join(" "))}" data-name="${esc((m.name||"").toLowerCase())}" data-idx="${i}">
+    <div class="mcard-bar" style="background:${esc(m.arch_color)}"></div>
+    <div class="mcard-body">
+      <div class="mcard-top">
+        <span class="arch-badge" style="background:${esc(m.arch_color)}22;color:${esc(m.arch_color)}">${esc(m.arch)}</span>
+        <span class="mcard-name" title="${esc(m.display_name)}">${esc(m.display_name)}</span>
+        <span class="role-badge" style="background:${esc(roleBg)};color:${esc(m.role_color)}">${esc(m.role_label)}</span>
+      </div>
+      <div class="mcard-meta">${esc(m.maker)}&nbsp;&bull;&nbsp;${esc(m.params||"?")}&nbsp;&bull;&nbsp;${esc(m.quant)}&nbsp;&bull;&nbsp;${m.size_gb} GB&nbsp;&bull;&nbsp;~${m.ram_gb} GB RAM</div>
+      <div class="mcard-caps">${capHtml}</div>
+      <div class="qbar">
+        <span class="qbar-lbl">Quality</span>
+        <div class="qbar-track"><div class="qbar-fill" style="width:${m.quant_quality}%;background:${qColor}"></div></div>
+        <span class="qbar-pct" style="color:${qColor}">${m.quant_quality}%</span>
+      </div>
+      <div class="mcard-acts">
+        <button class="ma ma-dean ${isDean?'on':''}"       onclick="selectDean(${i})">${deanLbl}</button>
+        <button class="ma ma-teacher ${isTeacher?'on':''}" onclick="toggleTeacher(${i})">${teachLbl}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function setFilter(f, btn) {
+  window._filter = f;
+  document.querySelectorAll(".fpill").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  filterGrid();
+}
+
+function filterGrid() {
+  const q = (document.getElementById("model-search").value || "").toLowerCase();
+  const f = window._filter;
+  document.querySelectorAll(".mcard").forEach(card => {
+    const role = card.dataset.role || "";
+    const caps = card.dataset.caps || "";
+    const name = card.dataset.name || "";
+    const matchF = f === "all" || role === f || caps.split(" ").includes(f);
+    const matchQ = !q || name.includes(q) || caps.includes(q) || role.includes(q);
+    card.classList.toggle("hidden", !(matchF && matchQ));
+  });
+  // Show empty state
+  const visible = document.querySelectorAll(".mcard:not(.hidden)").length;
+  let empty = document.getElementById("grid-empty");
+  if (!visible) {
+    if (!empty) {
+      empty = document.createElement("div");
+      empty.id = "grid-empty";
+      empty.style.cssText = "grid-column:span 2;color:#3a4556;font-size:11px;padding:30px;text-align:center";
+      empty.textContent = "No models match this filter.";
+      document.getElementById("model-grid").appendChild(empty);
+    }
+  } else if (empty) {
+    empty.remove();
+  }
+}
+
+// ── Selection handlers (index-based — no path escaping issues) ───────────────
+function selectDean(i) {
+  const m = _gridModels[i];
+  if (!m) return;
+  // Toggle off if already dean
+  window._dean = (window._dean?.path === m.path) ? null : m;
+  renderGrid();
+  updateSidebar();
+}
+
+function toggleTeacher(i) {
+  const m = _gridModels[i];
+  if (!m) return;
+  const ti = window._teachers.findIndex(t => t.path === m.path);
+  if (ti >= 0) {
+    window._teachers.splice(ti, 1);  // remove
+  } else {
+    window._teachers.push(m);        // add — dean can also be a teacher
+  }
+  renderGrid();
+  updateSidebar();
+}
+
+function clearDean() { window._dean = null; renderGrid(); updateSidebar(); }
+
+// ── Brain Architect rendering ────────────────────────────────────────────────
+
+function enrollStudent() {
+  const nameEl = document.getElementById("student-new-name");
+  const name = (nameEl.value || "").trim();
+  if (!name) {
+    nameEl.style.borderColor = "#f87171";
+    setTimeout(() => nameEl.style.borderColor = "", 1500);
+    return;
+  }
+  if (_selectedSkills.size === 0) { alert("Pick at least one skill first."); return; }
+  if (_selectedTier === null || !_availableTiers[_selectedTier]) { alert("Pick a quality tier first."); return; }
+  if (_selectedSkills.has("translation") && _selectedLangs.size < 2) { alert("Select at least 2 languages for translation."); return; }
+  const tier = _availableTiers[_selectedTier];
+  const hf_id = tier.hf;
+  if (window._students.find(s => s.name === name)) {
+    alert(`Variant "${name}" already enrolled.`); return;
+  }
+  window._students.push({
+    name, hf_id,
+    quality: tier.quality,
+    neurons: tier.neurons,
+    gguf_mb: tier.gguf_mb,
+    skills: [..._selectedSkills],
+    languages: _selectedSkills.has("translation") ? [..._selectedLangs] : [],
+    code_langs: _selectedSkills.has("coding") ? [..._selectedCodeLangs] : [],
+    lora_rank: 16, lr: 2e-4, epochs: 3,
+  });
+  nameEl.value = "";
+  updateSidebar();
+  updatePhase3Summary();
+}
+
+function removeStudent(n) {
+  window._students = window._students.filter(s => s.name !== n);
+  updateSidebar();
+  updatePhase3Summary();
+}
+function clearStudent() { window._students = []; updateSidebar(); updatePhase3Summary(); }
+
+function updatePhase3Summary() {
+  const el = document.getElementById("graduation-student-summary");
+  if (!el) return;
+  if (!window._students.length) { el.style.display = "none"; return; }
+  el.style.display = "";
+  el.innerHTML =
+    `<strong style="color:#6ee7b7">${window._students.length} variant(s) enrolled for Forge Matrix:</strong><br>` +
+    window._students.map((s, i) => {
+      const skillNames = (s.skills || []).map(sid => { const sk = SKILLS.find(x => x.id === sid); return sk ? sk.icon + " " + sk.name : sid; }).join(", ");
+      const langInfo = (s.languages || []).length ? " | langs: " + s.languages.join(", ") : "";
+      const gguf = s.gguf_mb >= 1000 ? (s.gguf_mb / 1000).toFixed(1) + " GB" : (s.gguf_mb || "?") + " MB";
+      return `<span style="font-family:monospace;font-size:10px">[${i + 1}] <b>${esc(s.name)}</b> &mdash; ` +
+        `${esc(s.quality || "?")} quality (${esc(s.neurons || "?")}) &bull; ~${esc(gguf)} GGUF ` +
+        `&bull; ${esc(skillNames)}${esc(langInfo)} ` +
+        `&bull; LoRA r${s.lora_rank} &bull; lr ${s.lr} &bull; ${s.epochs} epochs ` +
+        `<button onclick="removeStudent(${JSON.stringify(s.name)})" ` +
+        `style="background:none;border:none;color:#f87171;cursor:pointer;font-size:10px">x</button></span>`;
+    }).join("<br>");
+  const sf = document.getElementById("student-model");
+  const st = document.getElementById("saves-tag");
+  if (sf && window._students[0]) sf.value = window._students[0].hf_id;
+  if (st && window._students[0]) st.value = window._students[0].name;
+}
+
+function updateSidebar() {
+  // ── Dean slot ──
+  const dEmpty  = document.getElementById("dean-empty");
+  const dFilled = document.getElementById("dean-filled");
+  if (window._dean) {
+    dEmpty.style.display  = "none";
+    dFilled.style.display = "flex";
+    document.getElementById("dean-pip").style.background  = window._dean.arch_color;
+    document.getElementById("dean-name").textContent      = window._dean.display_name;
+    document.getElementById("dean-name").style.color      = window._dean.arch_color;
+    document.getElementById("dean-meta").textContent      =
+      `${window._dean.maker} · ${window._dean.params} · ${window._dean.size_gb} GB`;
+  } else {
+    dEmpty.style.display  = "";
+    dFilled.style.display = "none";
+  }
+
+  // ── Student slot ──
+  const sEmpty  = document.getElementById("student-empty");
+  const sFilled = document.getElementById("student-filled");
+  if (window._students.length) {
+    sEmpty.style.display  = "none";
+    sFilled.style.display = "flex";
+    const s0 = window._students[0];
+    document.getElementById("student-name-display").textContent =
+      window._students.length === 1 ? s0.name : window._students.length + " variants";
+    const skillTags = (s0.skills || []).map(sid => { const sk = SKILLS.find(x => x.id === sid); return sk ? sk.icon + sk.name : sid; }).join(" ");
+    document.getElementById("student-base-display").textContent =
+      window._students.length === 1
+        ? `${s0.quality || "?"} · ${s0.neurons || "?"} · ${skillTags}`
+        : window._students.map(s => s.name).join(" \u00b7 ");
+  } else {
+    sEmpty.style.display  = "";
+    sFilled.style.display = "none";
+  }
+
+  // ── Teacher strip ──
+  const strip = document.getElementById("teacher-strip");
+  const tEmpty = document.getElementById("teacher-empty");
+  strip.querySelectorAll(".tr-pill, .tc-count").forEach(e => e.remove());
+
+  if (!window._teachers.length) {
+    if (tEmpty) tEmpty.style.display = "";
+  } else {
+    if (tEmpty) tEmpty.style.display = "none";
+    const countEl = document.createElement("span");
+    countEl.className = "tc-count";
+    countEl.textContent = window._teachers.length + " teacher" + (window._teachers.length !== 1 ? "s" : "");
+    strip.appendChild(countEl);
+    window._teachers.forEach(t => {
+      const pill = document.createElement("span");
+      pill.className = "tr-pill";
+      pill.title = t.path;
+      pill.innerHTML = `<span style="color:${esc(t.arch_color)};font-size:8px">&#9632;</span> ${esc(t.display_name)} <span style="opacity:.5">&#215;</span>`;
+      // Find the index in the current grid and call toggleTeacher with it
+      pill.onclick = () => {
+        const idx = _gridModels.findIndex(m => m.path === t.path);
+        if (idx >= 0) toggleTeacher(idx);
+      };
+      strip.appendChild(pill);
+    });
+  }
+}
+
+// ── Zena chat ───────────────────────────────────────────────────────────────
+const chatbox = document.getElementById("chatbox");
+
+function md2html(t) {
+  return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+    .replace(/\*\*(.+?)\*\*/g,"<strong>$1</strong>")
+    .replace(/`([^`]+)`/g,"<code>$1</code>")
+    .replace(/\n/g,"<br>");
+}
+
+function appendMsg(role, text) {
+  const d = document.createElement("div");
+  d.className = "msg " + (role === "user" ? "user" : "bot");
+  if (role === "user") {
+    d.textContent = text;
+  } else {
+    d.innerHTML = md2html(text); // xray: ignore[JS-SEC-001] — md2html escapes HTML entities
+  }
+  chatbox.appendChild(d);
+  chatbox.scrollTop = chatbox.scrollHeight;
+  return d;
+}
+
+async function sendChat() {
+  const inp = document.getElementById("chat-input");
+  const msg = inp.value.trim();
+  if (!msg) return;
+  inp.value = "";
+  appendMsg("user", msg);
+  const thinking = appendMsg("bot", "...");
+  try {
+    const res = await fetch(API + "/api/chat", {
+      method: "POST", headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({
+        message: msg,
+        zena_gguf: getDeanPath(),
+        teachers_text: getTeacherPaths().join("\n"),
+      }),
+    });
+    const data = await res.json();
+    thinking.innerHTML = md2html(data.reply || data.error || "No response.");
+  } catch(e) {
+    thinking.innerHTML = `<span style='color:#f87171'>Network error: ${esc(e)}</span>`;
+  }
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+document.getElementById("chat-input").addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendChat(); }
+});
+
+// ── Credential check ─────────────────────────────────────────────────────────
+const CAP_COLORS = {
+  coding:["#34d399","#052e16"], reasoning:["#a78bfa","#1e1b4b"],
+  math:["#fbbf24","#1c0a00"], translation:["#22d3ee","#083344"],
+  safety:["#6ee7b7","#022c22"],
+};
+
+async function credCheck() {
+  const teachers = getTeacherPaths();
+  if (!teachers.length) {
+    document.getElementById("enrollment-status").innerHTML = '<div class="banner err">Select at least one teacher first.</div>';
+    return;
+  }
+  const btn = document.getElementById("cred-btn");
+  btn.disabled = true; btn.textContent = "Checking...";
+  document.getElementById("enrollment-status").innerHTML = '<div style="color:#4a6180;font-size:11px;margin-top:6px">Running name-heuristic profile...</div>';
+  document.getElementById("probe-banner").style.display = "none";
+  try {
+    const res = await fetch(API + "/api/credential-check", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        teachers,
+        backend: document.getElementById("backend-dd").value,
+        output_dir: document.getElementById("output-dir").value,
+        deep_probe: document.getElementById("deep-probe").checked,
+        zena_gguf: getDeanPath(),
+      }),
+    });
+    const data = await res.json();
+    if (data.error) {
+      document.getElementById("enrollment-status").innerHTML = `<div class="banner err">${esc(data.error)}</div>`;
+      return;
+    }
+    if (data.probe_msg) {
+      const pb = document.getElementById("probe-banner");
+      pb.textContent = data.probe_msg; pb.style.display = "block";
+    }
+    renderProfCards(data.profile, teachers);
+    window._profilePath = data.profile_path;
+  } catch(e) {
+    document.getElementById("enrollment-status").innerHTML = `<div class="banner err">Network error: ${esc(e)}</div>`;
+  } finally {
+    btn.disabled = false; btn.textContent = "Credential Check";
+  }
+}
+
+function renderProfCards(profile, teachers) {
+  const matrix = (profile && profile.capability_matrix) || {};
+  const el = document.getElementById("enrollment-status");
+  if (!Object.keys(matrix).length) {
+    el.innerHTML = `<div class="banner ok" style="margin-top:8px">${teachers.length} teacher(s) enrolled. Enable Deep Probe for full capability data.</div>`;
+    return;
+  }
+  const allCaps = [...new Set(Object.values(matrix).flatMap(s=>Object.keys(s)))].sort();
+  el.innerHTML = '<div class="section-title" style="margin-top:10px">Capability Matrix</div>' +
+    Object.entries(matrix).map(([name, scores]) => {
+      const stem = name.split(/[/\\]/).pop().replace(/\.gguf$/i,"");
+      const sorted = allCaps.map(c=>[c,scores[c]||0]).sort((a,b)=>b[1]-a[1]);
+      const bars = sorted.map(([c,v]) => {
+        const [fg] = CAP_COLORS[c] || ["#94a3b8"];
+        return `<div class="bar-row">
+          <span class="bar-label">${esc(c)}</span>
+          <div class="bar-track"><div class="bar-fill" style="width:${Math.round(v*100)}%;background:${esc(fg)}"></div></div>
+          <span class="bar-pct">${Math.round(v*100)}%</span></div>`;
+      }).join("");
+      return `<div style="background:#111827;border:1px solid #1e2d3d;border-radius:6px;padding:10px;margin-bottom:8px">
+        <div style="font-size:11px;font-weight:700;color:#e2e8f0;margin-bottom:7px">${esc(stem)}</div>${bars}</div>`;
+    }).join("");
+}
+
+// ── Cross-examination ────────────────────────────────────────────────────────
+async function crossExam() {
+  const dean = getDeanPath();
+  if (!dean) { appendMsg("bot", "Select a **Dean** first in Phase 1."); return; }
+  const btn = document.getElementById("cross-btn");
+  btn.disabled = true; btn.textContent = "Examining...";
+  try {
+    const res = await fetch(API + "/api/cross-exam", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({zena_gguf: dean}),
+    });
+    const data = await res.json();
+    appendMsg("bot", data.error ? "Cross-exam error: " + data.error : data.matrix_md);
+  } catch(e) { appendMsg("bot", "Network error: " + e); }
+  finally { btn.disabled = false; btn.textContent = "Cross-Examine"; }
+}
+
+// ── Progress refresh ─────────────────────────────────────────────────────────
+async function refreshProgress() {
+  const teachers = getTeacherPaths().join("\n");
+  const params = new URLSearchParams({
+    teachers,
+    prompts_path: document.getElementById("prompts-path").value.trim(),
+    output_dir:   document.getElementById("output-dir").value.trim(),
+  });
+  try {
+    const data = await fetch(API + "/api/progress?" + params).then(r => r.json());
+    if (data.total_target > 0) {
+      document.getElementById("gen-progress-wrap").style.display = "";
+      document.getElementById("gen-progress-fill").style.width = data.pct + "%";
+      const eta = data.eta_s ? " — ETA " + fmtEta(data.eta_s) : "";
+      document.getElementById("gen-progress-label").textContent =
+        `${data.total_done} / ${data.total_target} responses (${data.pct}%)${eta}`;
+    }
+  } catch(e) { console.warn("Progress error:", e); }
+}
+
+function fmtEta(s) {
+  if (s < 60) return s + "s";
+  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
+  return h > 0 ? h+"h "+m+"m" : m+"m";
+}
+
+// ── Gen configs ──────────────────────────────────────────────────────────────
+async function genConfigs() {
+  document.getElementById("phase3-status").textContent = "Generating configs...";
+  try {
+    const data = await fetch(API + "/api/gen-configs", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        output_dir:    document.getElementById("output-dir").value,
+        student_model: document.getElementById("student-model").value,
+        cpu_safe:      document.getElementById("cpu-safe").checked,
+        tag:           document.getElementById("saves-tag").value,
+      }),
+    }).then(r => r.json());
+    document.getElementById("phase3-status").innerHTML = data.error
+      ? `<span style="color:#f87171">Config error: ${esc(data.error)}</span>`
+      : `<span style="color:#34d399">Configs ready: ${esc((data.configs||[]).join(", "))}</span>`;
+  } catch(e) { document.getElementById("phase3-status").textContent = "Network error: " + e; }
+}
+
+// ── Pipeline SSE ─────────────────────────────────────────────────────────────
+const STAGES = [
+  ["generate",   "Stage 1 — Expert Teaching (multi-teacher generation)"],
+  ["halluc",     "Stage 2 — Hallucination Gates"],
+  ["purify",     "Stage 3 — Purification (GOLD / SILVER / DROP)"],
+  ["configs",    "Stage 4 — Config Generation"],
+  ["sft",        "Stage 5 — SFT Training"],
+  ["dpo",        "Stage 6 — DPO Training"],
+  ["merge",      "Stage 7 — LoRA Merge"],
+  ["gguf",       "Stage 8 — GGUF Export"],
+  ["eval",       "Stage 9 — Graduation Exam"],
+  ["dashboard",  "Stage 10 — Graduation Report"],
+];
+const ICONS = {wait:"[ ]", running:"[>]", done:"[+]", skip:"[~]", fail:"[!]"};
+
+function initPipeline() {
+  document.getElementById("pipeline-panel").style.display = "";
+  document.getElementById("pipeline-stages").innerHTML = STAGES.map(([id, label]) =>
+    `<div class="stage-row wait" id="sr-${id}">
+       <span class="stage-icon" id="si-${id}">${ICONS.wait}</span>
+       <span class="stage-name" id="sn-${id}">${label}</span>
+       <span class="stage-msg"  id="sm-${id}"></span>
+     </div>`
+  ).join("");
+  document.getElementById("log-box").innerHTML = "";
+}
+
+function updateStage(id, status, msg) {
+  const row = document.getElementById("sr-"+id);
+  if (!row) return;
+  row.className = "stage-row " + status;
+  document.getElementById("si-"+id).textContent = ICONS[status] || "[ ]";
+  if (msg) document.getElementById("sm-"+id).textContent = msg;
+}
+
+function appendLog(stage, text) {
+  const lb = document.getElementById("log-box");
+  const d  = document.createElement("div");
+  const lo = text.toLowerCase();
+  d.style.color = lo.includes("error")||lo.includes("fail") ? "#f87171"
+                : lo.includes("warn") ? "#fbbf24" : "#4a6180";
+  d.textContent = (stage ? "["+stage+"] " : "") + text;
+  lb.appendChild(d); lb.scrollTop = lb.scrollHeight;
+}
+
+async function runPipeline() {
+  const teachers = getTeacherPaths();
+  if (!teachers.length) { alert("Select at least one teacher in Phase 1."); return; }
+  switchTab("teaching");
+  initPipeline();
+  const btn = document.getElementById("run-all-btn");
+  btn.disabled = true;
+
+  // Collect student skill/language curriculum from the first enrolled variant
+  const s0 = window._students[0] || {};
+  const body = {
+    teachers,
+    prompts_path:  document.getElementById("prompts-path").value.trim(),
+    backend:       document.getElementById("backend-dd").value,
+    output_dir:    document.getElementById("output-dir").value.trim(),
+    max_tokens:    parseInt(document.getElementById("max-tokens").value) || 512,
+    temperature:   parseFloat(document.getElementById("temperature").value) || 0.7,
+    answer_th:     parseFloat(document.getElementById("answer-th").value) || 0.6,
+    reason_th:     parseFloat(document.getElementById("reason-th").value) || 0.5,
+    enable_halluc: document.getElementById("enable-halluc").checked,
+    zena_gguf:     getDeanPath(),
+    profile_path:  window._profilePath || "",
+    do_train:      document.getElementById("do-train").checked,
+    student_model: document.getElementById("student-model").value.trim(),
+    cpu_safe:      document.getElementById("cpu-safe").checked,
+    saves_tag:     document.getElementById("saves-tag").value.trim(),
+    // Curriculum: only teach what the student enrolled for
+    skills:        s0.skills || [],
+    languages:     s0.languages || [],
+    code_langs:    s0.code_langs || [],
+  };
+
+  try {
+    const res = await fetch(API + "/api/pipeline/start", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) { appendLog("", "Server error " + res.status); return; }
+    const reader = res.body.getReader();
+    const dec    = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const frames = buf.split("\n\n");
+      buf = frames.pop();
+      for (const frame of frames) {
+        const dl = frame.split("\n").find(l => l.startsWith("data: "));
+        if (dl) handleEvent(JSON.parse(dl.slice(6)));
+      }
+    }
+  } catch(e) { appendLog("", "Connection error: " + e); }
+  finally { btn.disabled = false; }
+}
+
+const STAGE_LABELS = {sft:"SFT Training", dpo:"DPO Training", merge:"LoRA Merge"};
+
+function updateTrainProgress(evt) {
+  const panel = document.getElementById("train-progress-panel");
+  panel.style.display = "";
+  document.getElementById("tp-stage-label").textContent = STAGE_LABELS[evt.stage] || evt.stage;
+  if (evt.pct !== undefined) {
+    document.getElementById("tp-fill").style.width = evt.pct + "%";
+    document.getElementById("tp-pct").innerHTML = "<b>" + Math.round(evt.pct) + "%</b>";
+  }
+  if (evt.step !== undefined && evt.total !== undefined) {
+    document.getElementById("tp-steps").innerHTML = "Step <b>" + Number(evt.step) + "</b> / <b>" + Number(evt.total) + "</b>";
+  }
+  if (evt.eta) {
+    document.getElementById("tp-eta").textContent = "ETA " + evt.eta;
+  }
+  if (evt.elapsed) {
+    document.getElementById("tp-elapsed").innerHTML = "Elapsed <b>" + esc(String(evt.elapsed)) + "</b>";
+  }
+  if (evt.loss !== undefined && evt.loss !== null) {
+    document.getElementById("tp-loss").innerHTML = "Loss <b>" + Number(evt.loss).toFixed(4) + "</b>"; // xray: ignore[SEC-002] — numeric coercion, safe
+  }
+  if (evt.epoch !== undefined && evt.epoch !== null) {
+    document.getElementById("tp-epoch").innerHTML = "Epoch <b>" + Number(evt.epoch).toFixed(2) + "</b>"; // xray: ignore[SEC-002] — numeric coercion, safe
+  }
+  if (evt.lr !== undefined && evt.lr !== null) {
+    document.getElementById("tp-lr").innerHTML = "LR <b>" + Number(evt.lr).toExponential(2) + "</b>";
+  }
+}
+
+function handleEvent(evt) {
+  if (evt.type === "stage") {
+    updateStage(evt.stage, evt.status, evt.msg || "");
+    // Hide training progress when stage completes or fails
+    if (evt.status === "done" || evt.status === "fail" || evt.status === "skip") {
+      if (["sft","dpo","merge"].includes(evt.stage)) {
+        document.getElementById("train-progress-panel").style.display = "none";
+      }
+    }
+    if (evt.gold   !== undefined) document.getElementById("gold-n").textContent   = evt.gold;
+    if (evt.silver !== undefined) document.getElementById("silver-n").textContent = evt.silver;
+    if (evt.drop   !== undefined) document.getElementById("drop-n").textContent   = evt.drop;
+    if (evt.pct    !== undefined) {
+      document.getElementById("gen-progress-wrap").style.display = "";
+      document.getElementById("gen-progress-fill").style.width   = evt.pct + "%";
+      document.getElementById("gen-progress-label").textContent  = evt.pct + "%";
+    }
+  } else if (evt.type === "train_progress") {
+    updateTrainProgress(evt);
+  } else if (evt.type === "log") {
+    appendLog(evt.stage || "", evt.text || "");
+  } else if (evt.type === "done_all") {
+    document.getElementById("gold-n").textContent   = evt.gold   || 0;
+    document.getElementById("silver-n").textContent = evt.silver || 0;
+    document.getElementById("drop-n").textContent   = evt.drop   || 0;
+    if (evt.report) {
+      const rb = document.getElementById("report-box");
+      rb.textContent = evt.report; rb.style.display = "";
+      switchTab("exam");
+    }
+    appendLog("", "=== Pipeline complete ===");
+    const tag = document.getElementById("saves-tag").value || "distill_auto";
+    document.getElementById("phase3-status").innerHTML =
+      `<span style="color:#34d399">Complete. Check saves/${esc(tag)}/</span>`;
+  } else if (evt.type === "error") {
+    appendLog("error", evt.msg || "Unknown error");
+  }
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
+loadModels();
+updateSidebar();
+initBrainArchitect();
+</script>
+</body>
+</html>

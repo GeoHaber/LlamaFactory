@@ -22,7 +22,11 @@ from torch.utils.data import DataLoader  # xray: ignore[SEC-015]
 from tqdm import tqdm  # xray: ignore[SEC-015]
 from transformers import DataCollatorForLanguageModeling  # xray: ignore[SEC-015]
 
-from llamafactory.data import MultiModalDataCollatorForSeq2Seq, get_dataset, get_template_and_fix_tokenizer  # xray: ignore[SEC-015]
+from llamafactory.data import (  # xray: ignore[SEC-015]
+    MultiModalDataCollatorForSeq2Seq,
+    get_dataset,
+    get_template_and_fix_tokenizer,
+)
 from llamafactory.extras.constants import IGNORE_INDEX  # xray: ignore[SEC-015]
 from llamafactory.hparams import get_train_args  # xray: ignore[SEC-015]
 from llamafactory.model import load_model, load_tokenizer  # xray: ignore[SEC-015]

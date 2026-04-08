@@ -88,18 +88,18 @@ def create_eval_tab(engine: "Engine") -> dict[str, "Component"]:
     elem_dict.update(dict(dataset_dir=dataset_dir, dataset=dataset, **preview_elems))
 
     with gr.Row():
-        cutoff_len = gr.Slider(minimum=4, maximum=131072, value=1024, step=1)
-        max_samples = gr.Textbox(value="100000")
-        batch_size = gr.Slider(minimum=1, maximum=1024, value=2, step=1)
-        predict = gr.Checkbox(value=True)
+        cutoff_len = gr.Slider(minimum=4, maximum=131072, value=1024, step=1, info="Max token length for evaluation. Match your training cutoff.")
+        max_samples = gr.Textbox(value="100000", info="Max samples to evaluate. Lower for quick spot-checks.")
+        batch_size = gr.Slider(minimum=1, maximum=1024, value=2, step=1, info="Samples per GPU per step. Reduce if out of memory.")
+        predict = gr.Checkbox(value=True, info="Save model outputs for manual inspection.")
 
     input_elems.update({cutoff_len, max_samples, batch_size, predict})
     elem_dict.update(dict(cutoff_len=cutoff_len, max_samples=max_samples, batch_size=batch_size, predict=predict))
 
     with gr.Row():
-        max_new_tokens = gr.Slider(minimum=8, maximum=4096, value=512, step=1)
-        top_p = gr.Slider(minimum=0.01, maximum=1, value=0.7, step=0.01)
-        temperature = gr.Slider(minimum=0.01, maximum=1.5, value=0.95, step=0.01)
+        max_new_tokens = gr.Slider(minimum=8, maximum=4096, value=512, step=1, info="Max tokens to generate per sample.")
+        top_p = gr.Slider(minimum=0.01, maximum=1, value=0.7, step=0.01, info="Nucleus sampling. Lower = more focused output. Typical: 0.7-0.95.")
+        temperature = gr.Slider(minimum=0.01, maximum=1.5, value=0.95, step=0.01, info="Sampling temperature. Lower = deterministic, higher = creative.")
         output_dir = gr.Textbox()
 
     with gr.Accordion("Evaluation help", open=False, visible=False) as eval_help_tab:

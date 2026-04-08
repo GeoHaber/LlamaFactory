@@ -273,7 +273,7 @@ examples:
         ds_path.write_text(json.dumps(ds_info, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
 
     # Print dataset_info.json registration snippet
-    print(f"\n=== Add to data/dataset_info.json ===")  # xray: ignore[PY-004]
+    print("\n=== Add to data/dataset_info.json ===")  # xray: ignore[PY-004]
     reg: dict = {}
     if has_sft:
         reg[sft_name] = {

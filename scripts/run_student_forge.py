@@ -49,6 +49,7 @@ from typing import Any
 
 import yaml  # xray: ignore[SEC-015]
 
+
 # ── SPSC ring buffer import with fallback ────────────────────────────────
 
 
@@ -317,7 +318,7 @@ class ForgeState:
                 json.dump(self._data, f, indent=2, ensure_ascii=False)
                 f.write("\n")
             Path(tmp_name).replace(self._path)
-        except Exception:
+        except (OSError, TypeError, ValueError):
             Path(tmp_name).unlink(missing_ok=True)
             raise
 
@@ -644,7 +645,7 @@ examples:
     dpo_data_path = Path(matrix.get("dpo_data", ""))  # xray: ignore[PY-004]
     config_out = Path(args.config_out_dir) / tag  # xray: ignore[PY-004]
   # xray: ignore-next[PY-004]
-    print(f"=== Student Forge Matrix ===")  # xray: ignore[PY-004]
+    print("=== Student Forge Matrix ===")  # xray: ignore[PY-004]
     print(f"Tag:           {tag}")  # xray: ignore[PY-004]
     print(f"Template:      {template}")  # xray: ignore[PY-004]
     print(f"CPU safe:      {cpu_safe}")  # xray: ignore[PY-004]
@@ -687,7 +688,7 @@ examples:
     stale_age = state.last_heartbeat_age()  # xray: ignore[PY-004]
     if stale_age is not None and stale_age > _HEARTBEAT_INTERVAL * 3:
         print(f"Warning: last heartbeat was {stale_age:.0f}s ago — previous run likely crashed")  # xray: ignore[PY-004]
-        print(f"Resuming from saved state...\n")  # xray: ignore[PY-004]
+        print("Resuming from saved state...\n")  # xray: ignore[PY-004]
 
     # ── Split probe set ──────────────────────────────────────────────────
     train_sft_path = sft_data_path.parent / "train_sft.jsonl"
@@ -795,7 +796,7 @@ examples:
   # xray: ignore-next[PY-004]
     failed = [r for r in results if not r["ok"]]
     if failed:  # xray: ignore[PY-004]
-        print(f"\nFailed variants:")  # xray: ignore[PY-004]
+        print("\nFailed variants:")  # xray: ignore[PY-004]
         for r in failed:
             print(f"  {r['variant_id']}: {r['error']}")  # xray: ignore[PY-004]
 

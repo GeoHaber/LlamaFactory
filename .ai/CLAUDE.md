@@ -103,3 +103,41 @@ Multi-GPU automatically uses `torchrun`. Additional backends:
 - Python 3.11+ syntax
 - Double quotes for strings
 - All new files must include Apache 2.0 license header (checked by `make license`)
+
+### Distillation Web UI (`scripts/distill_server.py` + `scripts/distill.html`)
+
+Standalone FastAPI app (not Gradio) on port 7870. Requires Python >= 3.14.
+
+**Run:** `python scripts/distill_server.py`
+
+Three-phase wizard:
+1. **Staff & Faculty** — pick Dean (Zena GGUF) + 3+ expert teacher GGUFs
+2. **Brain Architect** — skill-first student design: pick skills (translation, coding, OCR,
+   chat, reasoning, math, summarize, creative), configure languages, system recommends
+   quality tier (OK/Good/Excellent → hidden 0.5B/1.5B/3B HF models)
+3. **Teaching & Graduation** — SSE-streamed pipeline with 10 stage indicators + training progress
+
+**Curriculum filtering** (`_filter_prompts_by_curriculum()`): before generation, prompts JSONL
+is filtered to keep only prompts matching the student's enrolled skills and languages. Prompt
+IDs encode category (`tr-en2es-0013` = translation, `chat-en-0524` = conversation, `ocr-0001` = OCR).
+Filtered file → `curriculum_prompts.jsonl`; metadata → `saves/<tag>/curriculum.json`.
+
+**Key data structures (JS):**
+- `SKILLS[]` — 8 skills with id, icon, name, complexity
+- `BRAIN_TIERS[]` — 3 quality tiers (OK/Good/Excellent) → HF model IDs
+- `_selectedSkills`, `_selectedLangs`, `_selectedCodeLangs` — Sets of enrolled choices
+- `_availableTiers[]` — computed by `recalcTiers()` based on skill complexity
+- Student object: `{ name, hf_id, quality, skills, languages, code_langs, ... }`
+
+**Server (Python) key additions:**
+- `PipelineReq.skills/languages/code_langs` — curriculum fields
+- `_PROMPT_SKILL_MAP` — maps prompt ID prefixes to skill names
+- `_filter_prompts_by_curriculum()` — filters prompts JSONL by skills + languages
+- Pipeline uses `actual_prompts` (filtered) instead of `req.prompts_path` (original)
+
+**Crash guards:**
+- `_responses_have_content()` — blocks if >95% teacher answers are empty
+- GOLD=0 guard — blocks training when no consensus data
+- Curriculum zero-match — blocks generation when filter keeps 0 prompts
+- Missing SFT yaml — blocks training when config generation silently failed
+- Always use `sys.executable` for subprocess calls, never bare `llamafactory-cli`

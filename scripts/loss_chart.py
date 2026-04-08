@@ -277,7 +277,7 @@ def build_text_chart(
         lines.append(f"  {loss_label:7.4f} |{''.join(row)}|")
 
     lines.append(f"          {'─' * width}")
-    lines.append(f"          step →")
+    lines.append("          step →")
     lines.append("")
     lines.extend(legend)
 
@@ -404,12 +404,12 @@ examples:
         return 1
 
     # Text chart to stdout
-    print(f"\n=== Loss Comparison ===\n")  # xray: ignore[PY-004]
+    print("\n=== Loss Comparison ===\n")  # xray: ignore[PY-004]
     print(build_text_chart(curves))  # xray: ignore[PY-004]
 
     # Convergence prediction
     if args.predict:
-        print(f"\n=== Convergence Prediction ===\n")  # xray: ignore[PY-004]
+        print("\n=== Convergence Prediction ===\n")  # xray: ignore[PY-004]
         for name, entries in curves.items():
             pred = predict_convergence(entries, target_loss=args.target_loss)
             status = pred.get("reason", "unknown")

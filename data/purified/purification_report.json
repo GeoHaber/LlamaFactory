@@ -1,0 +1,18 @@
+{
+  "total_samples": 629,
+  "total_processed": 629,
+  "gold_count": 0,
+  "silver_count": 0,
+  "dropped_count": 629,
+  "gold_pct": 0.0,
+  "silver_pct": 0.0,
+  "dropped_pct": 100.0,
+  "answer_threshold": 0.6,
+  "reason_threshold": 0.5,
+  "input_sha256": "4c35ad1eedcb81bc2490a792eeb0c05321563809bd02723d31682363b75eb203",
+  "use_embeddings": false,
+  "teacher_weights": null,
+  "auto_tuned": false,
+  "curriculum_sorted": false,
+  "synthetic_dpo_count": 0
+}

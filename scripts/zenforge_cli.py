@@ -34,6 +34,7 @@ import importlib
 import sys
 from pathlib import Path
 
+
 # Ensure scripts/ is importable
 _SCRIPTS_DIR = Path(__file__).resolve().parent
 if str(_SCRIPTS_DIR) not in sys.path:
@@ -63,7 +64,7 @@ def _print_help() -> None:
     max_len = max(len(c) for c in _COMMANDS)
     for cmd, (_, desc) in _COMMANDS.items():
         print(f"  {cmd:<{max_len + 2}} {desc}")
-    print(f"\nRun 'python scripts/zenforge_cli.py <command> --help' for command-specific help.")
+    print("\nRun 'python scripts/zenforge_cli.py <command> --help' for command-specific help.")
 
 
 def main() -> int:
