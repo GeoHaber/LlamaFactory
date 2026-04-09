@@ -156,3 +156,127 @@ python scripts/benchmark_multi_teacher_dispatch.py \
   --teachers Mistral-7B-Instruct-v0.3 Qwen2.5-14B-Instruct \
   --max-tokens 96 --temperature 0.3
 ```
+
+---
+
+## Distillation Studio (Web UI)
+
+For users who prefer a graphical launcher, the same pipeline is wrapped in a FastAPI
++ vanilla-HTML web UI at `scripts/distill_server.py` + `scripts/distill.html`.
+
+**Launch:**
+
+```bash
+python scripts/distill_server.py       # or Run_me.bat on Windows
+# then open http://localhost:7870
+```
+
+Requires Python >= 3.14.
+
+### Top chrome (shared across every tab)
+
+Two thin rows sit at the very top of the window and stay visible on every tab:
+
+| Row               | Contents                                                                          |
+|-------------------|-----------------------------------------------------------------------------------|
+| **Zena topbar**   | Circular **Dean Zena avatar** (top-left, clickable → opens the settings panel), "University of Distillation" brand, and the tab nav chips (Studio · 1 Enrollment · 2 Teaching · 3 Graduation · 4 Exam). |
+| **Metrics rail**  | Live system telemetry flush under the topbar: GPU % · VRAM · CPU · RAM · DISK · NET · TOK/S · ETA · bottleneck bottle. 1 Hz updates from the backend. |
+
+There is **no hamburger icon** and **no top-bar STOP button**. Clicking the Zena avatar
+slides the Settings panel in from the **left side, tucked directly under Zena**. The
+only STOP control lives inside the Run Status Card (see below).
+
+The inner tab-header strip that used to be duplicated on top of every tab pane has
+been removed — the Zena topbar chips are the single source of navigation.
+
+### Internationalization (i18n)
+
+The Settings panel offers six languages that translate every menu, label, and tooltip
+on the page: **English, French, Italian, Romanian, Hungarian, Hebrew**. The current
+language is persisted in `localStorage` under `zena.lang`; Hebrew flips the document
+to RTL (`html[dir="rtl"]`) and mirrors the Settings panel to slide in from the right.
+
+### Studio-as-launcher layout
+
+The UI has four tabs, but only one of them starts runs:
+
+| Tab            | Role                                                                  |
+|----------------|-----------------------------------------------------------------------|
+| **Enrollment** | Pick Dean, Teachers, enroll Students with skills/languages            |
+| **Studio**     | **Single source-of-truth launcher** — Start/Stop + all pipeline knobs |
+| **Teaching**   | Read-only live monitor of stages 1-3 (generate/halluc/purify)         |
+| **Graduation** | Read-only live monitor of stages 4-11 (train/merge/eval/dashboard)    |
+
+The Studio tab uses a **Start ↔ Run Status Card slot-swap**: while idle, a big green
+**Start Training** button occupies the centerpiece slot. The moment you press it,
+`setPipelineRunning(true)` hides the Start button and unveils the Run Status Card in
+the exact same position. The card is compact (stage label and metrics in the same
+font-size as the STOP button, ~13 px) with this layout:
+
+```
+[ STOP / RESTART ]   STAGE  ·  STEP  LOSS  EPOCH  ETA  GOLD  SILVER  DROP
+                     ▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░  (progress bar)
+```
+
+- The **STOP / RESTART button is on the left**, before the progress body. STOP is
+  visible while the run is live; once the pipeline reaches a terminal state (done or
+  fail) the button swaps to RESTART (which re-invokes `studioStart()`).
+- STOP hits `POST /api/pipeline/stop`, which flips the cancel flag and kills the
+  active subprocess cleanly. Partial artifacts in `saves/{tag}/` are preserved.
+
+### Multi-student sequential batch training
+
+When you enroll **2 or more** students on the Enrollment tab, pressing Start in Studio
+trains them all sequentially in one run:
+
+```
+Stage 1-3 (shared)      Stage 4-11 (per-student loop)
+┌──────────────────┐    ┌──────────────────────────────┐
+│ Teacher generate │───▶│ Student 1: configs→SFT→DPO→  │
+│ Halluc gates     │    │            merge→gguf→eval   │
+│ Purify           │    │            →dashboard→PM     │
+└──────────────────┘    │ Student 2: (same)            │
+                        │ Student N: (same)            │
+                        └──────────────────────────────┘
+```
+
+- **Stages 1-3 run once shared** — the purified GOLD/SILVER dataset is reused across
+  every student in the batch. The curriculum prompt filter uses the **union** of all
+  enrolled students' skills and languages so no student is starved of relevant prompts.
+- **Stages 4-11 loop per student** with a per-student saves tag
+  `{saves_tag}_{safe_student_name}` passed as `--tag` to `gen_distill_configs.py` and
+  `slim_down.py` and as `--saves-tag` to `eval_student_panel.py` + `graduation_dashboard.py`.
+  This guarantees unique config YAMLs, unique `saves/{s_tag}/...` adapter/merged/gguf
+  directories, and unique evaluation scorecards per student.
+- **STOP cancels the whole batch** — pressing STOP mid-student kills the running
+  subprocess and breaks out of the loop. The pipeline reports the failed student as
+  `status: "cancelled"` (not `"fail"`) in its `student_end` SSE event.
+- **Single-student runs are fully back-compat** — with one enrolled student the loop
+  iterates once and `s_tag = saves_tag`, matching the old flow byte-for-byte.
+
+**Why sequential, not parallel?** Single-GPU training is compute-bound — two trainers
+time-slice the same CUDA cores so wall-clock is roughly the same as sequential, often
+worse due to kernel contention. Sequential also gives simpler STOP semantics, cleaner
+progress tracking, and recoverable failures. On multi-GPU hosts, parallel training
+(one trainer per device) would warrant a different approach.
+
+### Studio SSE event types
+
+The browser consumes a single SSE stream from `POST /api/pipeline/start`. Event types:
+
+| Type              | Payload                                                   | Purpose                                    |
+|-------------------|-----------------------------------------------------------|--------------------------------------------|
+| `stage`           | `stage, status, msg`                                      | Per-stage lifecycle (running/done/fail/…)  |
+| `log`             | `stage, text`                                             | Subprocess stdout line-by-line             |
+| `train_progress`  | `stage, step, total, loss, epoch, eta`                    | Parsed trainer_log.jsonl                   |
+| `metrics`         | `cpu, ram, gpu, vram, bottleneck, …`                      | Top metrics rail sampler (1 Hz)            |
+| `student_begin`   | `idx, total, name, hf_id, tag`                            | Batch: new student starting stages 4-11    |
+| `student_end`     | `idx, total, name, tag, status`                           | Batch: student finished (done/fail/cancelled) |
+| `done_all`        | `gold, silver, drop, report, batch_size, batch_status`    | Pipeline complete                          |
+| `error`           | `msg`                                                     | Fatal early-exit                           |
+
+The Run Status Card shows a `Student N / M · name` batch cell during multi-student
+runs (hidden for single-student). Between students the card's metric cells
+(STEP/LOSS/EPOCH/ETA) and progress bar reset so each student starts with a fresh UI.
+Teacher-generation progress (stages 1-3) also flows into the same card's progress
+bar and cells so the centerpiece is always the single place to look during a run.

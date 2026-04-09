@@ -20,7 +20,12 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 #right{flex:1;display:flex;flex-direction:column;overflow:hidden}
 
 /* ── Top bar ─────────────────────────────────────────────── */
-.avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#6366f1);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0}
+/* Zena avatar is now the click target for opening the Settings panel
+   (replaces the hamburger icon on the top right). */
+.avatar{width:38px;height:38px;border-radius:50%;background:#0f172a;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:2px solid #1e40af;box-shadow:0 0 0 2px #60a5fa22,0 0 12px -2px #60a5fa40;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease}
+.avatar:hover{transform:scale(1.06);border-color:#60a5fa;box-shadow:0 0 0 2px #60a5fa55,0 0 16px -2px #60a5fa80}
+.avatar:focus{outline:none;border-color:#60a5fa;box-shadow:0 0 0 3px #60a5fa88,0 0 16px -2px #60a5faaa}
+.avatar img{width:100%;height:100%;object-fit:cover;display:block;border-radius:50%;pointer-events:none}
 .brand{flex:1}.brand-title{font-size:14px;font-weight:700;color:#f1f5f9}.brand-title span{color:#60a5fa}
 .brand-sub{font-size:9px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em}
 .steps{display:flex;gap:3px;align-items:center}
@@ -139,30 +144,134 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 #chat-send:hover{background:#2563eb}
 
 /* ── Studio tab — Unsloth-style flat 3-column layout ──────── */
-#studio-wrap{display:flex;flex-direction:column;gap:10px}
-.studio-card{background:#0d1421;border:1px solid #1e2d3d;border-radius:8px;padding:12px}
-.studio-card-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#60a5fa;margin-bottom:8px}
+#studio-wrap{display:flex;flex-direction:column;gap:18px;max-width:1280px;margin:0 auto;padding:28px 36px 20px}
+.studio-card{background:#0d1421;border:1px solid #1e2d3d;border-radius:10px;padding:18px 20px}
+.studio-card-title{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#60a5fa;margin-bottom:12px}
+.studio-card-title .studio-hint{color:#4a6180;font-weight:500;text-transform:none;letter-spacing:0;margin-left:6px;font-size:10px;font-style:italic}
+.studio-adv{margin-top:12px;padding-top:10px;border-top:1px dashed #1e2d3d}
+.studio-adv>summary{cursor:pointer;font-size:10px;color:#4a6180;text-transform:uppercase;letter-spacing:.08em;font-weight:700;list-style:none;user-select:none}
+.studio-adv>summary:hover{color:#60a5fa}
+.studio-adv>summary::-webkit-details-marker{display:none}
+.studio-adv>summary::before{content:"▸ ";color:#4a6180}
+.studio-adv[open]>summary::before{content:"▾ "}
+.studio-adv>*:not(summary){margin-top:10px}
+
+/* ── Studio Roster card (at top of Studio — shows enrolled dean/teachers/students) ── */
+.studio-roster-card .studio-card-title{display:flex;align-items:center;margin-bottom:14px}
+.roster-grid{display:grid;grid-template-columns:1.2fr 2fr 2fr;gap:20px}
+.roster-slot{display:flex;flex-direction:column;gap:6px;min-width:0}
+.roster-slot .rs-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180}
+.roster-slot .rs-body{font-size:11px;color:#e2e8f0;min-height:22px}
+.roster-slot .rs-pills{display:flex;flex-wrap:wrap;gap:5px}
+.roster-slot .rs-empty{color:#3a4556;font-style:italic;font-size:10px}
+.rs-dean-chip{display:inline-flex;align-items:center;gap:7px;padding:5px 10px;background:#0f172a;border:1px solid #3b82f6;border-radius:6px;font-size:11px;font-weight:600;color:#93c5fd}
+.rs-dean-chip .rs-sq{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.rs-dean-chip .rs-meta{color:#4a6180;font-weight:400;font-size:9px;margin-left:4px}
+.rs-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;background:#111827;border:1px solid #1e2d3d;border-radius:12px;font-size:10px;color:#cbd5e1;max-width:100%}
+.rs-pill .rs-sq{width:7px;height:7px;border-radius:2px;flex-shrink:0}
+.rs-pill.rs-teacher{border-color:#334155}
+.rs-pill.rs-student{border-color:#065f46;background:#022c22;color:#6ee7b7}
+.rs-warn{margin-top:10px;padding:8px 12px;background:#451a03;border:1px solid #b45309;border-radius:6px;font-size:10px;color:#fbbf24}
+/* Read-only student info panel under the picker */
+.studio-student-info{margin-top:8px;padding:10px 12px;background:#0a1119;border:1px solid #1e2d3d;border-radius:6px;font-size:10px;color:#94a3b8;line-height:1.6;min-height:44px}
+.studio-student-info .ssi-row{display:flex;gap:8px;align-items:baseline}
+.studio-student-info .ssi-lbl{color:#4a6180;text-transform:uppercase;letter-spacing:.06em;font-size:8px;font-weight:700;min-width:72px;flex-shrink:0}
+.studio-student-info .ssi-val{color:#e2e8f0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.studio-multi-hint{margin-top:10px;padding:8px 12px;background:#0c1f3d;border:1px solid #3b82f6;border-radius:6px;font-size:10px;color:#93c5fd;line-height:1.5}
+
+/* ══ Monitor tabs (Teaching / Graduation) — clean progress views ══ */
+.monitor-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.monitor-header .section-title{margin:0}
+.monitor-go-studio{flex-shrink:0}
+.monitor-idle-hint{display:flex;align-items:center;gap:16px;padding:32px 28px;background:#0d1421;border:1px dashed #1e2d3d;border-radius:10px;color:#94a3b8}
+.monitor-idle-hint .mih-icon{font-size:32px;color:#4a6180;flex-shrink:0}
+.monitor-idle-hint .mih-title{font-size:13px;font-weight:700;color:#e2e8f0;margin-bottom:4px}
+.monitor-idle-hint .mih-sub{font-size:11px;color:#4a6180;line-height:1.6}
+.monitor-summary{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;padding:14px 18px;background:#0d1421;border:1px solid #1e2d3d;border-radius:8px;margin-bottom:14px}
+.monitor-summary .ms-row{display:flex;align-items:center;gap:10px;font-size:11px}
+.monitor-summary .ms-lbl{color:#4a6180;text-transform:uppercase;letter-spacing:.06em;font-size:9px;font-weight:700;flex-shrink:0;min-width:140px}
+.monitor-summary .ms-val{color:#e2e8f0;font-weight:600;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.monitor-body .log-header{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#60a5fa;margin:14px 0 6px}
+
+/* ══ Top-nav step status dots — running/done/fail next to the label ══ */
+.step{position:relative;padding-right:14px}
+.step::after{
+  content:"";position:absolute;right:2px;top:50%;width:6px;height:6px;
+  border-radius:50%;transform:translateY(-50%);background:transparent;
+  transition:background .2s ease,box-shadow .2s ease}
+.step.st-run::after {background:#34d399;box-shadow:0 0 6px #34d399a0;animation:stepPulse 1.2s ease-in-out infinite}
+.step.st-done::after{background:#60a5fa}
+.step.st-fail::after{background:#f87171;box-shadow:0 0 6px #f87171a0}
+@keyframes stepPulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* ══ Studio mode — Unsloth-style clean full-width view ══
+   When #app has .studio-mode, the Dean/Teachers sidebar, activity ribbon
+   and inner tab bar all hide, giving Studio the full canvas. */
+#app.studio-mode #left{display:none}
+#app.studio-mode #activity-ribbon{display:none}
+#app.studio-mode #right{background:#0a1119}
+#app.studio-mode #tabs-body{background:#0a1119}
 .studio-row{display:flex;gap:10px;align-items:flex-end}
-.studio-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-.studio-stat-row{display:flex;gap:10px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #1e2d3d;font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-.studio-start-row{display:flex;align-items:center;gap:14px}
-.studio-start-btn{flex:0 0 auto;background:#10b981!important;color:#062a17!important;font-size:13px;font-weight:800;padding:14px 28px;border-radius:8px;letter-spacing:.04em}
-.studio-start-btn:hover{background:#34d399!important}
-.studio-start-btn:disabled{background:#1e2d3d!important;color:#4a6180!important;cursor:not-allowed}
-.studio-start-hint{font-size:10px;color:#4a6180;font-style:italic}
+.studio-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.studio-stat-row{display:flex;gap:12px;align-items:center;margin-top:14px;padding-top:12px;border-top:1px solid #1e2d3d;font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.studio-start-row{display:flex;align-items:center;gap:16px;justify-content:center;padding:6px 0 2px}
+.studio-start-btn{flex:0 0 auto;background:#10b981!important;color:#062a17!important;font-size:15px;font-weight:800;padding:18px 56px;border-radius:10px;letter-spacing:.05em;box-shadow:0 4px 18px -6px #10b98180;text-transform:uppercase}
+.studio-start-btn:hover{background:#34d399!important;box-shadow:0 6px 22px -6px #34d399a0}
+.studio-start-btn:disabled{background:#1e2d3d!important;color:#4a6180!important;cursor:not-allowed;box-shadow:none}
+.studio-start-hint{font-size:11px;color:#4a6180;font-style:italic}
 #studio-stage-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:10px}
 #studio-stage-strip .sss{padding:3px 8px;border-radius:10px;background:#0a1119;border:1px solid #1e2d3d;color:#94a3b8}
 #studio-stage-strip .sss.run{background:#06402130;color:#34d399;border-color:#065f46}
 #studio-stage-strip .sss.done{background:#1e3a5f30;color:#60a5fa;border-color:#1e40af50}
 #studio-stage-strip .sss.fail{background:#7f1d1d30;color:#f87171;border-color:#7f1d1d}
+
+/* ── Compact Run Status card — the centerpiece once training starts ────
+     Layout: [STOP/RESTART button] [stage + metrics + progress bar] — button
+     is anchored LEFT, stage text matches the STOP button size (~13px). */
+#run-status-card{display:none;margin-top:14px;padding:12px 16px;border-radius:10px;
+  background:linear-gradient(180deg,#0d1f3d 0%,#0a1119 100%);border:1px solid #1e40af80;
+  box-shadow:0 0 0 1px #0a1119,0 6px 20px -12px #1e40af80}
+#run-status-card.done{border-color:#065f46;background:linear-gradient(180deg,#0a2a1b 0%,#0a1119 100%);box-shadow:0 0 0 1px #0a1119,0 6px 20px -12px #10b98180}
+#run-status-card.fail{border-color:#7f1d1d;background:linear-gradient(180deg,#2a0d0d 0%,#0a1119 100%);box-shadow:0 0 0 1px #0a1119,0 6px 20px -12px #dc262680}
+#run-status-card .rs-top{display:flex;align-items:center;gap:14px}
+/* Left side = STOP / RESTART button (before the progress body) */
+#run-status-card .rs-left{flex:0 0 auto;display:flex;gap:8px;align-items:center}
+/* Right side = stage label + metrics + progress — grows to fill */
+#run-status-card .rs-right{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+#run-status-card .rs-stage-lbl{font-size:9px;color:#4a6180;letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+#run-status-card .rs-stage{font-size:13px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#60a5fa;line-height:1.2;display:flex;align-items:center;gap:8px}
+#run-status-card.running .rs-stage{color:#34d399}
+#run-status-card.done .rs-stage{color:#10b981}
+#run-status-card.fail .rs-stage{color:#f87171}
+#run-status-card .rs-pulse{width:8px;height:8px;border-radius:50%;background:#34d399;box-shadow:0 0 0 0 #34d39970;animation:rspulse 1.4s ease-out infinite;flex:0 0 auto}
+#run-status-card.done .rs-pulse,#run-status-card.fail .rs-pulse{animation:none;box-shadow:none}
+#run-status-card.done .rs-pulse{background:#10b981}
+#run-status-card.fail .rs-pulse{background:#f87171}
+@keyframes rspulse{0%{box-shadow:0 0 0 0 #34d39970}70%{box-shadow:0 0 0 8px #34d39900}100%{box-shadow:0 0 0 0 #34d39900}}
+#run-status-card .rs-batch{font-size:11px;color:#93c5fd;font-weight:700;letter-spacing:.02em}
+#run-status-card .rs-batch b{color:#e2e8f0}
+#run-status-card .rs-metrics{font:11px/1.3 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;display:flex;gap:14px;flex-wrap:wrap}
+#run-status-card .rs-metrics .rsm-key{color:#4a6180;text-transform:uppercase;letter-spacing:.06em;font-size:9px}
+#run-status-card .rs-metrics .rsm-val{color:#e2e8f0;font-weight:700;margin-left:4px}
+#run-status-card .rs-err-msg{display:none;margin-top:6px;padding:6px 10px;background:#7f1d1d20;border:1px solid #7f1d1d80;border-radius:5px;color:#fca5a5;font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-word;max-height:100px;overflow-y:auto}
+#run-status-card.fail .rs-err-msg{display:block}
+#run-status-card .rs-progress{margin-top:2px;height:6px;background:#0a1119;border-radius:3px;overflow:hidden;border:1px solid #1e2d3d}
+#run-status-card .rs-progress-fill{height:100%;background:linear-gradient(90deg,#10b981,#34d399);width:0%;transition:width .3s ease}
+#run-status-card.fail .rs-progress-fill{background:linear-gradient(90deg,#dc2626,#f87171)}
+#run-status-card .rs-btn{font-size:13px;font-weight:800;padding:10px 18px;border-radius:8px;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:1px solid transparent;transition:all .12s;white-space:nowrap}
+#run-status-card .rs-btn-stop{background:#dc2626;color:#fff;border-color:#991b1b;box-shadow:0 4px 14px -4px #dc262680}
+#run-status-card .rs-btn-stop:hover{background:#ef4444}
+#run-status-card .rs-btn-restart{background:#1e40af;color:#dbeafe;border-color:#3b82f6;box-shadow:0 4px 14px -4px #1e40af80}
+#run-status-card .rs-btn-restart:hover{background:#2563eb;color:#fff}
+#run-status-card .rs-btn:disabled{background:#1e2d3d!important;color:#4a6180!important;cursor:not-allowed;border-color:#1e2d3d;box-shadow:none}
+@media (max-width: 700px){
+  #run-status-card .rs-top{flex-direction:column;align-items:stretch;gap:10px}
+  #run-status-card .rs-left{justify-content:center}
+}
+
 @media (max-width: 1100px){.studio-cols{grid-template-columns:1fr}}
 
-/* ── Tabs ─────────────────────────────────────────────────── */
-#tabs-header{display:flex;border-bottom:1px solid #1e2d3d;background:#111827;flex-shrink:0}
-.tab-btn{padding:9px 16px;font-size:11px;font-weight:700;color:#4a6180;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em;text-transform:uppercase}
-.tab-btn.active{color:#60a5fa;border-bottom-color:#3b82f6}
-.tab-btn:hover:not(.active){color:#94a3b8}
-.tab-group-sep{display:inline-flex;align-items:center;color:#1e2d3d;padding:0 4px;font-size:9px;font-weight:700}
+/* ── Tabs (nav lives in the Zena topbar; inner header removed) ───── */
 #tabs-body{flex:1;overflow:auto;padding:14px 16px}
 .tab-pane{display:none}.tab-pane.active{display:block}
 
@@ -296,17 +405,20 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
 .bar-fill{height:100%;border-radius:2px;transition:width .4s}
 .bar-pct{font-size:9px;font-weight:700;color:#94a3b8;width:28px}
 
-/* Iter 1: live metrics rail (always visible at the bottom of the viewport) */
-#metrics-rail{position:fixed;left:0;right:0;bottom:0;height:30px;
-  background:#0a1119;border-top:1px solid #1e2d3d;display:flex;align-items:center;
+/* Iter 1: live metrics rail — flush under the Zena topbar. */
+#metrics-rail{height:26px;
+  background:#0a1119;border-bottom:1px solid #1e2d3d;display:flex;align-items:center;
   gap:14px;padding:0 14px;font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-  color:#94a3b8;z-index:200;overflow-x:auto;white-space:nowrap}
+  color:#94a3b8;z-index:200;overflow-x:auto;white-space:nowrap;flex-shrink:0}
 #metrics-rail .mr-cell{display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
 #metrics-rail .mr-key{font-size:9px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em}
 #metrics-rail .mr-val{color:#e2e8f0;font-weight:700}
 #metrics-rail .mr-val.warn{color:#fbbf24}
 #metrics-rail .mr-val.crit{color:#f87171}
 #metrics-rail .mr-val.ok{color:#34d399}
+/* Stage badge in the rail is hidden — the big centerpiece Run Status
+   Card in the Studio tab is the single source of truth for current stage. */
+#metrics-rail .mr-cell:first-child{display:none}
 #metrics-rail .mr-stage{padding:2px 8px;border-radius:10px;background:#1e3a5f40;
   color:#60a5fa;border:1px solid #1e40af50;font-size:10px;font-weight:700}
 #metrics-rail .mr-bottle{margin-left:auto;font-size:10px;font-weight:700;
@@ -314,35 +426,183 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
 #metrics-rail .mr-bottle.warn{background:#78350f30;color:#fbbf24;border-color:#78350f}
 #metrics-rail .mr-bottle.crit{background:#7f1d1d30;color:#f87171;border-color:#7f1d1d}
 #metrics-rail .mr-bottle.ok{background:#06402130;color:#34d399;border-color:#065f46}
-#app{padding-bottom:30px}  /* leave space for the rail */
+
+/* ── Settings panel (Claude-style slide-in) — opened by clicking the Zena avatar ── */
+#settings-backdrop{position:fixed;inset:0;background:#000000aa;backdrop-filter:blur(3px);z-index:1000;
+  opacity:0;pointer-events:none;transition:opacity .2s}
+#settings-backdrop.open{opacity:1;pointer-events:auto}
+/* Slides in from the LEFT, tucked directly under the Zena avatar in the topbar.
+   Top offset = topbar height (about 48px) + metrics rail (26px) so it opens flush
+   beneath both strips instead of covering the brand. */
+#settings-panel{position:fixed;top:74px;left:-360px;width:340px;max-height:calc(100vh - 90px);background:#0f172a;
+  border:1px solid #1e40af80;border-left:none;border-radius:0 12px 12px 0;
+  box-shadow:12px 12px 36px -12px #00000080;z-index:1001;
+  display:flex;flex-direction:column;transition:left .25s ease;overflow:hidden}
+#settings-panel.open{left:0}
+html[dir="rtl"] #settings-panel{left:auto;right:-360px;border:1px solid #1e40af80;border-right:none;
+  border-radius:12px 0 0 12px;box-shadow:-12px 12px 36px -12px #00000080;transition:right .25s ease}
+html[dir="rtl"] #settings-panel.open{right:0;left:auto}
+#settings-panel .sp-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;
+  border-bottom:1px solid #1e2d3d;flex-shrink:0}
+#settings-panel .sp-title{font-size:14px;font-weight:800;color:#e2e8f0;letter-spacing:.02em}
+#settings-panel .sp-close{background:transparent;border:none;color:#4a6180;cursor:pointer;font-size:22px;
+  line-height:1;padding:2px 8px;border-radius:6px;transition:all .15s}
+#settings-panel .sp-close:hover{color:#f87171;background:#7f1d1d20}
+#settings-panel .sp-body{flex:1;overflow-y:auto;padding:14px 18px}
+#settings-panel .sp-section{margin-bottom:20px}
+#settings-panel .sp-label{font-size:10px;font-weight:800;color:#4a6180;text-transform:uppercase;
+  letter-spacing:.08em;margin-bottom:8px}
+#settings-panel .sp-desc{font-size:10px;color:#4a6180;margin-top:6px;line-height:1.5;font-style:italic}
+/* Language grid */
+.sp-lang-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.sp-lang-btn{display:flex;align-items:center;gap:8px;padding:9px 11px;background:#0a1119;
+  border:1px solid #1e2d3d;border-radius:7px;color:#94a3b8;cursor:pointer;font-size:11px;
+  font-weight:700;transition:all .15s;text-align:left}
+.sp-lang-btn:hover{border-color:#22d3ee;color:#22d3ee}
+.sp-lang-btn.on{background:#083344;border-color:#22d3ee;color:#22d3ee}
+.sp-lang-btn .flag{font-size:16px;line-height:1;flex-shrink:0}
+/* Theme toggle */
+.sp-theme{display:flex;gap:6px}
+.sp-theme-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px;
+  background:#0a1119;border:1px solid #1e2d3d;border-radius:7px;color:#94a3b8;cursor:pointer;
+  font-size:11px;font-weight:700;transition:all .15s}
+.sp-theme-btn:hover{border-color:#fbbf24;color:#fbbf24}
+.sp-theme-btn.on{background:#78350f40;border-color:#fbbf24;color:#fbbf24}
+/* Toggle rows */
+.sp-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;
+  border-bottom:1px solid #1e2d3d}
+.sp-toggle-row:last-child{border-bottom:none}
+.sp-toggle-row .sp-tr-lbl{font-size:11px;color:#e2e8f0;font-weight:600}
+.sp-toggle-row .sp-tr-sub{font-size:9px;color:#4a6180;margin-top:2px}
+.sp-switch{position:relative;width:34px;height:20px;background:#1e2d3d;border-radius:10px;cursor:pointer;
+  transition:background .2s;flex-shrink:0}
+.sp-switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;
+  background:#94a3b8;border-radius:50%;transition:all .2s}
+.sp-switch.on{background:#065f46}
+.sp-switch.on::after{left:16px;background:#34d399}
+/* Light theme overrides (minimal — swaps dark surfaces to light) */
+html[data-theme="light"] body{background:#f8fafc;color:#0f172a}
+html[data-theme="light"] #app{background:#f8fafc}
+html[data-theme="light"] #topbar{background:#f1f5f9;border-bottom-color:#cbd5e1;color:#0f172a}
+html[data-theme="light"] .brand-title{color:#0f172a}
+html[data-theme="light"] .brand-sub{color:#64748b}
+html[data-theme="light"] .step{color:#64748b}
+html[data-theme="light"] .step.active{background:#dbeafe;color:#1d4ed8;border-color:#93c5fd}
+html[data-theme="light"] #left{background:#f1f5f9;border-right-color:#cbd5e1}
+html[data-theme="light"] #app.studio-mode #right,
+html[data-theme="light"] #app.studio-mode #tabs-body{background:#f8fafc}
+html[data-theme="light"] .studio-card{background:#ffffff;border-color:#cbd5e1;color:#0f172a}
+html[data-theme="light"] .studio-card-title{color:#1d4ed8}
+html[data-theme="light"] input[type=text],html[data-theme="light"] input[type=number],
+html[data-theme="light"] select,html[data-theme="light"] textarea{background:#ffffff;color:#0f172a;border-color:#cbd5e1}
+html[data-theme="light"] #metrics-rail{background:#f1f5f9;border-bottom-color:#cbd5e1;color:#334155}
+html[data-theme="light"] #settings-panel{background:#ffffff;border-left-color:#cbd5e1}
+html[data-theme="light"] #settings-panel .sp-title{color:#0f172a}
+html[data-theme="light"] .sp-lang-btn,html[data-theme="light"] .sp-theme-btn{background:#f8fafc;border-color:#cbd5e1;color:#334155}
+/* RTL layout for Hebrew */
+html[dir="rtl"] #settings-panel{right:auto;left:-360px;border-left:none;border-right:1px solid #1e40af80}
+html[dir="rtl"] #settings-panel.open{left:0}
+html[dir="rtl"] #topbar,html[dir="rtl"] #main{direction:rtl}
 </style>
 </head>
 <body>
-<div id="app">
+<div id="app" class="studio-mode">
 
   <!-- TOP BAR -->
   <div id="topbar">
-    <div class="avatar">Z</div>
+    <div class="avatar" onclick="toggleSettingsPanel()" title="Click Zena to open settings — language, theme, …" data-i18n-title="settings.open" aria-label="Settings" role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSettingsPanel();}"><img src="/zena.png" alt="Zena" onerror="this.onerror=null;this.parentNode.textContent='Z'"></div>
     <div class="brand">
-      <div class="brand-title">University of <span>Distillation</span></div>
-      <div class="brand-sub">Dean Zena &mdash; Multi-Teacher Knowledge Transfer</div>
+      <div class="brand-title" data-i18n-html="top.brand">University of <span>Distillation</span></div>
+      <div class="brand-sub" data-i18n="top.brand.sub">Dean Zena &mdash; Multi-Teacher Knowledge Transfer</div>
     </div>
     <div class="steps">
-      <span class="step active" onclick="switchTab('studio')">Studio</span>
+      <span class="step active" onclick="switchTab('studio')" title="Configure everything and press Start" data-i18n="tab.studio" data-i18n-title="tab.studio.tooltip">Studio</span>
       <span class="step-sep">/</span>
-      <span class="step" onclick="switchTab('enrollment')">1 Enrollment</span>
+      <span class="step" onclick="switchTab('enrollment')" title="Advanced — browse and pick Dean/Teacher models" data-i18n="tab.enrollment" data-i18n-title="tab.enrollment.tooltip">1 Enrollment</span>
       <span class="step-sep">/</span>
-      <span class="step" onclick="switchTab('teaching')">2 Teaching</span>
+      <span class="step" onclick="switchTab('teaching')" title="Live monitor — teacher response generation" data-i18n="tab.teaching" data-i18n-title="tab.teaching.tooltip">2 Teaching</span>
       <span class="step-sep">/</span>
-      <span class="step" onclick="switchTab('graduation')">3 Graduation</span>
+      <span class="step" onclick="switchTab('graduation')" title="Live monitor — student training (SFT / DPO / Merge / GGUF)" data-i18n="tab.graduation" data-i18n-title="tab.graduation.tooltip">3 Graduation</span>
       <span class="step-sep">/</span>
-      <span class="step" onclick="switchTab('exam')">4 Exam</span>
+      <span class="step" onclick="switchTab('exam')" title="Final graduation report" data-i18n="tab.exam" data-i18n-title="tab.exam.tooltip">4 Exam</span>
     </div>
+    <!-- Top-bar STOP and hamburger removed: the big Run Status Card has its own STOP,
+         and Zena (top-left) is the single entry-point for the settings panel. -->
   </div>
+
+  <!-- ══ METRICS RAIL — thin strip flush under the Zena topbar, 1Hz updates ══ -->
+  <div id="metrics-rail" aria-label="Live system metrics">
+    <div class="mr-cell"><span class="mr-stage" id="mr-stage">idle</span></div>
+    <div class="mr-cell"><span class="mr-key">GPU</span><span class="mr-val" id="mr-gpu">--</span></div>
+    <div class="mr-cell"><span class="mr-key">VRAM</span><span class="mr-val" id="mr-vram">--</span></div>
+    <div class="mr-cell"><span class="mr-key">CPU</span><span class="mr-val" id="mr-cpu">--</span></div>
+    <div class="mr-cell"><span class="mr-key">RAM</span><span class="mr-val" id="mr-ram">--</span></div>
+    <div class="mr-cell"><span class="mr-key">DISK</span><span class="mr-val" id="mr-disk">--</span></div>
+    <div class="mr-cell"><span class="mr-key">NET</span><span class="mr-val" id="mr-net">--</span></div>
+    <div class="mr-cell"><span class="mr-key">TOK/S</span><span class="mr-val" id="mr-tok">--</span></div>
+    <div class="mr-cell"><span class="mr-key">ETA</span><span class="mr-val" id="mr-eta">--</span></div>
+    <div class="mr-bottle" id="mr-bottle">--</div>
+  </div>
+
+  <!-- Settings backdrop + slide-in panel (Claude-style) -->
+  <div id="settings-backdrop" onclick="closeSettingsPanel()"></div>
+  <aside id="settings-panel" aria-label="Settings panel">
+    <div class="sp-head">
+      <div class="sp-title" data-i18n="settings.title">Settings</div>
+      <button class="sp-close" onclick="closeSettingsPanel()" aria-label="Close">&#10005;</button>
+    </div>
+    <div class="sp-body">
+
+      <div class="sp-section">
+        <div class="sp-label" data-i18n="settings.language">Language</div>
+        <div class="sp-lang-grid" id="sp-lang-grid">
+          <button class="sp-lang-btn" data-lang="en" onclick="setLang('en')"><span class="flag">&#127468;&#127463;</span>English</button>
+          <button class="sp-lang-btn" data-lang="fr" onclick="setLang('fr')"><span class="flag">&#127467;&#127479;</span>Français</button>
+          <button class="sp-lang-btn" data-lang="it" onclick="setLang('it')"><span class="flag">&#127470;&#127481;</span>Italiano</button>
+          <button class="sp-lang-btn" data-lang="ro" onclick="setLang('ro')"><span class="flag">&#127479;&#127476;</span>Română</button>
+          <button class="sp-lang-btn" data-lang="hu" onclick="setLang('hu')"><span class="flag">&#127469;&#127482;</span>Magyar</button>
+          <button class="sp-lang-btn" data-lang="he" onclick="setLang('he')"><span class="flag">&#127470;&#127473;</span>עברית</button>
+        </div>
+        <div class="sp-desc" data-i18n="settings.language.desc">Translate every menu, label, and tooltip.</div>
+      </div>
+
+      <div class="sp-section">
+        <div class="sp-label" data-i18n="settings.theme">Theme</div>
+        <div class="sp-theme" id="sp-theme-grid">
+          <button class="sp-theme-btn" data-theme="dark"  onclick="setTheme('dark')">&#9790; <span data-i18n="settings.theme.dark">Dark</span></button>
+          <button class="sp-theme-btn" data-theme="light" onclick="setTheme('light')">&#9728; <span data-i18n="settings.theme.light">Light</span></button>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <div class="sp-label" data-i18n="settings.tooltips">Tooltips</div>
+        <div class="sp-toggle-row">
+          <div>
+            <div class="sp-tr-lbl" data-i18n="settings.tooltips.enable">Show help tooltips</div>
+            <div class="sp-tr-sub" data-i18n="settings.tooltips.sub">Hover any field or button to see what it does.</div>
+          </div>
+          <div class="sp-switch on" id="sp-tooltip-switch" onclick="toggleTooltips()"></div>
+        </div>
+      </div>
+
+      <div class="sp-section">
+        <div class="sp-label" data-i18n="settings.about">About</div>
+        <div class="sp-desc" style="font-style:normal">
+          <div data-i18n="settings.about.name">University of Distillation</div>
+          <div style="opacity:.7;margin-top:4px" data-i18n="settings.about.sub">Multi-teacher knowledge transfer studio</div>
+        </div>
+      </div>
+
+    </div>
+  </aside>
 
   <!-- GLOBAL ACTIVITY RIBBON -- always visible, fed by _lastInfo -->
   <div id="activity-ribbon" aria-label="Pipeline activity overview">
     <div class="ar-cell"><span class="ar-stage" id="ar-stage">idle</span></div>
+    <div class="ar-cell" id="ar-batch-cell" style="display:none">
+      <span class="ar-key">BATCH</span><span class="ar-val" id="ar-batch">--</span>
+    </div>
     <div class="ar-cell"><span class="ar-key">GOLD</span><span class="ar-val gold" id="ar-gold">0</span></div>
     <div class="ar-cell"><span class="ar-key">SILVER</span><span class="ar-val silver" id="ar-silver">0</span></div>
     <div class="ar-cell"><span class="ar-key">DROP</span><span class="ar-val drop" id="ar-drop">0</span></div>
@@ -409,40 +669,127 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
       </div>
     </div>
 
-    <!-- RIGHT: tabbed wizard -->
+    <!-- RIGHT: tabbed wizard (tab navigation lives in the top Zena bar; no inner tab strip) -->
     <div id="right">
-      <div id="tabs-header">
-        <button class="tab-btn active" data-tab="studio">Studio</button>
-        <span class="tab-group-sep">|</span>
-        <button class="tab-btn" data-tab="enrollment">Recipes &middot; 1 Enroll</button>
-        <button class="tab-btn" data-tab="teaching">2 Teach</button>
-        <button class="tab-btn" data-tab="graduation">3 Graduate</button>
-        <button class="tab-btn" data-tab="exam">4 Exam</button>
-      </div>
       <div id="tabs-body">
 
         <!-- ══ STUDIO: Unsloth-style flat 3-column layout, default tab ══ -->
         <div class="tab-pane active" id="tab-studio">
           <div id="studio-wrap">
 
-            <!-- Row 1 — Model bar -->
+            <!-- Row 0 — Roster summary (what's enrolled in 1 Enrollment) -->
+            <div class="studio-card studio-roster-card" id="studio-roster">
+              <div class="studio-card-title">
+                <span data-i18n="studio.roster">Roster</span> <span class="studio-hint" data-i18n-html="studio.roster.hint">— who's teaching and who's learning (configure in <b>1 Enrollment</b>)</span>
+                <button class="btn btn-ghost btn-sm" style="margin-left:auto;font-size:9px"
+                        onclick="switchTab('enrollment')"
+                        title="Jump to Enrollment to add or remove Dean, Teachers, or Students" data-i18n-title="studio.roster.edit.tooltip">
+                  &#9998;&nbsp;<span data-i18n="studio.roster.edit">Edit in Enrollment</span>
+                </button>
+              </div>
+              <div class="roster-grid">
+                <div class="roster-slot">
+                  <div class="rs-label" data-i18n="studio.roster.dean">Dean</div>
+                  <div class="rs-body" id="sr-dean"><span class="rs-empty" data-i18n="studio.roster.none">(none)</span></div>
+                </div>
+                <div class="roster-slot">
+                  <div class="rs-label"><span id="sr-teachers-count">0</span>&nbsp;<span data-i18n="studio.roster.teachers">Teacher(s)</span></div>
+                  <div class="rs-body rs-pills" id="sr-teachers"><span class="rs-empty" data-i18n="studio.roster.none">(none)</span></div>
+                </div>
+                <div class="roster-slot">
+                  <div class="rs-label"><span id="sr-students-count">0</span>&nbsp;<span data-i18n="studio.roster.students">Student(s)</span></div>
+                  <div class="rs-body rs-pills" id="sr-students"><span class="rs-empty" data-i18n="studio.roster.none">(none)</span></div>
+                </div>
+              </div>
+              <div class="rs-warn" id="sr-warn" style="display:none"></div>
+            </div>
+
+            <!-- Row 1 — Student to train (driven by enrollment) -->
             <div class="studio-card studio-model-row">
-              <div class="studio-card-title">Model</div>
+              <div class="studio-card-title"><span data-i18n="studio.model.title">Student to train</span> <span class="studio-hint" data-i18n-html="studio.model.hint">— pick from the students you enrolled in <b>1 Enrollment</b></span></div>
               <div class="studio-row">
                 <div class="field" style="flex:2">
-                  <label>Student model (HF id)</label>
-                  <input type="text" id="studio-model" value="Qwen/Qwen2.5-0.5B-Instruct" placeholder="HuggingFace model id">
+                  <label title="Which enrolled student (from 1 Enrollment) to train this run. Each student = a base model + selected skills + languages." data-i18n="studio.student" data-i18n-title="studio.student.tooltip">Student</label>
+                  <select id="studio-student-idx" onchange="onStudentPicked()"
+                          title="Which enrolled student to train this run. Pick one from your 1 Enrollment roster." data-i18n-title="studio.student.tooltip">
+                    <option value="" data-i18n="studio.student.empty">(no student enrolled — go to 1 Enrollment)</option>
+                  </select>
+                  <div class="studio-student-info" id="studio-student-info">
+                    <span class="rs-empty" data-i18n="studio.student.info">Base model / skills / languages will appear here once you enroll a student.</span>
+                  </div>
+                  <!-- hidden mirror field kept in sync with the picker so the pipeline payload stays identical -->
+                  <input type="hidden" id="studio-model" value="">
                 </div>
                 <div class="field" style="flex:1">
-                  <label>Saves tag</label>
-                  <input type="text" id="studio-tag" value="studio_run" placeholder="output name">
+                  <label title="Short name for this run. Used as the saves/<tag>/ folder and the final GGUF filename. Defaults to the student's name." data-i18n="studio.savestag" data-i18n-title="studio.savestag.tooltip">Saves tag</label>
+                  <input type="text" id="studio-tag" value="studio_run" placeholder="output name"
+                         title="Short name for this run. Used as the saves/<tag>/ folder and the final GGUF filename." data-i18n-title="studio.savestag.tooltip">
                 </div>
                 <div class="field" style="flex:1">
-                  <label>Backend</label>
-                  <select id="studio-backend">
+                  <label title="inprocess = teachers run in the Python server (faster spin-up). server = teachers run as separate llama-server processes (more stable under long runs)." data-i18n="studio.backend" data-i18n-title="studio.backend.tooltip">Backend</label>
+                  <select id="studio-backend"
+                          title="inprocess = teachers run in the Python server. server = teachers run as separate llama-server processes." data-i18n-title="studio.backend.tooltip">
                     <option value="inprocess">inprocess</option>
                     <option value="server">server</option>
                   </select>
+                </div>
+              </div>
+              <div class="studio-multi-hint" id="studio-multi-hint" style="display:none">
+                &#8505; You enrolled <b id="studio-multi-n">2</b> students — one Start will train them all <b>sequentially</b>.
+                Stages 1-3 (teacher generation, hallucination gates, purification) run <b>once shared</b>, then stages 4-11
+                loop per student with a per-student saves tag. STOP cancels the whole batch.
+              </div>
+
+              <!-- Big green START button — lives in the same slot as the Run Status Card.
+                   Visible when idle; hidden and replaced in-place by the card when a run starts. -->
+              <div class="studio-start-row" id="studio-start-row">
+                <button class="btn btn-primary studio-start-btn" id="studio-start-btn"
+                        onclick="studioStart()">&#9658;&nbsp;&nbsp;<span data-i18n="studio.start">Start Training</span></button>
+                <span class="studio-start-hint" data-i18n="studio.start.hint">Reuses the full pipeline backend &mdash; same SFT&rarr;DPO&rarr;Merge as Recipes</span>
+              </div>
+
+              <!-- COMPACT RUN STATUS CARD — the centerpiece once training starts.
+                   Layout: [STOP/RESTART button | stage + metrics + progress bar]
+                   Button is anchored LEFT before the progress body. -->
+              <div id="run-status-card" class="running">
+                <div class="rs-top">
+                  <!-- LEFT: STOP / RESTART button (single-column, before the progress) -->
+                  <div class="rs-left">
+                    <button class="rs-btn rs-btn-stop" id="rs-stop-btn"
+                            onclick="stopPipeline()" title="Cancel the running pipeline cleanly (kills the active subprocess, keeps partial artifacts)." data-i18n-title="runstatus.stop.tooltip">
+                      &#9632;&nbsp;<span data-i18n="runstatus.stop">STOP</span>
+                    </button>
+                    <button class="rs-btn rs-btn-restart" id="rs-restart-btn"
+                            onclick="studioStart()" style="display:none"
+                            title="Re-run the pipeline with the current Studio settings." data-i18n-title="runstatus.restart.tooltip">
+                      &#8634;&nbsp;<span data-i18n="runstatus.restart">RESTART</span>
+                    </button>
+                  </div>
+                  <!-- RIGHT: stage label + live metrics + progress bar -->
+                  <div class="rs-right">
+                    <div class="rs-stage-lbl" data-i18n="runstatus.stage">Current stage</div>
+                    <div class="rs-stage">
+                      <span class="rs-pulse" id="rs-pulse"></span>
+                      <span id="rs-stage" data-i18n="runstatus.starting">STARTING</span>
+                    </div>
+                    <div class="rs-batch" id="rs-batch" style="display:none">
+                      <span data-i18n="studio.student">Student</span>&nbsp;<b id="rs-batch-idx">1</b> / <b id="rs-batch-total">1</b> &middot;
+                      <b id="rs-batch-name">--</b>
+                    </div>
+                    <div class="rs-metrics" id="rs-metrics">
+                      <div><span class="rsm-key" data-i18n="ribbon.step">STEP</span><span class="rsm-val" id="rs-step">--</span></div>
+                      <div><span class="rsm-key" data-i18n="ribbon.loss">LOSS</span><span class="rsm-val" id="rs-loss">--</span></div>
+                      <div><span class="rsm-key" data-i18n="ribbon.epoch">EPOCH</span><span class="rsm-val" id="rs-epoch">--</span></div>
+                      <div><span class="rsm-key" data-i18n="ribbon.eta">ETA</span><span class="rsm-val" id="rs-eta">--</span></div>
+                      <div><span class="rsm-key" data-i18n="ribbon.gold">GOLD</span><span class="rsm-val" id="rs-gold">0</span></div>
+                      <div><span class="rsm-key" data-i18n="ribbon.silver">SILVER</span><span class="rsm-val" id="rs-silver">0</span></div>
+                      <div><span class="rsm-key" data-i18n="ribbon.drop">DROP</span><span class="rsm-val" id="rs-drop">0</span></div>
+                    </div>
+                    <div class="rs-progress" id="rs-progress-wrap" style="display:none">
+                      <div class="rs-progress-fill" id="rs-progress-fill"></div>
+                    </div>
+                    <div class="rs-err-msg" id="rs-err-msg"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -451,82 +798,119 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
             <div class="studio-cols">
               <!-- Dataset -->
               <div class="studio-card">
-                <div class="studio-card-title">Dataset</div>
-                <div class="field"><label>Prompts (.jsonl)</label>
-                  <input type="text" id="studio-prompts" value="data/zena007_prompts.jsonl"></div>
-                <div class="field"><label>Output dir</label>
-                  <input type="text" id="studio-out" value="data/purified"></div>
+                <div class="studio-card-title"><span data-i18n="studio.dataset">Dataset</span> <span class="studio-hint" data-i18n="studio.dataset.hint">— what the teachers will answer</span></div>
+                <div class="field">
+                  <label title="A .jsonl file where each line has a &quot;prompt&quot; field. The teachers will generate answers for every prompt." data-i18n="studio.prompts" data-i18n-title="studio.prompts.tooltip">Prompts (.jsonl)</label>
+                  <input type="text" id="studio-prompts" value="data/zena007_prompts.jsonl"
+                         title="Path to a .jsonl file with one prompt per line ({&quot;prompt&quot;: &quot;...&quot;})." data-i18n-title="studio.prompts.tooltip"></div>
+                <div class="field">
+                  <label title="Where teacher_responses.jsonl and the purified gold/silver/drop files get written." data-i18n="studio.outputdir" data-i18n-title="studio.outputdir.tooltip">Output dir</label>
+                  <input type="text" id="studio-out" value="data/purified"
+                         title="Directory where teacher_responses.jsonl and purified gold/silver/drop files get written." data-i18n-title="studio.outputdir.tooltip"></div>
                 <div class="field-row">
-                  <div class="field"><label>Max tokens</label>
-                    <input type="number" id="studio-max-tokens" value="512" min="64" max="4096"></div>
-                  <div class="field"><label>Temperature</label>
-                    <input type="number" id="studio-temp" value="0.7" min="0" max="2" step="0.05"></div>
+                  <div class="field">
+                    <label title="Hard cap on how long each teacher response can be. 512 is a good default; raise for reasoning tasks." data-i18n="studio.maxtokens" data-i18n-title="studio.maxtokens.tooltip">Max tokens</label>
+                    <input type="number" id="studio-max-tokens" value="512" min="64" max="4096"
+                           title="Maximum tokens per teacher response. 512 works for most tasks." data-i18n-title="studio.maxtokens.tooltip"></div>
+                  <div class="field">
+                    <label title="Sampling temperature. 0 = deterministic, 0.7 = balanced, 1.0 = creative." data-i18n="studio.temperature" data-i18n-title="studio.temperature.tooltip">Temperature</label>
+                    <input type="number" id="studio-temp" value="0.7" min="0" max="2" step="0.05"
+                           title="Sampling temperature. 0.0 = deterministic, 0.7 = balanced, 1.0+ = creative." data-i18n-title="studio.temperature.tooltip"></div>
                 </div>
-                <label class="check-lbl"><input type="checkbox" id="studio-halluc" checked>
-                  Hallucination filter</label>
+                <label class="check-lbl" title="Run each teacher response through a 5-gate filter that drops hallucinations before they enter the training set." data-i18n-title="studio.halluc.tooltip">
+                  <input type="checkbox" id="studio-halluc" checked>
+                  <span data-i18n="studio.halluc">Hallucination filter</span></label>
+
+                <!-- Advanced (collapsed by default) -->
+                <details class="studio-adv">
+                  <summary data-i18n="studio.advanced">Advanced</summary>
+                  <div class="field-row">
+                    <div class="field">
+                      <label title="Minimum per-response quality score to land in the GOLD set (used for SFT training). Higher = stricter." data-i18n="studio.goldthresh" data-i18n-title="studio.goldthresh.tooltip">GOLD threshold</label>
+                      <input type="number" id="studio-answer-th" value="0.6" min="0" max="1" step="0.05"
+                             title="Minimum quality score for GOLD (SFT). Default 0.6." data-i18n-title="studio.goldthresh.tooltip"></div>
+                    <div class="field">
+                      <label title="Minimum score for SILVER (used as &quot;rejected&quot; in DPO pairs). Must be below GOLD threshold." data-i18n="studio.silverthresh" data-i18n-title="studio.silverthresh.tooltip">SILVER threshold</label>
+                      <input type="number" id="studio-reason-th" value="0.5" min="0" max="1" step="0.05"
+                             title="Minimum quality score for SILVER (DPO rejected). Default 0.5." data-i18n-title="studio.silverthresh.tooltip"></div>
+                  </div>
+                </details>
               </div>
 
               <!-- Parameters -->
               <div class="studio-card">
-                <div class="studio-card-title">Parameters</div>
+                <div class="studio-card-title"><span data-i18n="studio.params">Parameters</span> <span class="studio-hint" data-i18n="studio.params.hint">— how the student learns</span></div>
                 <div class="field-row">
-                  <div class="field"><label>LoRA rank</label>
-                    <input type="number" id="studio-lora" value="16" min="4" max="256"></div>
-                  <div class="field"><label>LR</label>
-                    <input type="number" id="studio-lr" value="0.0002" min="0" max="0.01" step="0.0001"></div>
+                  <div class="field">
+                    <label title="LoRA adapter rank. Higher = more capacity but more VRAM. 16 is the sweet spot for most Qwen/Gemma students." data-i18n="studio.lorarank" data-i18n-title="studio.lorarank.tooltip">LoRA rank</label>
+                    <input type="number" id="studio-lora" value="16" min="4" max="256"
+                           title="LoRA adapter rank. 16 is the sweet spot; raise to 32/64 for harder tasks." data-i18n-title="studio.lorarank.tooltip"></div>
+                  <div class="field">
+                    <label title="Learning rate for the LoRA adapter. 2e-4 works for most SFT runs." data-i18n="studio.lr" data-i18n-title="studio.lr.tooltip">LR</label>
+                    <input type="number" id="studio-lr" value="0.0002" min="0" max="0.01" step="0.0001"
+                           title="Learning rate. 2e-4 is safe for LoRA SFT." data-i18n-title="studio.lr.tooltip"></div>
                 </div>
                 <div class="field-row">
-                  <div class="field"><label>Epochs</label>
-                    <input type="number" id="studio-epochs" value="3" min="1" max="20"></div>
-                  <div class="field"><label>Batch size</label>
-                    <input type="number" id="studio-bs" value="2" min="1" max="64"></div>
+                  <div class="field">
+                    <label title="Number of times the student sees the full training set. 3 is usually enough; more can overfit." data-i18n="studio.epochs" data-i18n-title="studio.epochs.tooltip">Epochs</label>
+                    <input type="number" id="studio-epochs" value="3" min="1" max="20"
+                           title="Training epochs. 3 is usually enough." data-i18n-title="studio.epochs.tooltip"></div>
+                  <div class="field">
+                    <label title="Samples per GPU forward pass. Lower if you hit OOM." data-i18n="studio.batchsize" data-i18n-title="studio.batchsize.tooltip">Batch size</label>
+                    <input type="number" id="studio-bs" value="2" min="1" max="64"
+                           title="Per-device batch size. Lower if you hit OOM." data-i18n-title="studio.batchsize.tooltip"></div>
                 </div>
                 <div class="field-row">
-                  <div class="field"><label>Grad accum</label>
-                    <input type="number" id="studio-gas" value="16" min="1" max="64"></div>
-                  <div class="field"><label>Cutoff len</label>
-                    <input type="number" id="studio-cutoff" value="2048" min="256" max="8192"></div>
+                  <div class="field">
+                    <label title="Effective batch = batch_size × grad_accum. Raise this to simulate a bigger batch without more VRAM." data-i18n="studio.gradaccum" data-i18n-title="studio.gradaccum.tooltip">Grad accum</label>
+                    <input type="number" id="studio-gas" value="16" min="1" max="64"
+                           title="Gradient accumulation steps. Effective batch = batch_size × grad_accum." data-i18n-title="studio.gradaccum.tooltip"></div>
+                  <div class="field">
+                    <label title="Max tokenised sequence length. Samples longer than this get truncated. 2048 is safe for short-form tasks." data-i18n="studio.cutoff" data-i18n-title="studio.cutoff.tooltip">Cutoff len</label>
+                    <input type="number" id="studio-cutoff" value="2048" min="256" max="8192"
+                           title="Max sequence length. Truncates longer samples." data-i18n-title="studio.cutoff.tooltip"></div>
                 </div>
-                <label class="check-lbl"><input type="checkbox" id="studio-liger" checked>
-                  Liger Kernel (+20% speed, &minus;60% VRAM)</label>
-                <label class="check-lbl"><input type="checkbox" id="studio-muon">
-                  Muon optimizer (~52% AdamW FLOPs)</label>
+                <label class="check-lbl" title="Fused Triton kernels from linkedin/Liger-Kernel. ~+20% throughput and ~−60% VRAM for attention + MLP on supported models (Qwen/Gemma/Llama/Mistral/Phi3). Requires `pip install liger-kernel` and a CUDA GPU." data-i18n-title="studio.liger.tooltip">
+                  <input type="checkbox" id="studio-liger" checked>
+                  <span data-i18n="studio.liger">Liger Kernel (+20% speed, &minus;60% VRAM)</span></label>
+                <label class="check-lbl" title="Newton-Schulz orthogonalisation optimiser. Uses ~52% of AdamW FLOPs on 2D weight matrices. Best paired with a standard AdamW fallback for 1D params — LLaMA-Factory handles that for you." data-i18n-title="studio.muon.tooltip">
+                  <input type="checkbox" id="studio-muon">
+                  <span data-i18n="studio.muon">Muon optimizer (~52% AdamW FLOPs)</span></label>
               </div>
 
               <!-- Training -->
               <div class="studio-card">
-                <div class="studio-card-title">Training</div>
-                <div class="field"><label>Stages</label>
-                  <select id="studio-stages">
-                    <option value="all">SFT &rarr; DPO &rarr; Merge &rarr; GGUF</option>
+                <div class="studio-card-title"><span data-i18n="studio.training">Training</span> <span class="studio-hint" data-i18n="studio.training.hint">— which stages to run</span></div>
+                <div class="field">
+                  <label title="Which training stages to run after teacher generation. &quot;Teachers only&quot; stops after purification — useful for inspecting quality before committing to a long train." data-i18n="studio.stages" data-i18n-title="studio.stages.tooltip">Stages</label>
+                  <select id="studio-stages"
+                          title="Which training stages to run after teacher generation." data-i18n-title="studio.stages.tooltip">
+                    <option value="all">SFT &rarr; DPO &rarr; Merge &rarr; GGUF (full)</option>
                     <option value="sft">SFT only</option>
                     <option value="sft_dpo">SFT &rarr; DPO</option>
-                    <option value="merge_gguf">Merge &rarr; GGUF</option>
+                    <option value="merge_gguf">Merge &rarr; GGUF (assumes you already trained)</option>
+                    <option value="teachers_only">Teachers only (no training)</option>
                   </select></div>
-                <label class="check-lbl"><input type="checkbox" id="studio-cpu-safe">
-                  CPU-safe (no bf16)</label>
-                <label class="check-lbl"><input type="checkbox" id="studio-eval" checked>
-                  Run eval after training</label>
-                <label class="check-lbl"><input type="checkbox" id="studio-postmortem" checked>
-                  Postmortem report on completion</label>
-                <div class="studio-stat-row">
-                  <span class="ar-key">STEPS</span><span class="ar-val" id="studio-stat-steps">--</span>
-                  <span class="ar-key">EPOCH</span><span class="ar-val" id="studio-stat-epoch">--</span>
-                  <span class="ar-key">LOSS</span><span class="ar-val" id="studio-stat-loss">--</span>
+                <label class="check-lbl" title="Force fp32 on CPU-only boxes. Leave OFF if you have an NVIDIA GPU with bf16 support." data-i18n-title="studio.cpusafe.tooltip">
+                  <input type="checkbox" id="studio-cpu-safe">
+                  <span data-i18n="studio.cpusafe">CPU-safe (no bf16)</span></label>
+                <label class="check-lbl" title="Run the graduation exam after training finishes. Prints a quality score you can use to compare runs." data-i18n-title="studio.runeval.tooltip">
+                  <input type="checkbox" id="studio-eval" checked>
+                  <span data-i18n="studio.runeval">Run eval after training</span></label>
+                <label class="check-lbl" title="After the pipeline finishes, run scripts/postmortem_agent.py against the metrics sidecar and emit a markdown report with auto-tune recommendations (e.g., &quot;GPU underutilised — raise batch_size&quot;)." data-i18n-title="studio.postmortem.tooltip">
+                  <input type="checkbox" id="studio-postmortem" checked>
+                  <span data-i18n="studio.postmortem">Postmortem report on completion</span></label>
+                <div class="studio-stat-row" title="Live training stats — updated from the SFT/DPO loop via SSE.">
+                  <span class="ar-key" data-i18n="ribbon.step">STEPS</span><span class="ar-val" id="studio-stat-steps">--</span>
+                  <span class="ar-key" data-i18n="ribbon.epoch">EPOCH</span><span class="ar-val" id="studio-stat-epoch">--</span>
+                  <span class="ar-key" data-i18n="ribbon.loss">LOSS</span><span class="ar-val" id="studio-stat-loss">--</span>
                 </div>
               </div>
             </div>
 
-            <!-- Row 3 — Big green Start -->
-            <div class="studio-start-row">
-              <button class="btn btn-primary studio-start-btn" id="studio-start-btn"
-                      onclick="studioStart()">&#9658;&nbsp;&nbsp;Start Training</button>
-              <span class="studio-start-hint">Reuses the full pipeline backend &mdash; same SFT&rarr;DPO&rarr;Merge as Recipes</span>
-            </div>
-
-            <!-- Row 4 — live loss chart + stage strip -->
+            <!-- Row 3 — live loss chart + stage strip -->
             <div class="studio-card">
-              <div class="studio-card-title">Live training loss</div>
+              <div class="studio-card-title" data-i18n="studio.loss.title">Live training loss</div>
               <canvas id="studio-loss-canvas" width="900" height="160"
                       style="width:100%;height:160px;background:#0a1119;border:1px solid #1e2d3d;border-radius:6px"></canvas>
               <div id="studio-stage-strip"></div>
@@ -541,37 +925,37 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
 
             <!-- Search + filter row -->
             <div id="enroll-toolbar">
-              <input id="model-search" type="text" placeholder="&#128269;  Search by name, family, or capability..." oninput="filterGrid()">
+              <input id="model-search" type="text" placeholder="&#128269;  Search by name, family, or capability..." data-i18n-placeholder="enroll.search" oninput="filterGrid()">
               <div class="filter-pills" id="filter-pills">
-                <button class="fpill active" data-f="all"          onclick="setFilter('all',this)">All</button>
-                <button class="fpill"         data-f="dean"         onclick="setFilter('dean',this)">Dean</button>
-                <button class="fpill"         data-f="teacher"      onclick="setFilter('teacher',this)">Teacher</button>
-                <button class="fpill"         data-f="student"      onclick="setFilter('student',this)">Student</button>
-                <button class="fpill"         data-f="coding"       onclick="setFilter('coding',this)">Coding</button>
-                <button class="fpill"         data-f="reasoning"    onclick="setFilter('reasoning',this)">Reasoning</button>
-                <button class="fpill"         data-f="multilingual" onclick="setFilter('multilingual',this)">Multilingual</button>
-                <button class="fpill"         data-f="fast"         onclick="setFilter('fast',this)">Fast/Small</button>
+                <button class="fpill active" data-f="all"          onclick="setFilter('all',this)"          data-i18n="enroll.filter.all">All</button>
+                <button class="fpill"         data-f="dean"         onclick="setFilter('dean',this)"         data-i18n="enroll.filter.dean">Dean</button>
+                <button class="fpill"         data-f="teacher"      onclick="setFilter('teacher',this)"      data-i18n="enroll.filter.teacher">Teacher</button>
+                <button class="fpill"         data-f="student"      onclick="setFilter('student',this)"      data-i18n="enroll.filter.student">Student</button>
+                <button class="fpill"         data-f="coding"       onclick="setFilter('coding',this)"       data-i18n="enroll.filter.coding">Coding</button>
+                <button class="fpill"         data-f="reasoning"    onclick="setFilter('reasoning',this)"    data-i18n="enroll.filter.reasoning">Reasoning</button>
+                <button class="fpill"         data-f="multilingual" onclick="setFilter('multilingual',this)" data-i18n="enroll.filter.multilingual">Multilingual</button>
+                <button class="fpill"         data-f="fast"         onclick="setFilter('fast',this)"         data-i18n="enroll.filter.fast">Fast/Small</button>
               </div>
-              <button class="btn btn-ghost btn-sm" onclick="loadModels()" title="Rescan C:\AI\Models">&#8635; Rescan</button>
+              <button class="btn btn-ghost btn-sm" onclick="loadModels()" title="Rescan C:\AI\Models" data-i18n-title="enroll.rescan.tooltip">&#8635;&nbsp;<span data-i18n="enroll.rescan">Rescan</span></button>
             </div>
 
             <!-- Config + action row -->
             <div id="enroll-cfg">
               <div class="field">
-                <label>Backend</label>
+                <label data-i18n="enroll.backend">Backend</label>
                 <select id="backend-dd">
                   <option value="inprocess">inprocess (direct GGUF, no HTTP)</option>
                   <option value="server">server (external llama-server)</option>
                 </select>
               </div>
               <div class="field">
-                <label>Output directory</label>
+                <label data-i18n="enroll.outputdir">Output directory</label>
                 <input type="text" id="output-dir" value="data/purified">
               </div>
               <div class="enroll-acts">
-                <label class="deep-label"><input type="checkbox" id="deep-probe"> Deep probe</label>
-                <button class="btn btn-ghost btn-sm" id="cred-btn" onclick="credCheck()">Credential Check</button>
-                <button class="btn btn-ghost btn-sm" id="cross-btn" onclick="crossExam()">Cross-Examine</button>
+                <label class="deep-label"><input type="checkbox" id="deep-probe">&nbsp;<span data-i18n="enroll.deep">Deep probe</span></label>
+                <button class="btn btn-ghost btn-sm" id="cred-btn" onclick="credCheck()" data-i18n="enroll.cred">Credential Check</button>
+                <button class="btn btn-ghost btn-sm" id="cross-btn" onclick="crossExam()" data-i18n="enroll.cross">Cross-Examine</button>
               </div>
             </div>
 
@@ -580,15 +964,15 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
 
             <!-- ── Brain Architect ──────────────────────────────── -->
             <div id="brain-architect">
-              <div class="ba-title">&#129504; Brain Architect &mdash; What Should Your Model Know?</div>
-              <div style="font-size:10px;color:#4a9e7a;margin-bottom:14px;line-height:1.5">
-                Pick the <strong style="color:#6ee7b7">skills</strong> your model needs.
+              <div class="ba-title" data-i18n="ba.title">&#129504; Brain Architect &mdash; What Should Your Model Know?</div>
+              <div style="font-size:10px;color:#4a9e7a;margin-bottom:14px;line-height:1.5" data-i18n="ba.intro">
+                Pick the skills your model needs.
                 The system will recommend the right brain size and estimate quality for each task.
-                Teachers will <em>only</em> teach the skills you select.
+                Teachers will only teach the skills you select.
               </div>
 
               <!-- Step 1: Skill picker -->
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin-bottom:6px">Step 1 &mdash; Select skills to teach</div>
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin-bottom:6px" data-i18n="ba.step1">Step 1 &mdash; Select skills to teach</div>
               <div class="ba-skills" id="ba-skills">
                 <!-- filled by JS -->
               </div>
@@ -597,19 +981,19 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
               <div id="ba-skill-configs">
                 <!-- Translation languages -->
                 <div class="ba-config" id="ba-cfg-translation">
-                  <div class="ba-config-title">&#127760; Translation &mdash; Select languages</div>
+                  <div class="ba-config-title" data-i18n="ba.translation">&#127760; Translation &mdash; Select languages</div>
                   <div class="ba-langs" id="ba-langs"><!-- filled by JS --></div>
                 </div>
                 <!-- Coding languages -->
                 <div class="ba-config" id="ba-cfg-coding">
-                  <div class="ba-config-title">&#128187; Coding &mdash; Select languages</div>
+                  <div class="ba-config-title" data-i18n="ba.coding">&#128187; Coding &mdash; Select languages</div>
                   <div class="ba-langs" id="ba-code-langs"><!-- filled by JS --></div>
                 </div>
               </div>
 
               <!-- Step 2: Quality tier recommendation -->
-              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin:14px 0 6px">Step 2 &mdash; Choose quality tier</div>
-              <div id="ba-no-skills" style="font-size:10px;color:#3a4556;font-style:italic;padding:8px 0">Pick at least one skill above to see recommendations</div>
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#4a6180;margin:14px 0 6px" data-i18n="ba.step2">Step 2 &mdash; Choose quality tier</div>
+              <div id="ba-no-skills" style="font-size:10px;color:#3a4556;font-style:italic;padding:8px 0" data-i18n="ba.noskills">Pick at least one skill above to see recommendations</div>
 
               <div class="ba-layout" id="ba-layout" style="display:none">
                 <!-- Left: quality tiers -->
@@ -636,15 +1020,15 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
               <!-- Step 3: Name + enroll -->
               <div class="ba-enroll-row" style="margin-top:14px">
                 <div class="field">
-                  <label>Name your new model (what the world will call it)</label>
+                  <label data-i18n="ba.studentName">Name your new model (what the world will call it)</label>
                   <input type="text" id="student-new-name" placeholder="e.g. Zena-Translator-v1">
                 </div>
-                <button class="btn btn-primary" style="background:#10b981;flex-shrink:0;height:32px" onclick="enrollStudent()">&#43; Enroll Student</button>
+                <button class="btn btn-primary" style="background:#10b981;flex-shrink:0;height:32px" onclick="enrollStudent()" data-i18n="ba.enroll">&#43; Enroll Student</button>
               </div>
             </div>
 
             <!-- Model grid (Deans + Teachers only) -->
-            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#4a6180;letter-spacing:.06em;margin-top:4px">Expert Models (Dean &amp; Teachers)</div>
+            <div style="font-size:9px;font-weight:700;text-transform:uppercase;color:#4a6180;letter-spacing:.06em;margin-top:4px" data-i18n="enroll.grid.title">Expert Models (Dean &amp; Teachers)</div>
             <div id="model-grid">
               <div style="grid-column:span 2;color:#3a4556;font-size:12px;padding:40px;text-align:center;letter-spacing:.05em">
                 SCANNING C:\AI\MODELS...
@@ -654,42 +1038,78 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
           </div>
         </div>
 
-        <!-- ══ PHASE 2: Teaching ══ -->
+        <!-- ══ PHASE 2: Teaching — READ-ONLY MONITOR ══
+             No Start button. Launch from Studio → this tab fills in live. -->
         <div class="tab-pane" id="tab-teaching">
-          <div class="section-title">Teaching Configuration</div>
-          <div class="field">
-            <label>Prompts file (.jsonl)</label>
-            <input type="text" id="prompts-path" value="data/zena007_prompts.jsonl">
+          <div class="monitor-header">
+            <div class="section-title" data-i18n="phase2.title">Teacher Generation &mdash; Live Monitor</div>
+            <button class="btn btn-ghost btn-sm monitor-go-studio" onclick="switchTab('studio')"
+                    title="Change settings in the Studio tab">&#9998;&nbsp;<span data-i18n="monitor.goto">Configure in Studio</span></button>
           </div>
-          <div class="field-row" style="margin-bottom:12px">
-            <div class="field"><label>Max tokens</label><input type="number" id="max-tokens" value="512" min="64" max="4096"></div>
-            <div class="field"><label>Temperature</label><input type="number" id="temperature" value="0.7" min="0" max="2" step="0.05"></div>
-            <div class="field"><label>GOLD threshold</label><input type="number" id="answer-th" value="0.6" min="0" max="1" step="0.05"></div>
-            <div class="field"><label>SILVER threshold</label><input type="number" id="reason-th" value="0.5" min="0" max="1" step="0.05"></div>
+
+          <!-- Idle hint — shown when no pipeline is running -->
+          <div class="monitor-idle-hint" id="teaching-idle-hint">
+            <div class="mih-icon">&#9208;</div>
+            <div>
+              <div class="mih-title" data-i18n="phase2.idle.title">Waiting for Studio</div>
+              <div class="mih-sub" data-i18n="phase2.idle.sub">Teacher responses will stream in here once you press
+                <b>&#9658; Start Training</b> in the Studio tab.</div>
+            </div>
           </div>
-          <label class="check-lbl"><input type="checkbox" id="enable-halluc" checked> Reduce Hallucinations (5-gate filter)</label>
-          <div style="display:flex;gap:8px;margin-bottom:14px">
-            <button class="btn btn-ghost btn-sm" onclick="refreshProgress()">&#8635; Refresh Progress</button>
-            <button class="btn btn-primary" id="run-all-btn" onclick="runPipeline()">&#9658; Run Full Pipeline (all 10 stages)</button>
+
+          <!-- Active monitor body (hidden until pipeline starts) -->
+          <div class="monitor-body" id="teaching-monitor" style="display:none">
+            <div class="stats-bar">
+              <div class="stat-box gold" title="Top-quality responses above the GOLD threshold. Used as SFT training data."><div class="stat-val" id="gold-n">0</div><div class="stat-lbl" data-i18n="phase2.gold">GOLD (SFT)</div></div>
+              <div class="stat-box silver" title="Medium-quality responses — used as &quot;rejected&quot; side of DPO preference pairs."><div class="stat-val" id="silver-n">0</div><div class="stat-lbl" data-i18n="phase2.silver">SILVER (DPO)</div></div>
+              <div class="stat-box drop" title="Filtered out — failed the hallucination gates or fell below SILVER threshold."><div class="stat-val" id="drop-n">0</div><div class="stat-lbl" data-i18n="phase2.drop">DROP</div></div>
+            </div>
+            <div class="gen-stats" id="gen-stats">
+              <span class="gs-done" id="gs-done">0 / 0 responses</span>
+              <span class="gs-elapsed" id="gs-elapsed">Elapsed <b>--</b></span>
+              <span class="gs-eta" id="gs-eta">ETA <b>--</b></span>
+              <span class="gs-rate" id="gs-rate"></span>
+            </div>
+            <div class="progress-wrap" id="gen-progress-wrap" style="display:none">
+              <div class="prog-track"><div class="prog-fill" id="gen-progress-fill" style="width:0%"></div></div>
+              <div class="prog-label" id="gen-progress-label">0 / 0 responses</div>
+            </div>
           </div>
-          <div class="stats-bar">
-            <div class="stat-box gold"><div class="stat-val" id="gold-n">0</div><div class="stat-lbl">GOLD (SFT)</div></div>
-            <div class="stat-box silver"><div class="stat-val" id="silver-n">0</div><div class="stat-lbl">SILVER (DPO)</div></div>
-            <div class="stat-box drop"><div class="stat-val" id="drop-n">0</div><div class="stat-lbl">DROP</div></div>
+        </div>
+
+        <!-- ══ PHASE 3: Graduation — READ-ONLY MONITOR ══
+             Live training view. All setup happens in Studio. -->
+        <div class="tab-pane" id="tab-graduation">
+          <div class="monitor-header">
+            <div class="section-title" data-i18n="phase3.title">Student Training &mdash; Live Monitor</div>
+            <button class="btn btn-ghost btn-sm monitor-go-studio" onclick="switchTab('studio')"
+                    title="Change settings in the Studio tab">&#9998;&nbsp;<span data-i18n="monitor.goto">Configure in Studio</span></button>
           </div>
-          <div class="gen-stats" id="gen-stats">
-            <span class="gs-done" id="gs-done">0 / 0 responses</span>
-            <span class="gs-elapsed" id="gs-elapsed">Elapsed <b>--</b></span>
-            <span class="gs-eta" id="gs-eta">ETA <b>--</b></span>
-            <span class="gs-rate" id="gs-rate"></span>
+
+          <!-- Read-only summary of what's being trained -->
+          <div class="monitor-summary" id="graduation-summary">
+            <div class="ms-row"><span class="ms-lbl" data-i18n="studio.student">Student</span><span class="ms-val" id="ms-student">--</span></div>
+            <div class="ms-row"><span class="ms-lbl" data-i18n="studio.savestag">Saves tag</span><span class="ms-val" id="ms-tag">--</span></div>
+            <div class="ms-row"><span class="ms-lbl" data-i18n="studio.stages">Stages</span><span class="ms-val" id="ms-stages">--</span></div>
+            <div class="ms-row"><span class="ms-lbl">LoRA r / LR / epochs</span><span class="ms-val" id="ms-hyp">--</span></div>
           </div>
-          <div class="progress-wrap" id="gen-progress-wrap" style="display:none">
-            <div class="prog-track"><div class="prog-fill" id="gen-progress-fill" style="width:0%"></div></div>
-            <div class="prog-label" id="gen-progress-label">0 / 0 responses</div>
+
+          <!-- Idle hint — shown when no pipeline is running -->
+          <div class="monitor-idle-hint" id="graduation-idle-hint">
+            <div class="mih-icon">&#127891;</div>
+            <div>
+              <div class="mih-title" data-i18n="phase2.idle.title">Waiting for Studio</div>
+              <div class="mih-sub" data-i18n="phase3.idle.sub">SFT &rarr; DPO &rarr; Merge &rarr; GGUF progress will appear here once training starts.
+                Press <b>&#9658; Start Training</b> in the Studio tab.</div>
+            </div>
           </div>
-          <div id="pipeline-panel" style="display:none">
+
+          <!-- Active monitor body (hidden until pipeline starts) -->
+          <div class="monitor-body" id="graduation-monitor" style="display:none">
+            <!-- Shared pipeline stage list (filled by initPipeline) -->
             <div id="pipeline-stages"></div>
-            <!-- Training progress bar -->
+
+            <!-- SFT/DPO/Merge progress bar -->
             <div id="train-progress-panel">
               <div class="tp-header">
                 <span class="tp-stage" id="tp-stage-label">SFT Training</span>
@@ -705,51 +1125,23 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
                 <span class="tp-stat" id="tp-lr">LR <b>--</b></span>
               </div>
             </div>
+
+            <!-- Shared log viewer -->
+            <div class="log-header">Log stream</div>
             <div id="log-box"></div>
           </div>
         </div>
 
-        <!-- ══ PHASE 3: Graduation ══ -->
-        <div class="tab-pane" id="tab-graduation">
-          <div class="section-title">Student Configuration</div>
-          <div id="graduation-student-summary" class="banner info" style="margin-bottom:12px;display:none"></div>
-          <div class="field-row" style="margin-bottom:12px">
-            <div class="field"><label>Student base model (HuggingFace ID)</label><input type="text" id="student-model" value="Qwen/Qwen2.5-0.5B-Instruct" placeholder="auto-filled from enrollment"></div>
-            <div class="field"><label>New model name (output name)</label><input type="text" id="saves-tag" value="distill_auto" placeholder="auto-filled from enrollment"></div>
-          </div>
-          <label class="check-lbl"><input type="checkbox" id="cpu-safe" checked> CPU-safe (no bf16)</label>
-          <label class="check-lbl"><input type="checkbox" id="do-train" checked> Run training stages (SFT / DPO / Merge / GGUF)</label>
-          <div style="display:flex;gap:8px;margin-top:8px">
-            <button class="btn btn-ghost btn-sm" onclick="genConfigs()">Generate Training Configs</button>
-            <button class="btn btn-primary" onclick="runPipeline()">&#9658; Run Full Pipeline</button>
-          </div>
-          <div id="phase3-status" style="margin-top:10px;font-size:11px;color:#4a6180"></div>
-        </div>
-
         <!-- ══ PHASE 4: Exam ══ -->
         <div class="tab-pane" id="tab-exam">
-          <div class="section-title">Graduation Report</div>
-          <p style="font-size:11px;color:#4a6180">Results appear here after the full pipeline completes.</p>
+          <div class="section-title" data-i18n="phase4.title">Graduation Report</div>
+          <p style="font-size:11px;color:#4a6180" data-i18n="phase4.hint">Results appear here after the full pipeline completes.</p>
           <div id="report-box" style="display:none"></div>
         </div>
 
       </div>
     </div>
   </div>
-</div>
-
-<!-- ══ METRICS RAIL — fixed bottom strip, 1Hz updates from backend ══ -->
-<div id="metrics-rail" aria-label="Live system metrics">
-  <div class="mr-cell"><span class="mr-stage" id="mr-stage">idle</span></div>
-  <div class="mr-cell"><span class="mr-key">GPU</span><span class="mr-val" id="mr-gpu">--</span></div>
-  <div class="mr-cell"><span class="mr-key">VRAM</span><span class="mr-val" id="mr-vram">--</span></div>
-  <div class="mr-cell"><span class="mr-key">CPU</span><span class="mr-val" id="mr-cpu">--</span></div>
-  <div class="mr-cell"><span class="mr-key">RAM</span><span class="mr-val" id="mr-ram">--</span></div>
-  <div class="mr-cell"><span class="mr-key">DISK</span><span class="mr-val" id="mr-disk">--</span></div>
-  <div class="mr-cell"><span class="mr-key">NET</span><span class="mr-val" id="mr-net">--</span></div>
-  <div class="mr-cell"><span class="mr-key">TOK/S</span><span class="mr-val" id="mr-tok">--</span></div>
-  <div class="mr-cell"><span class="mr-key">ETA</span><span class="mr-val" id="mr-eta">--</span></div>
-  <div class="mr-bottle" id="mr-bottle">--</div>
 </div>
 
 <script>
@@ -838,18 +1230,21 @@ function _wireInputPersistence() {
 }
 
 // ── Tab switching ───────────────────────────────────────────────────────────
+// Tab nav lives entirely in the Zena topbar (`.step` chips). The old inner
+// tab-btn strip was removed to avoid duplicate navigation per tab pane.
 function switchTab(id) {
   document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
-  document.querySelectorAll(".tab-btn, .step").forEach(b => b.classList.remove("active"));
+  document.querySelectorAll(".step").forEach(b => b.classList.remove("active"));
   // Re-paint the activity ribbon every time the user enters a tab so the
   // global counters stay visible regardless of where the events arrived.
   paintActivityRibbon();
   const pane = document.getElementById("tab-" + id);
   if (pane) pane.classList.add("active");
-  document.querySelectorAll(".tab-btn").forEach(b => { if (b.dataset.tab === id) b.classList.add("active"); });
   document.querySelectorAll(".step").forEach(s => { if ((s.getAttribute("onclick")||"").includes(id)) s.classList.add("active"); });
+  // Studio mode hides the Dean/Teachers sidebar and activity ribbon so the
+  // Studio card layout gets the full canvas (Unsloth-style).
+  document.getElementById("app").classList.toggle("studio-mode", id === "studio");
 }
-document.querySelectorAll(".tab-btn").forEach(b => b.addEventListener("click", () => switchTab(b.dataset.tab)));
 
 // ── Brain Architect: task-first model designer ──────────────────────────────
 // User picks SKILLS, system recommends brain size with quality tiers.
@@ -1375,10 +1770,9 @@ function updatePhase3Summary() {
         `<button onclick="removeStudent(${JSON.stringify(s.name)})" ` +
         `style="background:none;border:none;color:#f87171;cursor:pointer;font-size:10px">x</button></span>`;
     }).join("<br>");
-  const sf = document.getElementById("student-model");
-  const st = document.getElementById("saves-tag");
-  if (sf && window._students[0]) sf.value = window._students[0].hf_id;
-  if (st && window._students[0]) st.value = window._students[0].name;
+  // Studio launcher fields are now kept in sync by populateStudioRoster()
+  // → _fillStudioStudentPicker() → _renderStudioStudentInfo(). No direct
+  // writes here so the picker remains the single source of truth.
 }
 
 // ── Selection persistence (localStorage) ────────────────────────────────────
@@ -1497,6 +1891,185 @@ function updateSidebar() {
       strip.appendChild(pill);
     });
   }
+
+  // Mirror the roster into Studio's top card so the user can see who's
+  // enrolled without leaving the launcher tab.
+  populateStudioRoster();
+}
+
+// ── Studio student picker — driven entirely by enrolled window._students ──
+// Remembers the index across re-renders so the user's selection sticks.
+let _studioStudentIdx = 0;
+
+function _fillStudioStudentPicker() {
+  const sel = document.getElementById("studio-student-idx");
+  const info = document.getElementById("studio-student-info");
+  const multiHint = document.getElementById("studio-multi-hint");
+  const multiN = document.getElementById("studio-multi-n");
+  if (!sel || !info) return;
+
+  const students = window._students || [];
+
+  if (!students.length) {
+    sel.innerHTML = `<option value="">(no student enrolled — go to 1 Enrollment)</option>`;
+    sel.value = "";
+    info.innerHTML = `<span class="rs-empty">No student enrolled. Open <b>1 Enrollment</b>, pick a base model, choose skills &amp; languages, then press <b>Enroll</b>.</span>`;
+    if (multiHint) multiHint.style.display = "none";
+    // Clear the hidden mirror field + the saves tag default
+    const mirror = document.getElementById("studio-model");
+    if (mirror) mirror.value = "";
+    return;
+  }
+
+  // Rebuild options (user may have just added/removed a student)
+  if (_studioStudentIdx >= students.length) _studioStudentIdx = 0;
+  sel.innerHTML = students.map((s, i) =>
+    `<option value="${i}">${esc(s.name || ("student-" + i))}</option>`
+  ).join("");
+  sel.value = String(_studioStudentIdx);
+
+  // Multi-student hint
+  if (multiHint) {
+    if (students.length > 1) {
+      multiHint.style.display = "";
+      if (multiN) multiN.textContent = String(students.length);
+    } else {
+      multiHint.style.display = "none";
+    }
+  }
+
+  _renderStudioStudentInfo();
+}
+
+function _renderStudioStudentInfo() {
+  const info = document.getElementById("studio-student-info");
+  const mirror = document.getElementById("studio-model");
+  const tagInp = document.getElementById("studio-tag");
+  if (!info) return;
+  const s = (window._students || [])[_studioStudentIdx];
+  if (!s) return;
+
+  // Build the read-only info panel
+  const skillChips = (s.skills || []).map(sid => {
+    const sk = (typeof SKILLS !== "undefined") ? SKILLS.find(x => x.id === sid) : null;
+    return sk ? (sk.icon + " " + sk.name) : sid;
+  }).join("  ");
+  const langs = (s.languages || []).join(", ");
+  const codeLangs = (s.code_langs || []).join(", ");
+  const rows = [
+    ["BASE MODEL", s.hf_id || "(unknown)"],
+    ["QUALITY",    `${s.quality || "?"} · ${s.neurons || "?"} · ~${s.gguf_mb >= 1000 ? (s.gguf_mb/1000).toFixed(1)+" GB" : (s.gguf_mb||"?")+" MB"}`],
+    ["SKILLS",     skillChips || "(none)"],
+  ];
+  if (langs)     rows.push(["LANGUAGES", langs]);
+  if (codeLangs) rows.push(["CODE",      codeLangs]);
+  if (s.lora_rank != null) rows.push(["HYPERPARAMS", `LoRA r${s.lora_rank} · lr ${s.lr} · ${s.epochs} epochs`]);
+
+  info.innerHTML = rows.map(([lbl, val]) =>
+    `<div class="ssi-row"><span class="ssi-lbl">${esc(lbl)}</span><span class="ssi-val">${esc(val)}</span></div>`
+  ).join("");
+
+  // Sync the hidden mirror (so studioStart() still reads from studio-model)
+  if (mirror) mirror.value = s.hf_id || "";
+  // Default the saves tag to the student's name (but do NOT overwrite if the
+  // user has already typed something custom that doesn't look like a default)
+  if (tagInp && (tagInp.value === "studio_run" || tagInp.value === "" || tagInp.dataset.autoFilled === "1")) {
+    tagInp.value = s.name || "studio_run";
+    tagInp.dataset.autoFilled = "1";
+  }
+}
+
+function onStudentPicked() {
+  const sel = document.getElementById("studio-student-idx");
+  if (!sel) return;
+  const v = parseInt(sel.value, 10);
+  if (!Number.isFinite(v)) return;
+  _studioStudentIdx = v;
+  // User picked manually -- clear the "auto-filled" flag on the tag so they
+  // can see the new student's name without us overwriting their later edits.
+  const tagInp = document.getElementById("studio-tag");
+  if (tagInp) tagInp.dataset.autoFilled = "1";
+  _renderStudioStudentInfo();
+}
+
+// ── Studio Roster card — reflects _dean / _teachers / _students ──────────
+function populateStudioRoster() {
+  const dBody = document.getElementById("sr-dean");
+  const tBody = document.getElementById("sr-teachers");
+  const sBody = document.getElementById("sr-students");
+  const tCount = document.getElementById("sr-teachers-count");
+  const sCount = document.getElementById("sr-students-count");
+  const warn   = document.getElementById("sr-warn");
+  if (!dBody || !tBody || !sBody) return; // roster card not in the DOM
+
+  // Dean
+  if (window._dean) {
+    dBody.innerHTML = `<span class="rs-dean-chip">
+        <span class="rs-sq" style="background:${esc(window._dean.arch_color || "#60a5fa")}"></span>
+        ${esc(window._dean.display_name || "Dean")}
+        <span class="rs-meta">${esc(window._dean.params || "?")} &middot; ${esc(window._dean.size_gb || "?")} GB</span>
+      </span>`;
+  } else {
+    dBody.innerHTML = `<span class="rs-empty">(none — pick one in 1 Enrollment)</span>`;
+  }
+
+  // Teachers
+  tCount.textContent = window._teachers.length;
+  if (!window._teachers.length) {
+    tBody.innerHTML = `<span class="rs-empty">(none — pick 1+ in 1 Enrollment)</span>`;
+  } else {
+    tBody.innerHTML = window._teachers.map(t =>
+      `<span class="rs-pill rs-teacher" title="${esc(t.path || "")}">
+         <span class="rs-sq" style="background:${esc(t.arch_color || "#60a5fa")}"></span>
+         ${esc(t.display_name || "teacher")}
+       </span>`
+    ).join("");
+  }
+
+  // Students — include skills + languages so the user sees *what* will be taught
+  sCount.textContent = window._students.length;
+  if (!window._students.length) {
+    sBody.innerHTML = `<span class="rs-empty">(none — enroll a student in 1 Enrollment)</span>`;
+  } else {
+    sBody.innerHTML = window._students.map(s => {
+      const skillChips = (s.skills || []).map(sid => {
+        const sk = (typeof SKILLS !== "undefined") ? SKILLS.find(x => x.id === sid) : null;
+        return sk ? (sk.icon + sk.name) : sid;
+      }).join(" ");
+      const langs = (s.languages || []).join(", ");
+      const tooltipBits = [
+        `Base: ${s.hf_id || s.name || "?"}`,
+        `Quality: ${s.quality || "?"} (${s.neurons || "?"})`,
+        skillChips ? `Skills: ${skillChips}` : "",
+        langs ? `Languages: ${langs}` : "",
+        (s.code_langs && s.code_langs.length) ? `Code: ${s.code_langs.join(", ")}` : "",
+        s.lora_rank != null ? `LoRA r${s.lora_rank} · lr ${s.lr} · ${s.epochs}ep` : "",
+      ].filter(Boolean).join("\n");
+      return `<span class="rs-pill rs-student" title="${esc(tooltipBits)}">
+         <b>${esc(s.name || "student")}</b>
+         ${skillChips ? " " + esc(skillChips) : ""}
+         ${langs ? ` <span style="opacity:.7">[${esc(langs)}]</span>` : ""}
+       </span>`;
+    }).join("");
+  }
+
+  // Warn if something obvious is missing so the user knows *why* Start would
+  // fail before they press it.
+  const missing = [];
+  if (!window._dean) missing.push("Dean");
+  if (!window._teachers.length) missing.push("Teacher(s)");
+  if (!window._students.length) missing.push("Student");
+  if (missing.length) {
+    warn.style.display = "";
+    warn.textContent = "⚠ Missing: " + missing.join(", ")
+      + " — open 1 Enrollment to add them before pressing Start Training.";
+  } else {
+    warn.style.display = "none";
+    warn.textContent = "";
+  }
+
+  // Keep the Studio student picker in sync with the roster
+  _fillStudioStudentPicker();
 }
 
 // ── Zena chat ───────────────────────────────────────────────────────────────
@@ -1636,58 +2209,6 @@ async function crossExam() {
   finally { btn.disabled = false; btn.textContent = "Cross-Examine"; }
 }
 
-// ── Progress refresh ─────────────────────────────────────────────────────────
-async function refreshProgress() {
-  const teachers = getTeacherPaths().join("\n");
-  const params = new URLSearchParams({
-    teachers,
-    prompts_path: document.getElementById("prompts-path").value.trim(),
-    output_dir:   document.getElementById("output-dir").value.trim(),
-  });
-  try {
-    const data = await fetch(API + "/api/progress?" + params).then(r => r.json());
-    if (data.total_target > 0) {
-      document.getElementById("gen-progress-wrap").style.display = "";
-      document.getElementById("gen-progress-fill").style.width = data.pct + "%";
-      const eta = data.eta_s ? " -- ETA " + fmtEta(data.eta_s) : "";
-      document.getElementById("gen-progress-label").textContent =
-        `${data.total_done} / ${data.total_target} responses (${data.pct}%)${eta}`;
-      // Also update gen-stats bar
-      const gs = document.getElementById("gen-stats");
-      gs.style.display = "flex";
-      document.getElementById("gs-done").innerHTML = "<b>" + Number(data.total_done) + "</b> / <b>" + Number(data.total_target) + "</b> responses"; // xray: ignore[SEC-002] — numeric coercion, safe
-      if (data.eta_s) {
-        document.getElementById("gs-eta").innerHTML = "ETA <b>" + fmtEta(data.eta_s) + "</b>"; // xray: ignore[SEC-002] — fmtEta returns static number format
-      }
-    }
-  } catch(e) { console.warn("Progress error:", e); }
-}
-
-function fmtEta(s) {
-  if (s < 60) return s + "s";
-  const h = Math.floor(s/3600), m = Math.floor((s%3600)/60);
-  return h > 0 ? h+"h "+m+"m" : m+"m";
-}
-
-// ── Gen configs ──────────────────────────────────────────────────────────────
-async function genConfigs() {
-  document.getElementById("phase3-status").textContent = "Generating configs...";
-  try {
-    const data = await fetch(API + "/api/gen-configs", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify({
-        output_dir:    document.getElementById("output-dir").value,
-        student_model: document.getElementById("student-model").value,
-        cpu_safe:      document.getElementById("cpu-safe").checked,
-        tag:           document.getElementById("saves-tag").value,
-      }),
-    }).then(r => r.json());
-    document.getElementById("phase3-status").innerHTML = data.error
-      ? `<span style="color:#f87171">Config error: ${esc(data.error)}</span>`
-      : `<span style="color:#34d399">Configs ready: ${esc((data.configs||[]).join(", "))}</span>`;
-  } catch(e) { document.getElementById("phase3-status").textContent = "Network error: " + e; }
-}
-
 // ── Pipeline SSE ─────────────────────────────────────────────────────────────
 const STAGES = [
   ["generate",   "Stage 1 — Expert Teaching (multi-teacher generation)"],
@@ -1704,15 +2225,21 @@ const STAGES = [
 const ICONS = {wait:"[ ]", running:"[>]", done:"[+]", skip:"[~]", fail:"[!]"};
 
 function initPipeline() {
-  document.getElementById("pipeline-panel").style.display = "";
-  document.getElementById("pipeline-stages").innerHTML = STAGES.map(([id, label]) =>
-    `<div class="stage-row wait" id="sr-${id}">
-       <span class="stage-icon" id="si-${id}">${ICONS.wait}</span>
-       <span class="stage-name" id="sn-${id}">${label}</span>
-       <span class="stage-msg"  id="sm-${id}"></span>
-     </div>`
-  ).join("");
-  document.getElementById("log-box").innerHTML = "";
+  // The Graduation monitor is the canonical home for pipeline-stages + log-box.
+  // Legacy runPipeline()'s pipeline-panel wrapper is gone; the stage list is
+  // now always in the DOM inside tab-graduation's monitor-body.
+  const stagesEl = document.getElementById("pipeline-stages");
+  if (stagesEl) {
+    stagesEl.innerHTML = STAGES.map(([id, label]) =>
+      `<div class="stage-row wait" id="sr-${id}">
+         <span class="stage-icon" id="si-${id}">${ICONS.wait}</span>
+         <span class="stage-name" id="sn-${id}">${label}</span>
+         <span class="stage-msg"  id="sm-${id}"></span>
+       </div>`
+    ).join("");
+  }
+  const logEl = document.getElementById("log-box");
+  if (logEl) logEl.innerHTML = "";
 }
 
 function updateStage(id, status, msg) {
@@ -1733,60 +2260,92 @@ function appendLog(stage, text) {
   lb.appendChild(d); lb.scrollTop = lb.scrollHeight;
 }
 
-async function runPipeline() {
-  const teachers = getTeacherPaths();
-  if (!teachers.length) { alert("Select at least one teacher in Phase 1."); return; }
-  switchTab("teaching");
-  initPipeline();
-  const btn = document.getElementById("run-all-btn");
-  btn.disabled = true;
+// ── Global pipeline running state ─────────────────────────────────────────
+// Single source of truth for "is the pipeline running?". Flips all monitor
+// tabs between idle-hint and live body, and toggles the Start button slot
+// with the big Run Status Card (which owns the only STOP button in the UI).
+let _pipelineRunning = false;
 
-  // Collect student skill/language curriculum from the first enrolled variant
-  const s0 = window._students[0] || {};
-  const body = {
-    teachers,
-    prompts_path:  document.getElementById("prompts-path").value.trim(),
-    backend:       document.getElementById("backend-dd").value,
-    output_dir:    document.getElementById("output-dir").value.trim(),
-    max_tokens:    parseInt(document.getElementById("max-tokens").value) || 512,
-    temperature:   parseFloat(document.getElementById("temperature").value) || 0.7,
-    answer_th:     parseFloat(document.getElementById("answer-th").value) || 0.6,
-    reason_th:     parseFloat(document.getElementById("reason-th").value) || 0.5,
-    enable_halluc: document.getElementById("enable-halluc").checked,
-    zena_gguf:     getDeanPath(),
-    profile_path:  window._profilePath || "",
-    do_train:      document.getElementById("do-train").checked,
-    student_model: document.getElementById("student-model").value.trim(),
-    cpu_safe:      document.getElementById("cpu-safe").checked,
-    saves_tag:     document.getElementById("saves-tag").value.trim(),
-    // Curriculum: only teach what the student enrolled for
-    skills:        s0.skills || [],
-    languages:     s0.languages || [],
-    code_langs:    s0.code_langs || [],
-  };
-
-  try {
-    const res = await fetch(API + "/api/pipeline/start", {
-      method:"POST", headers:{"Content-Type":"application/json"},
-      body: JSON.stringify(body),
-    });
-    if (!res.ok) { appendLog("", "Server error " + res.status); return; }
-    const reader = res.body.getReader();
-    const dec    = new TextDecoder();
-    let buf = "";
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const frames = buf.split("\n\n");
-      buf = frames.pop();
-      for (const frame of frames) {
-        const dl = frame.split("\n").find(l => l.startsWith("data: "));
-        if (dl) handleEvent(JSON.parse(dl.slice(6)));
-      }
+function setPipelineRunning(running) {
+  _pipelineRunning = !!running;
+  const hide = (id) => { const e = document.getElementById(id); if (e) e.style.display = "none"; };
+  const show = (id, disp) => { const e = document.getElementById(id); if (e) e.style.display = disp || ""; };
+  const card = document.getElementById("run-status-card");
+  if (running) {
+    hide("teaching-idle-hint");   show("teaching-monitor", "");
+    hide("graduation-idle-hint"); show("graduation-monitor", "");
+    // Swap: Start button slot → Run Status Card. Studio shows the live card
+    // exactly where the Start button used to be.
+    hide("studio-start-row");
+    // Big centerpiece status card — show fresh "STARTING" state
+    if (card) {
+      card.style.display = "block";
+      card.classList.remove("done", "fail");
+      card.classList.add("running");
     }
-  } catch(e) { appendLog("", "Connection error: " + e); }
-  finally { btn.disabled = false; }
+    const setText = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+    setText("rs-stage",  t("runstatus.starting"));
+    setText("rs-step",   "--");
+    setText("rs-loss",   "--");
+    setText("rs-epoch",  "--");
+    setText("rs-eta",    "--");
+    setText("rs-gold",   "0");
+    setText("rs-silver", "0");
+    setText("rs-drop",   "0");
+    // Clear any previous error message so restart shows a clean card
+    const rsErr = document.getElementById("rs-err-msg");
+    if (rsErr) rsErr.textContent = "";
+    const prog = document.getElementById("rs-progress-wrap");
+    if (prog) prog.style.display = "none";
+    const fill = document.getElementById("rs-progress-fill");
+    if (fill) fill.style.width = "0%";
+    const stopBtn = document.getElementById("rs-stop-btn");
+    const restartBtn = document.getElementById("rs-restart-btn");
+    if (stopBtn)    { stopBtn.style.display = "inline-flex"; stopBtn.disabled = false; }
+    if (restartBtn) { restartBtn.style.display = "none"; }
+    const rsBatch = document.getElementById("rs-batch");
+    if (rsBatch) rsBatch.style.display = "none";
+  } else {
+    show("teaching-idle-hint", "flex");   hide("teaching-monitor");
+    show("graduation-idle-hint", "flex"); hide("graduation-monitor");
+    // Terminal state: keep the Run Status Card visible in its slot (done/fail)
+    // with STOP → RESTART swap. The Start button stays hidden so the card
+    // continues to occupy its visual slot — click RESTART on the card to re-run.
+    hide("studio-start-row");
+    const stopBtn = document.getElementById("rs-stop-btn");
+    const restartBtn = document.getElementById("rs-restart-btn");
+    if (stopBtn)    { stopBtn.style.display = "none"; }
+    if (restartBtn) { restartBtn.style.display = "inline-flex"; }
+    if (card) card.classList.remove("running");
+  }
+}
+
+function populateGraduationSummary() {
+  const v = (id) => { const e = document.getElementById(id); return e ? (e.value || "") : ""; };
+  const setText = (id, t) => { const e = document.getElementById(id); if (e) e.textContent = t; };
+  setText("ms-student", v("studio-model") || "--");
+  setText("ms-tag",     v("studio-tag")   || "studio_run");
+  const stagesSel = document.getElementById("studio-stages");
+  const stagesLbl = stagesSel ? stagesSel.options[stagesSel.selectedIndex].text : "--";
+  setText("ms-stages", stagesLbl);
+  setText("ms-hyp",
+    `r=${v("studio-lora") || "?"}  lr=${v("studio-lr") || "?"}  epochs=${v("studio-epochs") || "?"}`);
+}
+
+async function stopPipeline() {
+  if (!_pipelineRunning) return;
+  if (!confirm("Stop the running pipeline?\n\nThis kills the active subprocess. Partial artifacts in saves/<tag>/ are kept so you can inspect them.")) return;
+  try {
+    const res = await fetch(API + "/api/pipeline/stop", {method:"POST"});
+    const data = await res.json();
+    if (data && data.had_active_proc) {
+      appendLog("", "=== Stop requested — pipeline cancelled ===");
+    } else {
+      appendLog("", "=== Stop requested — no active stage to kill ===");
+    }
+  } catch (e) {
+    alert("Failed to reach /api/pipeline/stop: " + e);
+  }
 }
 
 // ── Studio tab — flat one-page launcher, reuses /api/pipeline/start ─────────
@@ -1862,13 +2421,41 @@ async function studioStart() {
   const strip = document.getElementById("studio-stage-strip");
   if (strip) strip.innerHTML = "";
 
+  // Swap monitor tabs from idle-hint -> live monitor body and pre-populate
+  // the Graduation summary card from the Studio inputs.
+  clearAllStepDots();
+  setPipelineRunning(true);
+  populateGraduationSummary();
+  initPipeline();
+
   // Studio mode submits a minimal payload -- backend reuses pipeline.
   // Teachers/Dean still come from the Recipes side if the user has
   // enrolled them; otherwise the backend will fail loudly and the user
   // can pick them in Phase 1.
   const teachers = (typeof getTeacherPaths === "function") ? getTeacherPaths() : [];
   const dean     = (typeof getDeanPath     === "function") ? getDeanPath()     : "";
-  const s0       = (window._students || [{}])[0] || {};
+  // Multi-student sequential batch: when 2+ students are enrolled the backend
+  // runs stages 1-3 (shared teacher gen/halluc/purify) ONCE, then loops
+  // stages 4-11 once per student with a per-student saves tag. For a single
+  // enrolled student the batch has length 1 and behaves like the old flow.
+  // The CPU-safe toggle from the Studio applies to every student in the batch.
+  const cpuSafe  = document.getElementById("studio-cpu-safe").checked;
+  const allStudents = (window._students || []);
+  // Union of skills/languages across the whole batch -- stages 1-3 are shared
+  // so the prompt filter must keep prompts matching ANY student's curriculum.
+  const skillUnion    = Array.from(new Set(allStudents.flatMap(s => s.skills    || [])));
+  const languageUnion = Array.from(new Set(allStudents.flatMap(s => s.languages || [])));
+  const codeLangUnion = Array.from(new Set(allStudents.flatMap(s => s.code_langs|| [])));
+  // The picker-selected student drives the flat student_model field used by
+  // the backend when students_batch is empty, so single-student runs still
+  // honor the Studio dropdown selection.
+  const s0 = allStudents[_studioStudentIdx] || allStudents[0] || {};
+  const studentsBatch = allStudents.map(s => ({
+    name:     s.name || "student",
+    hf_id:    s.hf_id || document.getElementById("studio-model").value.trim(),
+    cpu_safe: cpuSafe,
+  }));
+  const stagesSel = document.getElementById("studio-stages").value;
   const body = {
     teachers,
     prompts_path:  document.getElementById("studio-prompts").value.trim(),
@@ -1876,15 +2463,23 @@ async function studioStart() {
     output_dir:    document.getElementById("studio-out").value.trim(),
     max_tokens:    parseInt(document.getElementById("studio-max-tokens").value) || 512,
     temperature:   parseFloat(document.getElementById("studio-temp").value) || 0.7,
+    answer_th:     parseFloat(document.getElementById("studio-answer-th").value) || 0.6,
+    reason_th:     parseFloat(document.getElementById("studio-reason-th").value) || 0.5,
     enable_halluc: document.getElementById("studio-halluc").checked,
     zena_gguf:     dean,
-    do_train:      true,
+    do_train:      stagesSel !== "teachers_only",
+    stages:        stagesSel,
     student_model: document.getElementById("studio-model").value.trim(),
-    cpu_safe:      document.getElementById("studio-cpu-safe").checked,
+    cpu_safe:      cpuSafe,
     saves_tag:     document.getElementById("studio-tag").value.trim() || "studio_run",
-    skills:        s0.skills || [],
-    languages:     s0.languages || [],
-    code_langs:    s0.code_langs || [],
+    // Single-student curriculum (fallback when students_batch is empty).
+    // For multi-student the union above is what stage 1 filters prompts by.
+    skills:        studentsBatch.length > 1 ? skillUnion    : (s0.skills     || []),
+    languages:     studentsBatch.length > 1 ? languageUnion : (s0.languages  || []),
+    code_langs:    studentsBatch.length > 1 ? codeLangUnion : (s0.code_langs || []),
+    // Sequential batch: only sent when 2+ students are enrolled so the
+    // backend's backward-compat path still handles single-student runs.
+    students_batch: studentsBatch.length > 1 ? studentsBatch : [],
     // Studio-only knobs (the backend ignores fields it does not use)
     lora_rank:     parseInt(document.getElementById("studio-lora").value) || 16,
     learning_rate: parseFloat(document.getElementById("studio-lr").value) || 2e-4,
@@ -1894,6 +2489,9 @@ async function studioStart() {
     cutoff_len:    parseInt(document.getElementById("studio-cutoff").value) || 2048,
     enable_liger_kernel: document.getElementById("studio-liger").checked,
     use_muon:      document.getElementById("studio-muon").checked,
+    // Honor the "Run eval after training" / "Postmortem report" toggles
+    run_eval:       document.getElementById("studio-eval").checked,
+    run_postmortem: document.getElementById("studio-postmortem").checked,
   };
 
   try {
@@ -1931,6 +2529,7 @@ async function studioStart() {
     alert("Connection error: " + e);
   } finally {
     btn.disabled = false;
+    setPipelineRunning(false);
   }
 }
 
@@ -2062,52 +2661,231 @@ function updateMetricsRail(evt) {
   }
 }
 
+// Map pipeline stage → which top-bar tab "owns" it (for the status dots)
+const STAGE_TO_TAB = {
+  generate: "teaching", halluc: "teaching", purify: "teaching",
+  configs: "graduation", sft: "graduation", dpo: "graduation",
+  merge: "graduation", gguf: "graduation", eval: "graduation",
+  dashboard: "graduation",
+};
+
+// Map stage id → big centerpiece label
+const _RS_STAGE_LABELS = {
+  generate:   "TEACHER GENERATION",
+  halluc:     "HALLUCINATION GATES",
+  purify:     "PURIFICATION",
+  configs:    "CONFIG GENERATION",
+  sft:        "SFT TRAINING",
+  dpo:        "DPO TRAINING",
+  merge:      "LORA MERGE",
+  gguf:       "GGUF EXPORT",
+  eval:       "GRADUATION EXAM",
+  dashboard:  "REPORT",
+  postmortem: "POSTMORTEM",
+};
+
+// Update the big Run Status centerpiece card with a stage/status change
+function _updateRunStatusCard(stage, status) {
+  const card = document.getElementById("run-status-card");
+  if (!card) return;
+  const lbl = _RS_STAGE_LABELS[stage] || String(stage || "").toUpperCase() || "RUNNING";
+  const stageEl = document.getElementById("rs-stage");
+  if (stageEl) {
+    if (status === "skip") {
+      stageEl.textContent = lbl + " (skipped)";
+    } else {
+      stageEl.textContent = lbl;
+    }
+  }
+  // Only fail events should paint the card red; running/done/skip keep it in
+  // the "running" look so the centerpiece doesn't flicker green between stages.
+  card.classList.remove("done", "fail");
+  if (status === "fail") {
+    card.classList.add("fail");
+    card.classList.remove("running");
+  } else {
+    card.classList.add("running");
+  }
+}
+function _setStepDot(tabId, status) {
+  // Find the top-bar .step span whose onclick targets this tab
+  const step = document.querySelector(`.step[onclick*="'${tabId}'"]`);
+  if (!step) return;
+  step.classList.remove("st-run","st-done","st-fail");
+  if (status === "running" || status === "starting") step.classList.add("st-run");
+  else if (status === "done") step.classList.add("st-done");
+  else if (status === "fail") step.classList.add("st-fail");
+}
+function clearAllStepDots() {
+  document.querySelectorAll(".step").forEach(s => s.classList.remove("st-run","st-done","st-fail"));
+}
+
 function handleEvent(evt) {
   if (evt.type === "stage") {
     updateStage(evt.stage, evt.status, evt.msg || "");
+    // Big centerpiece card — promote the current stage into the big label
+    if (evt.status === "running" || evt.status === "starting" || evt.status === "skip" || evt.status === "fail") {
+      _updateRunStatusCard(evt.stage, evt.status);
+    }
+    // On stage failure, surface the reason in the big card's error panel
+    if (evt.status === "fail") {
+      const rsErrMsg = document.getElementById("rs-err-msg");
+      if (rsErrMsg) {
+        const stageLbl = _RS_STAGE_LABELS[evt.stage] || String(evt.stage || "").toUpperCase();
+        rsErrMsg.textContent = `${stageLbl} failed: ${evt.msg || "(no details — check log below)"}`;
+      }
+    }
+    // Tab status dots — light up the owning tab with running/done/fail
+    const ownerTab = STAGE_TO_TAB[evt.stage];
+    if (ownerTab) _setStepDot(ownerTab, evt.status);
     // Mirror to global activity ribbon (visible from any tab)
     _lastInfo.stage = evt.stage || _lastInfo.stage;
     _lastInfo.stageStatus = evt.status || _lastInfo.stageStatus;
     // Hide training progress when stage completes or fails
     if (evt.status === "done" || evt.status === "fail" || evt.status === "skip") {
       if (["sft","dpo","merge"].includes(evt.stage)) {
-        document.getElementById("train-progress-panel").style.display = "none";
+        const tpp = document.getElementById("train-progress-panel");
+        if (tpp) tpp.style.display = "none";
+      }
+      // Clear the big card's training progress bar between stages
+      if (["sft","dpo"].includes(evt.stage)) {
+        const prog = document.getElementById("rs-progress-wrap");
+        if (prog) prog.style.display = "none";
+        const fill = document.getElementById("rs-progress-fill");
+        if (fill) fill.style.width = "0%";
       }
     }
-    if (evt.gold   !== undefined) { document.getElementById("gold-n").textContent   = evt.gold;   _lastInfo.gold   = Number(evt.gold)   || 0; }
-    if (evt.silver !== undefined) { document.getElementById("silver-n").textContent = evt.silver; _lastInfo.silver = Number(evt.silver) || 0; }
-    if (evt.drop   !== undefined) { document.getElementById("drop-n").textContent   = evt.drop;   _lastInfo.drop   = Number(evt.drop)   || 0; }
+    if (evt.gold   !== undefined) {
+      document.getElementById("gold-n").textContent   = evt.gold;   _lastInfo.gold   = Number(evt.gold)   || 0;
+      const rsG = document.getElementById("rs-gold");   if (rsG) rsG.textContent = String(evt.gold);
+    }
+    if (evt.silver !== undefined) {
+      document.getElementById("silver-n").textContent = evt.silver; _lastInfo.silver = Number(evt.silver) || 0;
+      const rsS = document.getElementById("rs-silver"); if (rsS) rsS.textContent = String(evt.silver);
+    }
+    if (evt.drop   !== undefined) {
+      document.getElementById("drop-n").textContent   = evt.drop;   _lastInfo.drop   = Number(evt.drop)   || 0;
+      const rsD = document.getElementById("rs-drop");   if (rsD) rsD.textContent = String(evt.drop);
+    }
     paintActivityRibbon();
     if (evt.pct    !== undefined) {
       document.getElementById("gen-progress-wrap").style.display = "";
       document.getElementById("gen-progress-fill").style.width   = evt.pct + "%";
       document.getElementById("gen-progress-label").textContent  = evt.pct + "%";
+      // Also drive the big centerpiece Run Status Card's progress bar
+      const _rsProgWrapG = document.getElementById("rs-progress-wrap");
+      const _rsProgFillG = document.getElementById("rs-progress-fill");
+      if (_rsProgWrapG && _rsProgFillG) {
+        _rsProgWrapG.style.display = "";
+        _rsProgFillG.style.width   = Math.max(0, Math.min(100, Number(evt.pct))) + "%";
+      }
     }
     // Generation stats: elapsed, ETA, rate, done/total
     if (evt.done !== undefined && evt.total !== undefined) {
       const gs = document.getElementById("gen-stats");
       gs.style.display = "flex";
       document.getElementById("gs-done").innerHTML = "<b>" + Number(evt.done) + "</b> / <b>" + Number(evt.total) + "</b> responses"; // xray: ignore[SEC-002] — numeric coercion, safe
+      // Mirror done/total into the big card's STEP cell so progress shows in the middle
+      const _rsStepG = document.getElementById("rs-step");
+      if (_rsStepG) _rsStepG.textContent = Number(evt.done) + " / " + Number(evt.total);
     }
     if (evt.elapsed) {
       document.getElementById("gen-stats").style.display = "flex";
       document.getElementById("gs-elapsed").innerHTML = "Elapsed <b>" + esc(String(evt.elapsed)) + "</b>"; // xray: ignore[SEC-002] — esc() sanitized
+      // Park elapsed in the big card's EPOCH cell (repurposed during generate)
+      const _rsEpochG = document.getElementById("rs-epoch");
+      if (_rsEpochG) _rsEpochG.textContent = String(evt.elapsed);
     }
     if (evt.eta) {
       document.getElementById("gen-stats").style.display = "flex";
       document.getElementById("gs-eta").innerHTML = "ETA <b>" + esc(String(evt.eta)) + "</b>";
+      const _rsEtaG = document.getElementById("rs-eta");
+      if (_rsEtaG) _rsEtaG.textContent = String(evt.eta);
     } else if (evt.done !== undefined) {
       document.getElementById("gs-eta").innerHTML = "ETA <b>--</b>";
     }
     if (evt.rate) {
       document.getElementById("gs-rate").innerHTML = "<b>" + esc(String(evt.rate)) + "</b>";
+      // Park rate (tokens/sec or resp/sec) in the big card's LOSS cell during generate
+      const _rsLossG = document.getElementById("rs-loss");
+      if (_rsLossG) _rsLossG.textContent = String(evt.rate);
     }
   } else if (evt.type === "train_progress") {
     updateTrainProgress(evt);
+    // Also feed the big Run Status centerpiece card
+    if (evt.step !== undefined)  { const el = document.getElementById("rs-step");  if (el) el.textContent = Number(evt.step) + (evt.total !== undefined ? " / " + Number(evt.total) : ""); }
+    if (evt.loss !== undefined && evt.loss !== null)  { const el = document.getElementById("rs-loss");  if (el) el.textContent = Number(evt.loss).toFixed(4); }
+    if (evt.epoch !== undefined && evt.epoch !== null) { const el = document.getElementById("rs-epoch"); if (el) el.textContent = Number(evt.epoch).toFixed(2); }
+    if (evt.eta)  { const el = document.getElementById("rs-eta");  if (el) el.textContent = String(evt.eta); }
+    // Progress bar
+    const _rsProgWrap = document.getElementById("rs-progress-wrap");
+    const _rsProgFill = document.getElementById("rs-progress-fill");
+    if (_rsProgWrap && _rsProgFill) {
+      let pct = null;
+      if (evt.pct !== undefined) pct = Number(evt.pct);
+      else if (evt.step !== undefined && evt.total) pct = (Number(evt.step) / Number(evt.total)) * 100;
+      if (pct != null && !isNaN(pct)) {
+        _rsProgWrap.style.display = "";
+        _rsProgFill.style.width = Math.max(0, Math.min(100, pct)) + "%";
+      }
+    }
   } else if (evt.type === "metrics") {
     updateMetricsRail(evt);
   } else if (evt.type === "log") {
     appendLog(evt.stage || "", evt.text || "");
+  } else if (evt.type === "student_begin") {
+    // Sequential batch: a new student is starting stages 4-11. Reset the
+    // per-student stage dots and training progress so the UI reflects a
+    // fresh start, and light up the BATCH cell in the activity ribbon.
+    const idx = Number(evt.idx || 0) + 1;
+    const total = Number(evt.total || 1);
+    const name = evt.name || ("student " + idx);
+    const cell = document.getElementById("ar-batch-cell");
+    const batchEl = document.getElementById("ar-batch");
+    if (cell && batchEl) {
+      cell.style.display = total > 1 ? "" : "none";
+      batchEl.textContent = `${idx}/${total} · ${name}`;
+    }
+    // Big Run Status Card: update the batch line
+    const rsBatch = document.getElementById("rs-batch");
+    const rsBatchIdx = document.getElementById("rs-batch-idx");
+    const rsBatchTot = document.getElementById("rs-batch-total");
+    const rsBatchName = document.getElementById("rs-batch-name");
+    if (rsBatch) rsBatch.style.display = total > 1 ? "" : "none";
+    if (rsBatchIdx) rsBatchIdx.textContent = String(idx);
+    if (rsBatchTot) rsBatchTot.textContent = String(total);
+    if (rsBatchName) rsBatchName.textContent = name;
+    // Reset per-student metrics in the big card
+    ["rs-step","rs-loss","rs-epoch","rs-eta"].forEach(id => {
+      const el = document.getElementById(id); if (el) el.textContent = "--";
+    });
+    const _rsProgWrap2 = document.getElementById("rs-progress-wrap");
+    const _rsProgFill2 = document.getElementById("rs-progress-fill");
+    if (_rsProgWrap2) _rsProgWrap2.style.display = "none";
+    if (_rsProgFill2) _rsProgFill2.style.width = "0%";
+    if (total > 1) {
+      // Reset just the training-side dots -- teachers/sparring/refinery stay
+      // done from the shared stages above.
+      ["configs","sft","dpo","merge","gguf","eval","dashboard","postmortem"].forEach(stg => {
+        updateStage(stg, "idle", "");
+        const ownerTab = STAGE_TO_TAB[stg];
+        if (ownerTab) _setStepDot(ownerTab, "");
+      });
+      // Reset training progress panel
+      const tpp = document.getElementById("train-progress-panel");
+      if (tpp) tpp.style.display = "none";
+      _studioLossSeries.length = 0;
+      _studioPaintLoss();
+      appendLog("", `=== Student ${idx}/${total}: ${name} (${evt.hf_id || "?"}) ===`);
+    }
+  } else if (evt.type === "student_end") {
+    const idx = Number(evt.idx || 0) + 1;
+    const total = Number(evt.total || 1);
+    const name = evt.name || ("student " + idx);
+    const status = evt.status || "done";
+    if (total > 1) {
+      appendLog("", `=== Student ${idx}/${total}: ${name} → ${status} ===`);
+    }
   } else if (evt.type === "done_all") {
     document.getElementById("gold-n").textContent   = evt.gold   || 0;
     document.getElementById("silver-n").textContent = evt.silver || 0;
@@ -2118,19 +2896,60 @@ function handleEvent(evt) {
     _lastInfo.stage  = "complete";
     _lastInfo.stageStatus = "done";
     paintActivityRibbon();
+    // Clear the batch indicator at end-of-run
+    const _bcell = document.getElementById("ar-batch-cell");
+    if (_bcell) _bcell.style.display = "none";
     if (evt.report) {
       const rb = document.getElementById("report-box");
-      rb.textContent = evt.report; rb.style.display = "";
+      if (rb) { rb.textContent = evt.report; rb.style.display = ""; }
+      _setStepDot("exam", "done");
       switchTab("exam");
     }
-    appendLog("", "=== Pipeline complete ===");
-    const tag = document.getElementById("saves-tag").value || "distill_auto";
-    document.getElementById("phase3-status").innerHTML =
-      `<span style="color:#34d399">Complete. Check saves/${esc(tag)}/</span>`;
+    const _bs = evt.batch_size ? ` (${evt.batch_size} student${evt.batch_size > 1 ? "s" : ""})` : "";
+    appendLog("", `=== Pipeline complete${_bs} ===`);
+    // Mark all pipeline tabs as done and drop the Studio Start button back to idle
+    _setStepDot("teaching", "done");
+    _setStepDot("graduation", "done");
+    // Big Run Status Card: promote to done (or fail if batch_status says so)
+    const rsCard = document.getElementById("run-status-card");
+    const rsStage = document.getElementById("rs-stage");
+    const rsProgWrap3 = document.getElementById("rs-progress-wrap");
+    if (rsCard) {
+      rsCard.classList.remove("running");
+      if (evt.batch_status === "fail") {
+        rsCard.classList.remove("done");
+        rsCard.classList.add("fail");
+        if (rsStage) rsStage.textContent = t("runstatus.failed");
+      } else if (evt.batch_status === "cancelled") {
+        rsCard.classList.remove("done");
+        rsCard.classList.add("fail");
+        if (rsStage) rsStage.textContent = t("runstatus.cancelled");
+      } else {
+        rsCard.classList.remove("fail");
+        rsCard.classList.add("done");
+        if (rsStage) rsStage.textContent = t("runstatus.complete");
+      }
+    }
+    if (rsProgWrap3) rsProgWrap3.style.display = "none";
+    // Sync gold/silver/drop in the big card
+    const _rsG = document.getElementById("rs-gold");   if (_rsG) _rsG.textContent = String(evt.gold   || 0);
+    const _rsS = document.getElementById("rs-silver"); if (_rsS) _rsS.textContent = String(evt.silver || 0);
+    const _rsD = document.getElementById("rs-drop");   if (_rsD) _rsD.textContent = String(evt.drop   || 0);
+    setPipelineRunning(false);
   } else if (evt.type === "error") {
     appendLog("error", evt.msg || "Unknown error");
     _lastInfo.stageStatus = "fail";
     paintActivityRibbon();
+    // Big Run Status Card: fail state with the actual reason
+    const rsCardErr = document.getElementById("run-status-card");
+    const rsStageErr = document.getElementById("rs-stage");
+    const rsErrMsg2  = document.getElementById("rs-err-msg");
+    if (rsCardErr) {
+      rsCardErr.classList.remove("running", "done");
+      rsCardErr.classList.add("fail");
+    }
+    if (rsStageErr) rsStageErr.textContent = t("runstatus.error");
+    if (rsErrMsg2)  rsErrMsg2.textContent = evt.msg || t("runstatus.error.unknown");
   }
 }
 
@@ -2154,6 +2973,1131 @@ async function _pollMetricsIdle() {
 setInterval(_pollMetricsIdle, 2000);
 _pollMetricsIdle();
 
+// ════════════════════════════════════════════════════════════════════════════
+// ── i18n system ─────────────────────────────────────────────────────────────
+// Every translatable string lives in LANG[lang][key]. DOM elements opt in
+// via data-i18n, data-i18n-title, or data-i18n-placeholder attributes.
+// Unknown keys fall back to English, then to the key itself.
+// ════════════════════════════════════════════════════════════════════════════
+const LANG = {
+  en: {
+    // Top bar & tabs
+    "top.brand": "University of <span>Distillation</span>",
+    "top.brand.sub": "Dean Zena — Multi-Teacher Knowledge Transfer",
+    "top.stop": "STOP",
+    "top.stop.tooltip": "Kill the running pipeline. Partial artifacts are kept.",
+    "tab.studio": "Studio",
+    "tab.studio.tooltip": "Configure everything and press Start",
+    "tab.enrollment": "1 Enrollment",
+    "tab.enrollment.tooltip": "Advanced — browse and pick Dean/Teacher models",
+    "tab.teaching": "2 Teaching",
+    "tab.teaching.tooltip": "Live monitor — teacher response generation",
+    "tab.graduation": "3 Graduation",
+    "tab.graduation.tooltip": "Live monitor — student training (SFT / DPO / Merge / GGUF)",
+    "tab.exam": "4 Exam",
+    "tab.exam.tooltip": "Final graduation report",
+    // Settings panel
+    "settings.open": "Settings — language, theme, …",
+    "settings.title": "Settings",
+    "settings.language": "Language",
+    "settings.language.desc": "Translate every menu, label, and tooltip.",
+    "settings.theme": "Theme",
+    "settings.theme.dark": "Dark",
+    "settings.theme.light": "Light",
+    "settings.tooltips": "Tooltips",
+    "settings.tooltips.enable": "Show help tooltips",
+    "settings.tooltips.sub": "Hover any field or button to see what it does.",
+    "settings.about": "About",
+    "settings.about.name": "University of Distillation",
+    "settings.about.sub": "Multi-teacher knowledge transfer studio",
+    // Ribbon / metrics
+    "ribbon.batch": "BATCH",
+    "ribbon.gold": "GOLD",
+    "ribbon.silver": "SILVER",
+    "ribbon.drop": "DROP",
+    "ribbon.step": "STEP",
+    "ribbon.loss": "LOSS",
+    "ribbon.epoch": "EPOCH",
+    "ribbon.eta": "ETA",
+    "ribbon.saved": "inputs saved",
+    "ribbon.saved.tooltip": "Inputs auto-save to your browser",
+    // Studio roster
+    "studio.roster": "Roster",
+    "studio.roster.hint": "— who's teaching and who's learning (configure in 1 Enrollment)",
+    "studio.roster.edit": "Edit in Enrollment",
+    "studio.roster.edit.tooltip": "Jump to Enrollment to add or remove Dean, Teachers, or Students",
+    "studio.roster.dean": "Dean",
+    "studio.roster.teachers": "Teacher(s)",
+    "studio.roster.students": "Student(s)",
+    "studio.roster.none": "(none)",
+    // Studio model row
+    "studio.model.title": "Student to train",
+    "studio.model.hint": "— pick from the students you enrolled in 1 Enrollment",
+    "studio.student": "Student",
+    "studio.student.tooltip": "Which enrolled student (from 1 Enrollment) to train this run. Each student = a base model + selected skills + languages.",
+    "studio.student.empty": "(no student enrolled — go to 1 Enrollment)",
+    "studio.student.info": "Base model / skills / languages will appear here once you enroll a student.",
+    "studio.savestag": "Saves tag",
+    "studio.savestag.tooltip": "Short name for this run. Used as the saves/<tag>/ folder and the final GGUF filename.",
+    "studio.backend": "Backend",
+    "studio.backend.tooltip": "inprocess = teachers run in the Python server (faster spin-up). server = teachers run as separate llama-server processes (more stable under long runs).",
+    // Studio dataset
+    "studio.dataset": "Dataset",
+    "studio.dataset.hint": "— what the teachers will answer",
+    "studio.prompts": "Prompts (.jsonl)",
+    "studio.prompts.tooltip": "A .jsonl file where each line has a \"prompt\" field. The teachers will generate answers for every prompt.",
+    "studio.outputdir": "Output dir",
+    "studio.outputdir.tooltip": "Where teacher_responses.jsonl and the purified gold/silver/drop files get written.",
+    "studio.maxtokens": "Max tokens",
+    "studio.maxtokens.tooltip": "Hard cap on how long each teacher response can be. 512 is a good default; raise for reasoning tasks.",
+    "studio.temperature": "Temperature",
+    "studio.temperature.tooltip": "Sampling temperature. 0 = deterministic, 0.7 = balanced, 1.0 = creative.",
+    "studio.halluc": "Hallucination filter",
+    "studio.halluc.tooltip": "Run each teacher response through a 5-gate filter that drops hallucinations before they enter the training set.",
+    "studio.advanced": "Advanced",
+    "studio.goldthresh": "GOLD threshold",
+    "studio.goldthresh.tooltip": "Minimum per-response quality score to land in the GOLD set (used for SFT training). Higher = stricter.",
+    "studio.silverthresh": "SILVER threshold",
+    "studio.silverthresh.tooltip": "Minimum score for SILVER (used as \"rejected\" in DPO pairs). Must be below GOLD threshold.",
+    // Studio parameters
+    "studio.params": "Parameters",
+    "studio.params.hint": "— how the student learns",
+    "studio.lorarank": "LoRA rank",
+    "studio.lorarank.tooltip": "LoRA adapter rank. Higher = more capacity but more VRAM. 16 is the sweet spot for most Qwen/Gemma students.",
+    "studio.lr": "LR",
+    "studio.lr.tooltip": "Learning rate for the LoRA adapter. 2e-4 works for most SFT runs.",
+    "studio.epochs": "Epochs",
+    "studio.epochs.tooltip": "Number of times the student sees the full training set. 3 is usually enough; more can overfit.",
+    "studio.batchsize": "Batch size",
+    "studio.batchsize.tooltip": "Samples per GPU forward pass. Lower if you hit OOM.",
+    "studio.gradaccum": "Grad accum",
+    "studio.gradaccum.tooltip": "Effective batch = batch_size × grad_accum. Raise this to simulate a bigger batch without more VRAM.",
+    "studio.cutoff": "Cutoff len",
+    "studio.cutoff.tooltip": "Max tokenised sequence length. Samples longer than this get truncated. 2048 is safe for short-form tasks.",
+    "studio.liger": "Liger Kernel (+20% speed, −60% VRAM)",
+    "studio.liger.tooltip": "Fused Triton kernels from linkedin/Liger-Kernel. ~+20% throughput and ~−60% VRAM for attention + MLP on supported models.",
+    "studio.muon": "Muon optimizer (~52% AdamW FLOPs)",
+    "studio.muon.tooltip": "Newton-Schulz orthogonalisation optimiser. Uses ~52% of AdamW FLOPs on 2D weight matrices.",
+    // Studio training
+    "studio.training": "Training",
+    "studio.training.hint": "— which stages to run",
+    "studio.stages": "Stages",
+    "studio.stages.tooltip": "Which training stages to run after teacher generation. \"Teachers only\" stops after purification.",
+    "studio.cpusafe": "CPU-safe (no bf16)",
+    "studio.cpusafe.tooltip": "Force fp32 on CPU-only boxes. Leave OFF if you have an NVIDIA GPU with bf16 support.",
+    "studio.runeval": "Run eval after training",
+    "studio.runeval.tooltip": "Run the graduation exam after training finishes. Prints a quality score you can use to compare runs.",
+    "studio.postmortem": "Postmortem report on completion",
+    "studio.postmortem.tooltip": "After the pipeline finishes, run the postmortem agent and emit a markdown report with auto-tune recommendations.",
+    "studio.start": "Start Training",
+    "studio.start.hint": "Reuses the full pipeline backend — same SFT→DPO→Merge as Recipes",
+    "studio.loss.title": "Live training loss",
+    // Run status card
+    "runstatus.stage": "Current stage",
+    "runstatus.starting": "STARTING",
+    "runstatus.stop": "STOP",
+    "runstatus.restart": "RESTART",
+    "runstatus.stop.tooltip": "Cancel the running pipeline cleanly (kills the active subprocess, keeps partial artifacts).",
+    "runstatus.restart.tooltip": "Re-run the pipeline with the current Studio settings.",
+    "runstatus.complete": "COMPLETE",
+    "runstatus.failed": "FAILED",
+    "runstatus.cancelled": "CANCELLED",
+    "runstatus.error": "ERROR",
+    "runstatus.error.unknown": "Unknown error — check the log below.",
+    // Stage labels
+    "stage.generate": "TEACHER GENERATION",
+    "stage.halluc": "HALLUCINATION GATES",
+    "stage.purify": "PURIFICATION",
+    "stage.configs": "CONFIG GENERATION",
+    "stage.sft": "SFT TRAINING",
+    "stage.dpo": "DPO TRAINING",
+    "stage.merge": "LORA MERGE",
+    "stage.gguf": "GGUF EXPORT",
+    "stage.eval": "GRADUATION EXAM",
+    "stage.dashboard": "REPORT",
+    "stage.postmortem": "POSTMORTEM",
+    // Enrollment tab
+    "enroll.search": "🔍  Search by name, family, or capability...",
+    "enroll.filter.all": "All",
+    "enroll.filter.dean": "Dean",
+    "enroll.filter.teacher": "Teacher",
+    "enroll.filter.student": "Student",
+    "enroll.filter.coding": "Coding",
+    "enroll.filter.reasoning": "Reasoning",
+    "enroll.filter.multilingual": "Multilingual",
+    "enroll.filter.fast": "Fast/Small",
+    "enroll.rescan": "Rescan",
+    "enroll.rescan.tooltip": "Rescan C:\\AI\\Models",
+    "enroll.backend": "Backend",
+    "enroll.outputdir": "Output directory",
+    "enroll.deep": "Deep probe",
+    "enroll.cred": "Credential Check",
+    "enroll.cross": "Cross-Examine",
+    "enroll.grid.title": "Expert Models (Dean & Teachers)",
+    // Brain Architect
+    "ba.title": "🧠 Brain Architect — What Should Your Model Know?",
+    "ba.intro": "Pick the skills your model needs. The system will recommend the right brain size and estimate quality for each task.",
+    "ba.step1": "Step 1 — Select skills to teach",
+    "ba.step2": "Step 2 — Choose quality tier",
+    "ba.translation": "🌐 Translation — Select languages",
+    "ba.coding": "💻 Coding — Select languages",
+    "ba.noskills": "Pick at least one skill above to see recommendations",
+    "ba.studentName": "Name your new model (what the world will call it)",
+    "ba.enroll": "+ Enroll Student",
+    // Monitors
+    "phase2.title": "Teacher Generation — Live Monitor",
+    "phase3.title": "Student Training — Live Monitor",
+    "phase2.idle.title": "Waiting for Studio",
+    "phase2.idle.sub": "Teacher responses will stream in here once you press ▶ Start Training in the Studio tab.",
+    "phase3.idle.sub": "SFT → DPO → Merge → GGUF progress will appear here once training starts. Press ▶ Start Training in the Studio tab.",
+    "phase2.gold": "GOLD (SFT)",
+    "phase2.silver": "SILVER (DPO)",
+    "phase2.drop": "DROP",
+    "phase4.title": "Graduation Report",
+    "phase4.hint": "Results appear here after the full pipeline completes.",
+    "monitor.goto": "Configure in Studio",
+  },
+  fr: {
+    "top.brand": "Université de <span>Distillation</span>",
+    "top.brand.sub": "Doyenne Zena — Transfert de connaissances multi-enseignants",
+    "top.stop": "STOP",
+    "top.stop.tooltip": "Arrêter le pipeline en cours. Les artefacts partiels sont conservés.",
+    "tab.studio": "Studio",
+    "tab.studio.tooltip": "Tout configurer et appuyer sur Démarrer",
+    "tab.enrollment": "1 Inscription",
+    "tab.enrollment.tooltip": "Avancé — parcourir et choisir les modèles Doyen/Enseignant",
+    "tab.teaching": "2 Enseignement",
+    "tab.teaching.tooltip": "Suivi en direct — génération des réponses enseignants",
+    "tab.graduation": "3 Diplôme",
+    "tab.graduation.tooltip": "Suivi en direct — entraînement de l'étudiant (SFT / DPO / Fusion / GGUF)",
+    "tab.exam": "4 Examen",
+    "tab.exam.tooltip": "Rapport final de remise des diplômes",
+    "settings.open": "Paramètres — langue, thème, …",
+    "settings.title": "Paramètres",
+    "settings.language": "Langue",
+    "settings.language.desc": "Traduit chaque menu, étiquette et info-bulle.",
+    "settings.theme": "Thème",
+    "settings.theme.dark": "Sombre",
+    "settings.theme.light": "Clair",
+    "settings.tooltips": "Info-bulles",
+    "settings.tooltips.enable": "Afficher les info-bulles d'aide",
+    "settings.tooltips.sub": "Survolez un champ ou un bouton pour voir à quoi il sert.",
+    "settings.about": "À propos",
+    "settings.about.name": "Université de Distillation",
+    "settings.about.sub": "Studio de transfert de connaissances multi-enseignants",
+    "ribbon.batch": "LOT",
+    "ribbon.gold": "OR",
+    "ribbon.silver": "ARGENT",
+    "ribbon.drop": "REJET",
+    "ribbon.step": "ÉTAPE",
+    "ribbon.loss": "PERTE",
+    "ribbon.epoch": "ÉPOQUE",
+    "ribbon.eta": "ETA",
+    "ribbon.saved": "entrées enregistrées",
+    "ribbon.saved.tooltip": "Les entrées sont enregistrées automatiquement dans votre navigateur",
+    "studio.roster": "Équipe",
+    "studio.roster.hint": "— qui enseigne et qui apprend (à configurer dans 1 Inscription)",
+    "studio.roster.edit": "Modifier dans Inscription",
+    "studio.roster.edit.tooltip": "Aller à Inscription pour ajouter ou retirer le Doyen, les Enseignants ou les Étudiants",
+    "studio.roster.dean": "Doyen",
+    "studio.roster.teachers": "Enseignant(s)",
+    "studio.roster.students": "Étudiant(s)",
+    "studio.roster.none": "(aucun)",
+    "studio.model.title": "Étudiant à entraîner",
+    "studio.model.hint": "— choisissez parmi les étudiants inscrits dans 1 Inscription",
+    "studio.student": "Étudiant",
+    "studio.student.tooltip": "Quel étudiant inscrit (depuis 1 Inscription) entraîner pour cette exécution.",
+    "studio.student.empty": "(aucun étudiant inscrit — aller dans 1 Inscription)",
+    "studio.student.info": "Le modèle de base / compétences / langues apparaîtront ici une fois un étudiant inscrit.",
+    "studio.savestag": "Balise de sauvegarde",
+    "studio.savestag.tooltip": "Nom court pour cette exécution. Utilisé comme dossier saves/<tag>/ et nom du fichier GGUF final.",
+    "studio.backend": "Backend",
+    "studio.backend.tooltip": "inprocess = enseignants dans le serveur Python. server = enseignants dans des processus llama-server distincts.",
+    "studio.dataset": "Jeu de données",
+    "studio.dataset.hint": "— ce à quoi les enseignants répondront",
+    "studio.prompts": "Prompts (.jsonl)",
+    "studio.prompts.tooltip": "Fichier .jsonl où chaque ligne contient un champ \"prompt\".",
+    "studio.outputdir": "Dossier de sortie",
+    "studio.outputdir.tooltip": "Emplacement des fichiers teacher_responses.jsonl et gold/silver/drop purifiés.",
+    "studio.maxtokens": "Tokens max",
+    "studio.maxtokens.tooltip": "Limite stricte sur la longueur de chaque réponse enseignant.",
+    "studio.temperature": "Température",
+    "studio.temperature.tooltip": "Température d'échantillonnage. 0 = déterministe, 0.7 = équilibré, 1.0 = créatif.",
+    "studio.halluc": "Filtre hallucinations",
+    "studio.halluc.tooltip": "Passe chaque réponse enseignant à travers un filtre à 5 portes qui écarte les hallucinations.",
+    "studio.advanced": "Avancé",
+    "studio.goldthresh": "Seuil OR",
+    "studio.goldthresh.tooltip": "Score qualité minimum pour aller dans le jeu OR (utilisé pour le SFT).",
+    "studio.silverthresh": "Seuil ARGENT",
+    "studio.silverthresh.tooltip": "Score minimum pour ARGENT (côté \"rejeté\" en DPO).",
+    "studio.params": "Paramètres",
+    "studio.params.hint": "— comment l'étudiant apprend",
+    "studio.lorarank": "Rang LoRA",
+    "studio.lorarank.tooltip": "Rang de l'adaptateur LoRA. 16 est le juste milieu.",
+    "studio.lr": "LR",
+    "studio.lr.tooltip": "Taux d'apprentissage de l'adaptateur LoRA.",
+    "studio.epochs": "Époques",
+    "studio.epochs.tooltip": "Nombre de passes sur le jeu d'entraînement complet. 3 suffit généralement.",
+    "studio.batchsize": "Taille de lot",
+    "studio.batchsize.tooltip": "Échantillons par passe forward GPU. Baisser en cas de OOM.",
+    "studio.gradaccum": "Accumul. grad",
+    "studio.gradaccum.tooltip": "Lot effectif = batch_size × grad_accum.",
+    "studio.cutoff": "Longueur max",
+    "studio.cutoff.tooltip": "Longueur de séquence tokenisée max. Les plus longues sont tronquées.",
+    "studio.liger": "Noyau Liger (+20% vitesse, −60% VRAM)",
+    "studio.liger.tooltip": "Noyaux Triton fusionnés. ~+20% débit et ~−60% VRAM.",
+    "studio.muon": "Optimiseur Muon (~52% FLOPs AdamW)",
+    "studio.muon.tooltip": "Optimiseur d'orthogonalisation Newton-Schulz.",
+    "studio.training": "Entraînement",
+    "studio.training.hint": "— quelles étapes exécuter",
+    "studio.stages": "Étapes",
+    "studio.stages.tooltip": "Quelles étapes d'entraînement exécuter après la génération enseignant.",
+    "studio.cpusafe": "Mode CPU (sans bf16)",
+    "studio.cpusafe.tooltip": "Force fp32 sur les machines CPU seulement.",
+    "studio.runeval": "Évaluer après l'entraînement",
+    "studio.runeval.tooltip": "Lance l'examen de diplôme après l'entraînement.",
+    "studio.postmortem": "Rapport post-mortem à la fin",
+    "studio.postmortem.tooltip": "Après la fin du pipeline, lance l'agent post-mortem.",
+    "studio.start": "Démarrer l'entraînement",
+    "studio.start.hint": "Réutilise tout le backend du pipeline — même chaîne SFT→DPO→Fusion",
+    "studio.loss.title": "Perte d'entraînement en direct",
+    "runstatus.stage": "Étape courante",
+    "runstatus.starting": "DÉMARRAGE",
+    "runstatus.stop": "STOP",
+    "runstatus.restart": "RELANCER",
+    "runstatus.stop.tooltip": "Annuler proprement le pipeline en cours.",
+    "runstatus.restart.tooltip": "Relancer le pipeline avec les réglages Studio actuels.",
+    "runstatus.complete": "TERMINÉ",
+    "runstatus.failed": "ÉCHEC",
+    "runstatus.cancelled": "ANNULÉ",
+    "runstatus.error": "ERREUR",
+    "runstatus.error.unknown": "Erreur inconnue — consultez le journal ci-dessous.",
+    "stage.generate": "GÉNÉRATION ENSEIGNANT",
+    "stage.halluc": "PORTES ANTI-HALLUCINATION",
+    "stage.purify": "PURIFICATION",
+    "stage.configs": "GÉNÉRATION DE CONFIG",
+    "stage.sft": "ENTRAÎNEMENT SFT",
+    "stage.dpo": "ENTRAÎNEMENT DPO",
+    "stage.merge": "FUSION LORA",
+    "stage.gguf": "EXPORT GGUF",
+    "stage.eval": "EXAMEN DE DIPLÔME",
+    "stage.dashboard": "RAPPORT",
+    "stage.postmortem": "POST-MORTEM",
+    "enroll.search": "🔍  Rechercher par nom, famille ou capacité...",
+    "enroll.filter.all": "Tous",
+    "enroll.filter.dean": "Doyen",
+    "enroll.filter.teacher": "Enseignant",
+    "enroll.filter.student": "Étudiant",
+    "enroll.filter.coding": "Code",
+    "enroll.filter.reasoning": "Raisonnement",
+    "enroll.filter.multilingual": "Multilingue",
+    "enroll.filter.fast": "Rapide/Petit",
+    "enroll.rescan": "Rescanner",
+    "enroll.rescan.tooltip": "Re-scanner C:\\AI\\Models",
+    "enroll.backend": "Backend",
+    "enroll.outputdir": "Dossier de sortie",
+    "enroll.deep": "Sonde approfondie",
+    "enroll.cred": "Vérif. d'identité",
+    "enroll.cross": "Contre-interrogatoire",
+    "enroll.grid.title": "Modèles experts (Doyen & Enseignants)",
+    "ba.title": "🧠 Architecte du cerveau — Que doit savoir votre modèle ?",
+    "ba.intro": "Choisissez les compétences dont votre modèle a besoin. Le système recommandera la bonne taille de cerveau.",
+    "ba.step1": "Étape 1 — Sélectionnez les compétences à enseigner",
+    "ba.step2": "Étape 2 — Choisissez le niveau de qualité",
+    "ba.translation": "🌐 Traduction — Sélectionnez les langues",
+    "ba.coding": "💻 Code — Sélectionnez les langages",
+    "ba.noskills": "Sélectionnez au moins une compétence ci-dessus pour voir les recommandations",
+    "ba.studentName": "Nommez votre nouveau modèle (son nom public)",
+    "ba.enroll": "+ Inscrire l'étudiant",
+    "phase2.title": "Génération enseignant — Suivi en direct",
+    "phase3.title": "Entraînement étudiant — Suivi en direct",
+    "phase2.idle.title": "En attente du Studio",
+    "phase2.idle.sub": "Les réponses enseignants apparaîtront ici dès que vous appuierez sur ▶ Démarrer l'entraînement.",
+    "phase3.idle.sub": "La progression SFT → DPO → Fusion → GGUF apparaîtra ici. Appuyez sur ▶ Démarrer l'entraînement.",
+    "phase2.gold": "OR (SFT)",
+    "phase2.silver": "ARGENT (DPO)",
+    "phase2.drop": "REJET",
+    "phase4.title": "Rapport de diplôme",
+    "phase4.hint": "Les résultats apparaissent ici après la fin du pipeline complet.",
+    "monitor.goto": "Configurer dans Studio",
+  },
+  it: {
+    "top.brand": "Università della <span>Distillazione</span>",
+    "top.brand.sub": "Preside Zena — Trasferimento di conoscenza multi-insegnante",
+    "top.stop": "STOP",
+    "top.stop.tooltip": "Interrompi la pipeline in esecuzione. Gli artefatti parziali vengono mantenuti.",
+    "tab.studio": "Studio",
+    "tab.studio.tooltip": "Configura tutto e premi Avvia",
+    "tab.enrollment": "1 Iscrizione",
+    "tab.enrollment.tooltip": "Avanzato — sfoglia e scegli i modelli Preside/Insegnante",
+    "tab.teaching": "2 Insegnamento",
+    "tab.teaching.tooltip": "Monitor live — generazione risposte insegnanti",
+    "tab.graduation": "3 Diploma",
+    "tab.graduation.tooltip": "Monitor live — addestramento studente (SFT / DPO / Merge / GGUF)",
+    "tab.exam": "4 Esame",
+    "tab.exam.tooltip": "Rapporto finale di diploma",
+    "settings.open": "Impostazioni — lingua, tema, …",
+    "settings.title": "Impostazioni",
+    "settings.language": "Lingua",
+    "settings.language.desc": "Traduce ogni menu, etichetta e descrizione.",
+    "settings.theme": "Tema",
+    "settings.theme.dark": "Scuro",
+    "settings.theme.light": "Chiaro",
+    "settings.tooltips": "Descrizioni comando",
+    "settings.tooltips.enable": "Mostra descrizioni di aiuto",
+    "settings.tooltips.sub": "Passa sopra un campo o un pulsante per vedere cosa fa.",
+    "settings.about": "Informazioni",
+    "settings.about.name": "Università della Distillazione",
+    "settings.about.sub": "Studio per il trasferimento di conoscenza multi-insegnante",
+    "ribbon.batch": "LOTTO",
+    "ribbon.gold": "ORO",
+    "ribbon.silver": "ARGENTO",
+    "ribbon.drop": "SCARTO",
+    "ribbon.step": "PASSO",
+    "ribbon.loss": "PERDITA",
+    "ribbon.epoch": "EPOCA",
+    "ribbon.eta": "ETA",
+    "ribbon.saved": "input salvati",
+    "ribbon.saved.tooltip": "Gli input vengono salvati automaticamente nel browser",
+    "studio.roster": "Elenco",
+    "studio.roster.hint": "— chi insegna e chi impara (configura in 1 Iscrizione)",
+    "studio.roster.edit": "Modifica in Iscrizione",
+    "studio.roster.edit.tooltip": "Vai a Iscrizione per aggiungere o rimuovere Preside, Insegnanti o Studenti",
+    "studio.roster.dean": "Preside",
+    "studio.roster.teachers": "Insegnante/i",
+    "studio.roster.students": "Studente/i",
+    "studio.roster.none": "(nessuno)",
+    "studio.model.title": "Studente da addestrare",
+    "studio.model.hint": "— scegli fra gli studenti iscritti in 1 Iscrizione",
+    "studio.student": "Studente",
+    "studio.student.tooltip": "Quale studente iscritto addestrare in questa esecuzione.",
+    "studio.student.empty": "(nessuno studente iscritto — vai a 1 Iscrizione)",
+    "studio.student.info": "Modello base / competenze / lingue appariranno qui una volta iscritto uno studente.",
+    "studio.savestag": "Tag di salvataggio",
+    "studio.savestag.tooltip": "Nome breve per questa esecuzione. Usato come cartella saves/<tag>/ e nome del file GGUF.",
+    "studio.backend": "Backend",
+    "studio.backend.tooltip": "inprocess = insegnanti nel server Python. server = insegnanti in processi llama-server separati.",
+    "studio.dataset": "Dataset",
+    "studio.dataset.hint": "— a cosa risponderanno gli insegnanti",
+    "studio.prompts": "Prompt (.jsonl)",
+    "studio.prompts.tooltip": "File .jsonl in cui ogni riga ha un campo \"prompt\".",
+    "studio.outputdir": "Cartella di output",
+    "studio.outputdir.tooltip": "Dove vengono scritti teacher_responses.jsonl e i file purificati gold/silver/drop.",
+    "studio.maxtokens": "Token max",
+    "studio.maxtokens.tooltip": "Limite massimo sulla lunghezza di ogni risposta insegnante.",
+    "studio.temperature": "Temperatura",
+    "studio.temperature.tooltip": "Temperatura di campionamento. 0 = deterministico, 0.7 = bilanciato, 1.0 = creativo.",
+    "studio.halluc": "Filtro allucinazioni",
+    "studio.halluc.tooltip": "Passa ogni risposta attraverso un filtro a 5 porte che scarta le allucinazioni.",
+    "studio.advanced": "Avanzato",
+    "studio.goldthresh": "Soglia ORO",
+    "studio.goldthresh.tooltip": "Punteggio qualità minimo per entrare nel set ORO (usato per SFT).",
+    "studio.silverthresh": "Soglia ARGENTO",
+    "studio.silverthresh.tooltip": "Punteggio minimo per ARGENTO (\"rifiutato\" in DPO).",
+    "studio.params": "Parametri",
+    "studio.params.hint": "— come apprende lo studente",
+    "studio.lorarank": "Rango LoRA",
+    "studio.lorarank.tooltip": "Rango dell'adattatore LoRA. 16 è il valore ottimale.",
+    "studio.lr": "LR",
+    "studio.lr.tooltip": "Tasso di apprendimento dell'adattatore LoRA.",
+    "studio.epochs": "Epoche",
+    "studio.epochs.tooltip": "Numero di passate sul set di addestramento completo. 3 di solito basta.",
+    "studio.batchsize": "Dim. batch",
+    "studio.batchsize.tooltip": "Campioni per passata forward GPU. Abbassa in caso di OOM.",
+    "studio.gradaccum": "Accum. grad",
+    "studio.gradaccum.tooltip": "Batch effettivo = batch_size × grad_accum.",
+    "studio.cutoff": "Lunghezza max",
+    "studio.cutoff.tooltip": "Lunghezza massima della sequenza tokenizzata.",
+    "studio.liger": "Kernel Liger (+20% velocità, −60% VRAM)",
+    "studio.liger.tooltip": "Kernel Triton fusi. ~+20% throughput e ~−60% VRAM.",
+    "studio.muon": "Ottimizzatore Muon (~52% FLOPs AdamW)",
+    "studio.muon.tooltip": "Ottimizzatore di ortogonalizzazione Newton-Schulz.",
+    "studio.training": "Addestramento",
+    "studio.training.hint": "— quali fasi eseguire",
+    "studio.stages": "Fasi",
+    "studio.stages.tooltip": "Quali fasi eseguire dopo la generazione insegnante.",
+    "studio.cpusafe": "Modalità CPU (senza bf16)",
+    "studio.cpusafe.tooltip": "Forza fp32 su macchine solo CPU.",
+    "studio.runeval": "Valuta dopo l'addestramento",
+    "studio.runeval.tooltip": "Esegui l'esame di diploma al termine dell'addestramento.",
+    "studio.postmortem": "Rapporto post-mortem al termine",
+    "studio.postmortem.tooltip": "Dopo la pipeline, lancia l'agente post-mortem.",
+    "studio.start": "Avvia addestramento",
+    "studio.start.hint": "Riutilizza tutto il backend del pipeline — stessa catena SFT→DPO→Merge",
+    "studio.loss.title": "Perdita di addestramento in tempo reale",
+    "runstatus.stage": "Fase corrente",
+    "runstatus.starting": "AVVIO",
+    "runstatus.stop": "STOP",
+    "runstatus.restart": "RIAVVIA",
+    "runstatus.stop.tooltip": "Annulla in modo pulito il pipeline in corso.",
+    "runstatus.restart.tooltip": "Riesegui il pipeline con le impostazioni attuali di Studio.",
+    "runstatus.complete": "COMPLETATO",
+    "runstatus.failed": "FALLITO",
+    "runstatus.cancelled": "ANNULLATO",
+    "runstatus.error": "ERRORE",
+    "runstatus.error.unknown": "Errore sconosciuto — consulta il log qui sotto.",
+    "stage.generate": "GENERAZIONE INSEGNANTE",
+    "stage.halluc": "PORTE ANTI-ALLUCINAZIONE",
+    "stage.purify": "PURIFICAZIONE",
+    "stage.configs": "GENERAZIONE CONFIG",
+    "stage.sft": "ADDESTRAMENTO SFT",
+    "stage.dpo": "ADDESTRAMENTO DPO",
+    "stage.merge": "MERGE LORA",
+    "stage.gguf": "EXPORT GGUF",
+    "stage.eval": "ESAME DI DIPLOMA",
+    "stage.dashboard": "RAPPORTO",
+    "stage.postmortem": "POST-MORTEM",
+    "enroll.search": "🔍  Cerca per nome, famiglia o capacità...",
+    "enroll.filter.all": "Tutti",
+    "enroll.filter.dean": "Preside",
+    "enroll.filter.teacher": "Insegnante",
+    "enroll.filter.student": "Studente",
+    "enroll.filter.coding": "Codice",
+    "enroll.filter.reasoning": "Ragionamento",
+    "enroll.filter.multilingual": "Multilingue",
+    "enroll.filter.fast": "Veloce/Piccolo",
+    "enroll.rescan": "Riscansiona",
+    "enroll.rescan.tooltip": "Riscansiona C:\\AI\\Models",
+    "enroll.backend": "Backend",
+    "enroll.outputdir": "Cartella di output",
+    "enroll.deep": "Sonda profonda",
+    "enroll.cred": "Verifica credenziali",
+    "enroll.cross": "Controinterrogatorio",
+    "enroll.grid.title": "Modelli esperti (Preside & Insegnanti)",
+    "ba.title": "🧠 Architetto del cervello — Cosa deve sapere il tuo modello?",
+    "ba.intro": "Scegli le competenze di cui ha bisogno il tuo modello. Il sistema suggerirà la giusta dimensione.",
+    "ba.step1": "Passo 1 — Seleziona le competenze da insegnare",
+    "ba.step2": "Passo 2 — Scegli il livello di qualità",
+    "ba.translation": "🌐 Traduzione — Seleziona le lingue",
+    "ba.coding": "💻 Codice — Seleziona i linguaggi",
+    "ba.noskills": "Seleziona almeno una competenza per vedere i suggerimenti",
+    "ba.studentName": "Dai un nome al nuovo modello (come lo chiamerà il mondo)",
+    "ba.enroll": "+ Iscrivi studente",
+    "phase2.title": "Generazione insegnante — Monitor live",
+    "phase3.title": "Addestramento studente — Monitor live",
+    "phase2.idle.title": "In attesa di Studio",
+    "phase2.idle.sub": "Le risposte degli insegnanti appariranno qui quando premerai ▶ Avvia addestramento.",
+    "phase3.idle.sub": "Il progresso SFT → DPO → Merge → GGUF apparirà qui. Premi ▶ Avvia addestramento.",
+    "phase2.gold": "ORO (SFT)",
+    "phase2.silver": "ARGENTO (DPO)",
+    "phase2.drop": "SCARTO",
+    "phase4.title": "Rapporto di diploma",
+    "phase4.hint": "I risultati appaiono qui al termine del pipeline completo.",
+    "monitor.goto": "Configura in Studio",
+  },
+  ro: {
+    "top.brand": "Universitatea de <span>Distilare</span>",
+    "top.brand.sub": "Decan Zena — Transfer de cunoștințe cu mai mulți profesori",
+    "top.stop": "STOP",
+    "top.stop.tooltip": "Oprește pipeline-ul în execuție. Artefactele parțiale sunt păstrate.",
+    "tab.studio": "Studio",
+    "tab.studio.tooltip": "Configurează totul și apasă Start",
+    "tab.enrollment": "1 Înscriere",
+    "tab.enrollment.tooltip": "Avansat — răsfoiește și alege modelele Decan/Profesor",
+    "tab.teaching": "2 Predare",
+    "tab.teaching.tooltip": "Monitor live — generarea răspunsurilor profesorilor",
+    "tab.graduation": "3 Absolvire",
+    "tab.graduation.tooltip": "Monitor live — antrenamentul studentului (SFT / DPO / Merge / GGUF)",
+    "tab.exam": "4 Examen",
+    "tab.exam.tooltip": "Raport final de absolvire",
+    "settings.open": "Setări — limbă, temă, …",
+    "settings.title": "Setări",
+    "settings.language": "Limbă",
+    "settings.language.desc": "Traduce fiecare meniu, etichetă și tooltip.",
+    "settings.theme": "Temă",
+    "settings.theme.dark": "Întunecată",
+    "settings.theme.light": "Luminoasă",
+    "settings.tooltips": "Tooltip-uri",
+    "settings.tooltips.enable": "Afișează tooltip-urile de ajutor",
+    "settings.tooltips.sub": "Treci cu mouse-ul peste orice câmp sau buton pentru a vedea ce face.",
+    "settings.about": "Despre",
+    "settings.about.name": "Universitatea de Distilare",
+    "settings.about.sub": "Studio de transfer de cunoștințe cu mai mulți profesori",
+    "ribbon.batch": "LOT",
+    "ribbon.gold": "AUR",
+    "ribbon.silver": "ARGINT",
+    "ribbon.drop": "ELIM.",
+    "ribbon.step": "PAS",
+    "ribbon.loss": "PIERDERE",
+    "ribbon.epoch": "EPOCĂ",
+    "ribbon.eta": "ETA",
+    "ribbon.saved": "intrări salvate",
+    "ribbon.saved.tooltip": "Intrările se salvează automat în browser",
+    "studio.roster": "Lista",
+    "studio.roster.hint": "— cine predă și cine învață (configurează în 1 Înscriere)",
+    "studio.roster.edit": "Editează în Înscriere",
+    "studio.roster.edit.tooltip": "Mergi la Înscriere pentru a adăuga sau scoate Decan, Profesori sau Studenți",
+    "studio.roster.dean": "Decan",
+    "studio.roster.teachers": "Profesor(i)",
+    "studio.roster.students": "Student/Studenți",
+    "studio.roster.none": "(niciunul)",
+    "studio.model.title": "Student de antrenat",
+    "studio.model.hint": "— alege dintre studenții înscriși în 1 Înscriere",
+    "studio.student": "Student",
+    "studio.student.tooltip": "Care student înscris (din 1 Înscriere) să fie antrenat.",
+    "studio.student.empty": "(niciun student înscris — mergi la 1 Înscriere)",
+    "studio.student.info": "Modelul de bază / abilități / limbi vor apărea aici după înscrierea unui student.",
+    "studio.savestag": "Eticheta salvare",
+    "studio.savestag.tooltip": "Nume scurt pentru această execuție. Folosit ca folder saves/<tag>/ și nume GGUF final.",
+    "studio.backend": "Backend",
+    "studio.backend.tooltip": "inprocess = profesorii rulează în serverul Python. server = profesorii rulează ca procese llama-server separate.",
+    "studio.dataset": "Set de date",
+    "studio.dataset.hint": "— la ce vor răspunde profesorii",
+    "studio.prompts": "Prompturi (.jsonl)",
+    "studio.prompts.tooltip": "Fișier .jsonl în care fiecare linie are un câmp \"prompt\".",
+    "studio.outputdir": "Folder ieșire",
+    "studio.outputdir.tooltip": "Unde sunt scrise teacher_responses.jsonl și fișierele purificate gold/silver/drop.",
+    "studio.maxtokens": "Tokeni max",
+    "studio.maxtokens.tooltip": "Limită strictă pe lungimea fiecărui răspuns profesor.",
+    "studio.temperature": "Temperatură",
+    "studio.temperature.tooltip": "Temperatură de eșantionare. 0 = determinist, 0.7 = echilibrat, 1.0 = creativ.",
+    "studio.halluc": "Filtru halucinații",
+    "studio.halluc.tooltip": "Trece fiecare răspuns prin filtrul cu 5 porți care elimină halucinațiile.",
+    "studio.advanced": "Avansat",
+    "studio.goldthresh": "Prag AUR",
+    "studio.goldthresh.tooltip": "Scor minim de calitate pentru setul AUR (folosit în SFT).",
+    "studio.silverthresh": "Prag ARGINT",
+    "studio.silverthresh.tooltip": "Scor minim pentru ARGINT (latura \"respins\" în DPO).",
+    "studio.params": "Parametri",
+    "studio.params.hint": "— cum învață studentul",
+    "studio.lorarank": "Rang LoRA",
+    "studio.lorarank.tooltip": "Rangul adaptorului LoRA. 16 este valoarea optimă.",
+    "studio.lr": "LR",
+    "studio.lr.tooltip": "Rata de învățare pentru adaptorul LoRA.",
+    "studio.epochs": "Epoci",
+    "studio.epochs.tooltip": "De câte ori vede studentul setul complet. 3 este de obicei suficient.",
+    "studio.batchsize": "Dim. batch",
+    "studio.batchsize.tooltip": "Eșantioane per forward GPU. Scade dacă apare OOM.",
+    "studio.gradaccum": "Acum. grad",
+    "studio.gradaccum.tooltip": "Batch efectiv = batch_size × grad_accum.",
+    "studio.cutoff": "Lungime max",
+    "studio.cutoff.tooltip": "Lungime maximă a secvenței tokenizate.",
+    "studio.liger": "Kernel Liger (+20% viteză, −60% VRAM)",
+    "studio.liger.tooltip": "Kernel-uri Triton fuzionate. ~+20% throughput și ~−60% VRAM.",
+    "studio.muon": "Optimizator Muon (~52% FLOPs AdamW)",
+    "studio.muon.tooltip": "Optimizator de ortogonalizare Newton-Schulz.",
+    "studio.training": "Antrenament",
+    "studio.training.hint": "— ce etape să ruleze",
+    "studio.stages": "Etape",
+    "studio.stages.tooltip": "Ce etape de antrenament să ruleze după generarea profesorilor.",
+    "studio.cpusafe": "Mod CPU (fără bf16)",
+    "studio.cpusafe.tooltip": "Forțează fp32 pe mașini doar CPU.",
+    "studio.runeval": "Evaluare după antrenament",
+    "studio.runeval.tooltip": "Rulează examenul de absolvire după antrenament.",
+    "studio.postmortem": "Raport post-mortem la final",
+    "studio.postmortem.tooltip": "După pipeline, rulează agentul post-mortem.",
+    "studio.start": "Pornește antrenamentul",
+    "studio.start.hint": "Refolosește tot backend-ul pipeline — același lanț SFT→DPO→Merge",
+    "studio.loss.title": "Pierdere de antrenament în timp real",
+    "runstatus.stage": "Etapa curentă",
+    "runstatus.starting": "PORNIRE",
+    "runstatus.stop": "STOP",
+    "runstatus.restart": "REPORNIRE",
+    "runstatus.stop.tooltip": "Anulează curat pipeline-ul în execuție.",
+    "runstatus.restart.tooltip": "Reexecută pipeline-ul cu setările actuale din Studio.",
+    "runstatus.complete": "COMPLET",
+    "runstatus.failed": "EȘUAT",
+    "runstatus.cancelled": "ANULAT",
+    "runstatus.error": "EROARE",
+    "runstatus.error.unknown": "Eroare necunoscută — verifică jurnalul de mai jos.",
+    "stage.generate": "GENERARE PROFESOR",
+    "stage.halluc": "PORȚI ANTI-HALUCINAȚIE",
+    "stage.purify": "PURIFICARE",
+    "stage.configs": "GENERARE CONFIG",
+    "stage.sft": "ANTRENAMENT SFT",
+    "stage.dpo": "ANTRENAMENT DPO",
+    "stage.merge": "FUZIUNE LORA",
+    "stage.gguf": "EXPORT GGUF",
+    "stage.eval": "EXAMEN DE ABSOLVIRE",
+    "stage.dashboard": "RAPORT",
+    "stage.postmortem": "POST-MORTEM",
+    "enroll.search": "🔍  Caută după nume, familie sau capacitate...",
+    "enroll.filter.all": "Toate",
+    "enroll.filter.dean": "Decan",
+    "enroll.filter.teacher": "Profesor",
+    "enroll.filter.student": "Student",
+    "enroll.filter.coding": "Cod",
+    "enroll.filter.reasoning": "Raționament",
+    "enroll.filter.multilingual": "Multilingvă",
+    "enroll.filter.fast": "Rapid/Mic",
+    "enroll.rescan": "Rescanează",
+    "enroll.rescan.tooltip": "Rescanează C:\\AI\\Models",
+    "enroll.backend": "Backend",
+    "enroll.outputdir": "Folder ieșire",
+    "enroll.deep": "Sondaj profund",
+    "enroll.cred": "Verificare credențiale",
+    "enroll.cross": "Interogare încrucișată",
+    "enroll.grid.title": "Modele expert (Decan & Profesori)",
+    "ba.title": "🧠 Arhitectul creierului — Ce ar trebui să știe modelul tău?",
+    "ba.intro": "Alege abilitățile de care are nevoie modelul tău. Sistemul va recomanda dimensiunea potrivită.",
+    "ba.step1": "Pasul 1 — Selectează abilitățile de predat",
+    "ba.step2": "Pasul 2 — Alege nivelul de calitate",
+    "ba.translation": "🌐 Traducere — Selectează limbi",
+    "ba.coding": "💻 Cod — Selectează limbaje",
+    "ba.noskills": "Selectează cel puțin o abilitate pentru a vedea recomandări",
+    "ba.studentName": "Numește noul tău model (cum îl va cunoaște lumea)",
+    "ba.enroll": "+ Înscrie student",
+    "phase2.title": "Generare profesor — Monitor live",
+    "phase3.title": "Antrenament student — Monitor live",
+    "phase2.idle.title": "Așteaptă Studio",
+    "phase2.idle.sub": "Răspunsurile profesorilor vor apărea aici când apeși ▶ Pornește antrenamentul.",
+    "phase3.idle.sub": "Progresul SFT → DPO → Merge → GGUF va apărea aici. Apasă ▶ Pornește antrenamentul.",
+    "phase2.gold": "AUR (SFT)",
+    "phase2.silver": "ARGINT (DPO)",
+    "phase2.drop": "ELIM.",
+    "phase4.title": "Raport de absolvire",
+    "phase4.hint": "Rezultatele apar aici după ce pipeline-ul se termină complet.",
+    "monitor.goto": "Configurează în Studio",
+  },
+  hu: {
+    "top.brand": "<span>Desztillációs</span> Egyetem",
+    "top.brand.sub": "Zena dékán — Több tanáros tudásátadás",
+    "top.stop": "STOP",
+    "top.stop.tooltip": "Futó pipeline leállítása. A részleges eredmények megmaradnak.",
+    "tab.studio": "Stúdió",
+    "tab.studio.tooltip": "Állíts be mindent és nyomj Indítást",
+    "tab.enrollment": "1 Beiratkozás",
+    "tab.enrollment.tooltip": "Haladó — böngészés és Dékán/Tanár modellek kiválasztása",
+    "tab.teaching": "2 Tanítás",
+    "tab.teaching.tooltip": "Élő monitor — tanári válaszok generálása",
+    "tab.graduation": "3 Diplomázás",
+    "tab.graduation.tooltip": "Élő monitor — tanuló betanítása (SFT / DPO / Merge / GGUF)",
+    "tab.exam": "4 Vizsga",
+    "tab.exam.tooltip": "Végső diplomavizsga riport",
+    "settings.open": "Beállítások — nyelv, téma, …",
+    "settings.title": "Beállítások",
+    "settings.language": "Nyelv",
+    "settings.language.desc": "Lefordítja az összes menüt, címkét és tippet.",
+    "settings.theme": "Téma",
+    "settings.theme.dark": "Sötét",
+    "settings.theme.light": "Világos",
+    "settings.tooltips": "Tippek",
+    "settings.tooltips.enable": "Súgó tippek megjelenítése",
+    "settings.tooltips.sub": "Vidd a kurzort bármelyik mezőre vagy gombra.",
+    "settings.about": "Névjegy",
+    "settings.about.name": "Desztillációs Egyetem",
+    "settings.about.sub": "Több tanáros tudásátadó stúdió",
+    "ribbon.batch": "KÖTEG",
+    "ribbon.gold": "ARANY",
+    "ribbon.silver": "EZÜST",
+    "ribbon.drop": "KI",
+    "ribbon.step": "LÉPÉS",
+    "ribbon.loss": "VESZTESÉG",
+    "ribbon.epoch": "EPOCH",
+    "ribbon.eta": "ETA",
+    "ribbon.saved": "mentve",
+    "ribbon.saved.tooltip": "A mezők automatikusan mentődnek a böngészőben",
+    "studio.roster": "Névsor",
+    "studio.roster.hint": "— ki tanít és ki tanul (állítsd be a 1 Beiratkozásban)",
+    "studio.roster.edit": "Szerk. Beiratkozásban",
+    "studio.roster.edit.tooltip": "Ugrás a Beiratkozáshoz Dékán / Tanárok / Tanulók módosításához",
+    "studio.roster.dean": "Dékán",
+    "studio.roster.teachers": "Tanár(ok)",
+    "studio.roster.students": "Tanuló(k)",
+    "studio.roster.none": "(nincs)",
+    "studio.model.title": "Betanítandó tanuló",
+    "studio.model.hint": "— a 1 Beiratkozásban beiratkozott tanulók közül választhatsz",
+    "studio.student": "Tanuló",
+    "studio.student.tooltip": "Melyik beiratkozott tanulót tanítsuk be ebben a futtatásban.",
+    "studio.student.empty": "(nincs beiratkozott tanuló — menj a 1 Beiratkozásba)",
+    "studio.student.info": "Az alapmodell / készségek / nyelvek itt jelennek meg, ha beiratkozol egy tanulót.",
+    "studio.savestag": "Mentés címke",
+    "studio.savestag.tooltip": "Rövid név ehhez a futtatáshoz. Ez lesz a saves/<tag>/ könyvtár és a GGUF fájlnév.",
+    "studio.backend": "Backend",
+    "studio.backend.tooltip": "inprocess = tanárok a Python szerverben. server = tanárok külön llama-server folyamatokban.",
+    "studio.dataset": "Adathalmaz",
+    "studio.dataset.hint": "— mire fognak válaszolni a tanárok",
+    "studio.prompts": "Promptok (.jsonl)",
+    "studio.prompts.tooltip": "Egy .jsonl fájl, ahol minden sor tartalmaz egy \"prompt\" mezőt.",
+    "studio.outputdir": "Kimeneti mappa",
+    "studio.outputdir.tooltip": "Ide kerülnek a teacher_responses.jsonl és gold/silver/drop fájlok.",
+    "studio.maxtokens": "Max tokenek",
+    "studio.maxtokens.tooltip": "Kemény korlát egy tanári válasz hosszára.",
+    "studio.temperature": "Hőmérséklet",
+    "studio.temperature.tooltip": "Mintavételi hőmérséklet. 0 = determinisztikus, 0.7 = kiegyensúlyozott, 1.0 = kreatív.",
+    "studio.halluc": "Hallucináció szűrő",
+    "studio.halluc.tooltip": "Minden választ átenged egy 5 kapus szűrőn a hallucinációk ellen.",
+    "studio.advanced": "Haladó",
+    "studio.goldthresh": "ARANY küszöb",
+    "studio.goldthresh.tooltip": "Minimális minőségi pontszám az ARANY halmazba (SFT).",
+    "studio.silverthresh": "EZÜST küszöb",
+    "studio.silverthresh.tooltip": "Minimális pontszám az EZÜSThöz (DPO-ban \"elutasított\" oldal).",
+    "studio.params": "Paraméterek",
+    "studio.params.hint": "— hogyan tanul a tanuló",
+    "studio.lorarank": "LoRA rang",
+    "studio.lorarank.tooltip": "A LoRA adapter rangja. 16 az ideális középérték.",
+    "studio.lr": "LR",
+    "studio.lr.tooltip": "Tanulási ráta a LoRA adapterhez.",
+    "studio.epochs": "Epoch-ok",
+    "studio.epochs.tooltip": "Hányszor látja a tanuló a teljes tréning halmazt. 3 általában elég.",
+    "studio.batchsize": "Batch méret",
+    "studio.batchsize.tooltip": "Minta per GPU forward pass. OOM esetén csökkentsd.",
+    "studio.gradaccum": "Grad akkumul.",
+    "studio.gradaccum.tooltip": "Effektív batch = batch_size × grad_accum.",
+    "studio.cutoff": "Max hossz",
+    "studio.cutoff.tooltip": "Maximális tokenizált szekvencia hossz.",
+    "studio.liger": "Liger kernel (+20% sebesség, −60% VRAM)",
+    "studio.liger.tooltip": "Fúzionált Triton kernelek. ~+20% áteresztőképesség és ~−60% VRAM.",
+    "studio.muon": "Muon optimalizáló (~52% AdamW FLOP)",
+    "studio.muon.tooltip": "Newton-Schulz ortogonalizáló optimalizáló.",
+    "studio.training": "Tanítás",
+    "studio.training.hint": "— melyik fázisok fussanak",
+    "studio.stages": "Fázisok",
+    "studio.stages.tooltip": "Melyik tanítási fázisok fussanak a tanári generálás után.",
+    "studio.cpusafe": "CPU-mód (nincs bf16)",
+    "studio.cpusafe.tooltip": "fp32 kényszerítés csak CPU-s gépeken.",
+    "studio.runeval": "Kiértékelés a tanítás után",
+    "studio.runeval.tooltip": "A tanítás végén lefuttatja a diplomavizsgát.",
+    "studio.postmortem": "Post-mortem riport a végén",
+    "studio.postmortem.tooltip": "A pipeline végén futtatja a post-mortem ügynököt.",
+    "studio.start": "Tanítás indítása",
+    "studio.start.hint": "Ugyanazt a pipeline backendet használja — SFT→DPO→Merge",
+    "studio.loss.title": "Élő tanítási veszteség",
+    "runstatus.stage": "Aktuális fázis",
+    "runstatus.starting": "INDUL",
+    "runstatus.stop": "STOP",
+    "runstatus.restart": "ÚJRA",
+    "runstatus.stop.tooltip": "Futó pipeline tiszta megszakítása.",
+    "runstatus.restart.tooltip": "Pipeline újraindítása a jelenlegi Stúdió beállításokkal.",
+    "runstatus.complete": "KÉSZ",
+    "runstatus.failed": "HIBA",
+    "runstatus.cancelled": "MEGSZAKÍTVA",
+    "runstatus.error": "HIBA",
+    "runstatus.error.unknown": "Ismeretlen hiba — nézd meg a naplót alul.",
+    "stage.generate": "TANÁRI GENERÁLÁS",
+    "stage.halluc": "HALLUCINÁCIÓS KAPUK",
+    "stage.purify": "TISZTÍTÁS",
+    "stage.configs": "KONFIG GENERÁLÁS",
+    "stage.sft": "SFT TANÍTÁS",
+    "stage.dpo": "DPO TANÍTÁS",
+    "stage.merge": "LORA EGYESÍTÉS",
+    "stage.gguf": "GGUF EXPORT",
+    "stage.eval": "DIPLOMAVIZSGA",
+    "stage.dashboard": "RIPORT",
+    "stage.postmortem": "POST-MORTEM",
+    "enroll.search": "🔍  Keresés név, család vagy képesség alapján...",
+    "enroll.filter.all": "Összes",
+    "enroll.filter.dean": "Dékán",
+    "enroll.filter.teacher": "Tanár",
+    "enroll.filter.student": "Tanuló",
+    "enroll.filter.coding": "Kód",
+    "enroll.filter.reasoning": "Érvelés",
+    "enroll.filter.multilingual": "Többnyelvű",
+    "enroll.filter.fast": "Gyors/Kicsi",
+    "enroll.rescan": "Újraolvasás",
+    "enroll.rescan.tooltip": "C:\\AI\\Models újraolvasása",
+    "enroll.backend": "Backend",
+    "enroll.outputdir": "Kimeneti mappa",
+    "enroll.deep": "Mély szonda",
+    "enroll.cred": "Hitelesítés ellenőrzése",
+    "enroll.cross": "Keresztkérdezés",
+    "enroll.grid.title": "Szakértő modellek (Dékán & Tanárok)",
+    "ba.title": "🧠 Agyépítő — Mit kellene tudnia a modellednek?",
+    "ba.intro": "Válaszd ki a modelled számára szükséges készségeket. A rendszer ajánlani fog méretet.",
+    "ba.step1": "1. lépés — Válaszd ki a tanítandó készségeket",
+    "ba.step2": "2. lépés — Válaszd ki a minőségi szintet",
+    "ba.translation": "🌐 Fordítás — Válaszd ki a nyelveket",
+    "ba.coding": "💻 Kódolás — Válaszd ki a nyelveket",
+    "ba.noskills": "Válassz legalább egy készséget az ajánlások megjelenítéséhez",
+    "ba.studentName": "Nevezd el az új modellt (ahogy a világ hívni fogja)",
+    "ba.enroll": "+ Tanuló beíratása",
+    "phase2.title": "Tanári generálás — Élő monitor",
+    "phase3.title": "Tanuló betanítása — Élő monitor",
+    "phase2.idle.title": "Várakozás a Stúdióra",
+    "phase2.idle.sub": "A tanári válaszok itt jelennek meg, amint megnyomod a ▶ Tanítás indítása gombot.",
+    "phase3.idle.sub": "Az SFT → DPO → Merge → GGUF haladás itt jelenik meg. Nyomd meg a ▶ Tanítás indítása gombot.",
+    "phase2.gold": "ARANY (SFT)",
+    "phase2.silver": "EZÜST (DPO)",
+    "phase2.drop": "KI",
+    "phase4.title": "Diploma riport",
+    "phase4.hint": "Az eredmények a teljes pipeline lefutása után jelennek meg itt.",
+    "monitor.goto": "Beállítás a Stúdióban",
+  },
+  he: {
+    "top.brand": "אוניברסיטת <span>הזיקוק</span>",
+    "top.brand.sub": "הדיקנית זנה — העברת ידע מרובת־מורים",
+    "top.stop": "עצור",
+    "top.stop.tooltip": "עצור את הצינור הרץ. פריטים חלקיים נשמרים.",
+    "tab.studio": "סטודיו",
+    "tab.studio.tooltip": "הגדר הכל ולחץ התחל",
+    "tab.enrollment": "1 רישום",
+    "tab.enrollment.tooltip": "מתקדם — דפדוף ובחירת מודלים של דיקן/מורה",
+    "tab.teaching": "2 הוראה",
+    "tab.teaching.tooltip": "צג חי — יצירת תשובות מורים",
+    "tab.graduation": "3 סיום",
+    "tab.graduation.tooltip": "צג חי — אימון סטודנט (SFT / DPO / מיזוג / GGUF)",
+    "tab.exam": "4 מבחן",
+    "tab.exam.tooltip": "דוח סיום סופי",
+    "settings.open": "הגדרות — שפה, ערכת נושא, …",
+    "settings.title": "הגדרות",
+    "settings.language": "שפה",
+    "settings.language.desc": "מתרגם כל תפריט, תווית ותיאור.",
+    "settings.theme": "ערכת נושא",
+    "settings.theme.dark": "כהה",
+    "settings.theme.light": "בהיר",
+    "settings.tooltips": "תיאורים",
+    "settings.tooltips.enable": "הצג תיאורי עזרה",
+    "settings.tooltips.sub": "רחף מעל שדה או כפתור כדי לראות מה הוא עושה.",
+    "settings.about": "אודות",
+    "settings.about.name": "אוניברסיטת הזיקוק",
+    "settings.about.sub": "סטודיו להעברת ידע מרובת־מורים",
+    "ribbon.batch": "אצווה",
+    "ribbon.gold": "זהב",
+    "ribbon.silver": "כסף",
+    "ribbon.drop": "סינון",
+    "ribbon.step": "שלב",
+    "ribbon.loss": "אובדן",
+    "ribbon.epoch": "עידן",
+    "ribbon.eta": "זמן משוער",
+    "ribbon.saved": "נשמר",
+    "ribbon.saved.tooltip": "הקלטים נשמרים אוטומטית בדפדפן",
+    "studio.roster": "צוות",
+    "studio.roster.hint": "— מי מלמד ומי לומד (הגדר ב-1 רישום)",
+    "studio.roster.edit": "ערוך ברישום",
+    "studio.roster.edit.tooltip": "קפוץ לרישום כדי להוסיף או להסיר דיקן, מורים או סטודנטים",
+    "studio.roster.dean": "דיקן",
+    "studio.roster.teachers": "מורה/מורים",
+    "studio.roster.students": "סטודנט/ים",
+    "studio.roster.none": "(אין)",
+    "studio.model.title": "סטודנט לאימון",
+    "studio.model.hint": "— בחר מבין הסטודנטים שנרשמו ב-1 רישום",
+    "studio.student": "סטודנט",
+    "studio.student.tooltip": "איזה סטודנט רשום לאמן בריצה זו.",
+    "studio.student.empty": "(אין סטודנט רשום — לך ל-1 רישום)",
+    "studio.student.info": "מודל הבסיס / כישורים / שפות יופיעו כאן לאחר רישום סטודנט.",
+    "studio.savestag": "תג שמירה",
+    "studio.savestag.tooltip": "שם קצר לריצה. משמש כתיקייה saves/<tag>/ וכשם קובץ GGUF הסופי.",
+    "studio.backend": "Backend",
+    "studio.backend.tooltip": "inprocess = מורים רצים בשרת הפייתון. server = מורים רצים כתהליכי llama-server נפרדים.",
+    "studio.dataset": "מאגר נתונים",
+    "studio.dataset.hint": "— למה המורים יענו",
+    "studio.prompts": "פרומפטים (.jsonl)",
+    "studio.prompts.tooltip": "קובץ .jsonl שבו כל שורה מכילה שדה \"prompt\".",
+    "studio.outputdir": "תיקיית פלט",
+    "studio.outputdir.tooltip": "לאן נכתבים teacher_responses.jsonl וקבצי gold/silver/drop המזוקקים.",
+    "studio.maxtokens": "טוקנים מקס׳",
+    "studio.maxtokens.tooltip": "תקרה נוקשה על אורך כל תשובת מורה.",
+    "studio.temperature": "טמפרטורה",
+    "studio.temperature.tooltip": "טמפרטורת דגימה. 0 = דטרמיניסטי, 0.7 = מאוזן, 1.0 = יצירתי.",
+    "studio.halluc": "מסנן הזיות",
+    "studio.halluc.tooltip": "מעביר כל תשובה דרך מסנן בעל 5 שערים המסלק הזיות.",
+    "studio.advanced": "מתקדם",
+    "studio.goldthresh": "סף זהב",
+    "studio.goldthresh.tooltip": "ציון איכות מינימלי לכניסה לקבוצת הזהב (משמשת ל-SFT).",
+    "studio.silverthresh": "סף כסף",
+    "studio.silverthresh.tooltip": "ציון מינימלי לכסף (צד \"נדחה\" ב-DPO).",
+    "studio.params": "פרמטרים",
+    "studio.params.hint": "— איך הסטודנט לומד",
+    "studio.lorarank": "דרגת LoRA",
+    "studio.lorarank.tooltip": "דרגת מתאם LoRA. 16 היא נקודת האמצע האופטימלית.",
+    "studio.lr": "LR",
+    "studio.lr.tooltip": "קצב למידה של מתאם ה-LoRA.",
+    "studio.epochs": "עידנים",
+    "studio.epochs.tooltip": "כמה פעמים הסטודנט רואה את כל מאגר האימון. 3 זה בדרך כלל מספיק.",
+    "studio.batchsize": "גודל אצווה",
+    "studio.batchsize.tooltip": "דגימות לכל מעבר GPU קדימה. הורד במקרה של OOM.",
+    "studio.gradaccum": "צבירת גרדיאנט",
+    "studio.gradaccum.tooltip": "אצווה אפקטיבית = batch_size × grad_accum.",
+    "studio.cutoff": "אורך חיתוך",
+    "studio.cutoff.tooltip": "אורך רצף טוקנים מקסימלי.",
+    "studio.liger": "קרנל Liger (+20% מהירות, −60% VRAM)",
+    "studio.liger.tooltip": "קרנלי Triton מאוחדים. ~+20% תפוקה ו-~−60% VRAM.",
+    "studio.muon": "אופטימייזר Muon (~52% FLOPs של AdamW)",
+    "studio.muon.tooltip": "אופטימייזר אורתוגונליזציה של ניוטון-שולץ.",
+    "studio.training": "אימון",
+    "studio.training.hint": "— אילו שלבים להריץ",
+    "studio.stages": "שלבים",
+    "studio.stages.tooltip": "אילו שלבי אימון להריץ אחרי יצירת המורים.",
+    "studio.cpusafe": "מצב CPU (ללא bf16)",
+    "studio.cpusafe.tooltip": "כפה fp32 על מכונות CPU בלבד.",
+    "studio.runeval": "הערכה לאחר האימון",
+    "studio.runeval.tooltip": "הרץ את מבחן הסיום לאחר האימון.",
+    "studio.postmortem": "דוח post-mortem בסיום",
+    "studio.postmortem.tooltip": "לאחר סיום הצינור, הרץ את סוכן ה-post-mortem.",
+    "studio.start": "התחל אימון",
+    "studio.start.hint": "משתמש בכל ה-backend של הצינור — אותה שרשרת SFT→DPO→מיזוג",
+    "studio.loss.title": "אובדן אימון חי",
+    "runstatus.stage": "שלב נוכחי",
+    "runstatus.starting": "מתחיל",
+    "runstatus.stop": "עצור",
+    "runstatus.restart": "הפעל מחדש",
+    "runstatus.stop.tooltip": "בטל בנקיות את הצינור הרץ.",
+    "runstatus.restart.tooltip": "הרץ מחדש את הצינור עם ההגדרות הנוכחיות של הסטודיו.",
+    "runstatus.complete": "הושלם",
+    "runstatus.failed": "נכשל",
+    "runstatus.cancelled": "בוטל",
+    "runstatus.error": "שגיאה",
+    "runstatus.error.unknown": "שגיאה לא ידועה — בדוק את היומן למטה.",
+    "stage.generate": "יצירת מורה",
+    "stage.halluc": "שערי הזיה",
+    "stage.purify": "זיקוק",
+    "stage.configs": "יצירת תצורה",
+    "stage.sft": "אימון SFT",
+    "stage.dpo": "אימון DPO",
+    "stage.merge": "מיזוג LoRA",
+    "stage.gguf": "ייצוא GGUF",
+    "stage.eval": "מבחן סיום",
+    "stage.dashboard": "דוח",
+    "stage.postmortem": "POST-MORTEM",
+    "enroll.search": "🔍  חפש לפי שם, משפחה או יכולת...",
+    "enroll.filter.all": "הכל",
+    "enroll.filter.dean": "דיקן",
+    "enroll.filter.teacher": "מורה",
+    "enroll.filter.student": "סטודנט",
+    "enroll.filter.coding": "קוד",
+    "enroll.filter.reasoning": "חשיבה",
+    "enroll.filter.multilingual": "רב־לשוני",
+    "enroll.filter.fast": "מהיר/קטן",
+    "enroll.rescan": "סרוק מחדש",
+    "enroll.rescan.tooltip": "סרוק מחדש את C:\\AI\\Models",
+    "enroll.backend": "Backend",
+    "enroll.outputdir": "תיקיית פלט",
+    "enroll.deep": "בדיקה עמוקה",
+    "enroll.cred": "בדיקת אישורים",
+    "enroll.cross": "חקירה נגדית",
+    "enroll.grid.title": "מודלים מומחים (דיקן & מורים)",
+    "ba.title": "🧠 אדריכל המוח — מה המודל שלך צריך לדעת?",
+    "ba.intro": "בחר את הכישורים שהמודל שלך צריך. המערכת תמליץ על גודל המוח הנכון.",
+    "ba.step1": "שלב 1 — בחר כישורים ללמד",
+    "ba.step2": "שלב 2 — בחר דרגת איכות",
+    "ba.translation": "🌐 תרגום — בחר שפות",
+    "ba.coding": "💻 קוד — בחר שפות",
+    "ba.noskills": "בחר לפחות כישור אחד כדי לראות המלצות",
+    "ba.studentName": "תן שם למודל החדש שלך (איך העולם יקרא לו)",
+    "ba.enroll": "+ רשום סטודנט",
+    "phase2.title": "יצירת מורה — צג חי",
+    "phase3.title": "אימון סטודנט — צג חי",
+    "phase2.idle.title": "ממתין לסטודיו",
+    "phase2.idle.sub": "תשובות המורים יופיעו כאן כשתלחץ על ▶ התחל אימון בסטודיו.",
+    "phase3.idle.sub": "התקדמות SFT → DPO → מיזוג → GGUF תופיע כאן. לחץ על ▶ התחל אימון.",
+    "phase2.gold": "זהב (SFT)",
+    "phase2.silver": "כסף (DPO)",
+    "phase2.drop": "סינון",
+    "phase4.title": "דוח סיום",
+    "phase4.hint": "התוצאות מופיעות כאן לאחר שהצינור המלא מסתיים.",
+    "monitor.goto": "הגדר בסטודיו",
+  },
+};
+
+let _currentLang = "en";
+function t(key, fallback) {
+  const dict = LANG[_currentLang] || LANG.en;
+  if (dict[key] != null) return dict[key];
+  if (LANG.en[key] != null) return LANG.en[key];
+  return fallback != null ? fallback : key;
+}
+function applyI18n() {
+  // Text content
+  document.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.getAttribute("data-i18n");
+    el.textContent = t(key);
+  });
+  // Inner HTML (for labels that contain child spans / formatting)
+  document.querySelectorAll("[data-i18n-html]").forEach(el => {
+    const key = el.getAttribute("data-i18n-html");
+    el.innerHTML = t(key);
+  });
+  // title="" attributes (tooltips)
+  document.querySelectorAll("[data-i18n-title]").forEach(el => {
+    const key = el.getAttribute("data-i18n-title");
+    el.setAttribute("title", t(key));
+  });
+  // placeholder="" attributes
+  document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.getAttribute("data-i18n-placeholder");
+    el.setAttribute("placeholder", t(key));
+  });
+  // Re-sync the _RS_STAGE_LABELS dict so dynamic stage label updates stay
+  // translated after the next stage event.
+  _RS_STAGE_LABELS.generate   = t("stage.generate");
+  _RS_STAGE_LABELS.halluc     = t("stage.halluc");
+  _RS_STAGE_LABELS.purify     = t("stage.purify");
+  _RS_STAGE_LABELS.configs    = t("stage.configs");
+  _RS_STAGE_LABELS.sft        = t("stage.sft");
+  _RS_STAGE_LABELS.dpo        = t("stage.dpo");
+  _RS_STAGE_LABELS.merge      = t("stage.merge");
+  _RS_STAGE_LABELS.gguf       = t("stage.gguf");
+  _RS_STAGE_LABELS.eval       = t("stage.eval");
+  _RS_STAGE_LABELS.dashboard  = t("stage.dashboard");
+  _RS_STAGE_LABELS.postmortem = t("stage.postmortem");
+  // Update the language picker highlight
+  document.querySelectorAll(".sp-lang-btn").forEach(b => {
+    b.classList.toggle("on", b.getAttribute("data-lang") === _currentLang);
+  });
+}
+function setLang(lang) {
+  if (!LANG[lang]) return;
+  _currentLang = lang;
+  try { localStorage.setItem("zena.lang", lang); } catch (e) {}
+  document.documentElement.setAttribute("lang", lang);
+  document.documentElement.setAttribute("dir", lang === "he" ? "rtl" : "ltr");
+  applyI18n();
+}
+// Theme (dark/light)
+let _currentTheme = "dark";
+function setTheme(theme) {
+  if (theme !== "dark" && theme !== "light") theme = "dark";
+  _currentTheme = theme;
+  try { localStorage.setItem("zena.theme", theme); } catch (e) {}
+  document.documentElement.setAttribute("data-theme", theme);
+  document.querySelectorAll(".sp-theme-btn").forEach(b => {
+    b.classList.toggle("on", b.getAttribute("data-theme") === theme);
+  });
+}
+// Hamburger settings panel open/close
+function toggleSettingsPanel() {
+  const panel = document.getElementById("settings-panel");
+  const backdrop = document.getElementById("settings-backdrop");
+  if (!panel || !backdrop) return;
+  const opening = !panel.classList.contains("open");
+  panel.classList.toggle("open", opening);
+  backdrop.classList.toggle("open", opening);
+}
+function closeSettingsPanel() {
+  document.getElementById("settings-panel")?.classList.remove("open");
+  document.getElementById("settings-backdrop")?.classList.remove("open");
+}
+// Tooltips show/hide — drops all title attributes when off, restores on
+let _tooltipsEnabled = true;
+const _tooltipCache = new WeakMap();
+function toggleTooltips() {
+  _tooltipsEnabled = !_tooltipsEnabled;
+  const sw = document.getElementById("sp-tooltip-switch");
+  if (sw) sw.classList.toggle("on", _tooltipsEnabled);
+  try { localStorage.setItem("zena.tooltips", _tooltipsEnabled ? "1" : "0"); } catch (e) {}
+  document.querySelectorAll("[title], [data-i18n-title]").forEach(el => {
+    if (_tooltipsEnabled) {
+      // Restore from cache or the translated key
+      const cached = _tooltipCache.get(el);
+      if (cached != null) el.setAttribute("title", cached);
+      else if (el.hasAttribute("data-i18n-title")) {
+        el.setAttribute("title", t(el.getAttribute("data-i18n-title")));
+      }
+    } else {
+      if (el.hasAttribute("title")) _tooltipCache.set(el, el.getAttribute("title"));
+      el.removeAttribute("title");
+    }
+  });
+}
+// Close panel on Escape
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") closeSettingsPanel();
+});
+// Load persisted settings BEFORE first render
+(function _bootI18n() {
+  try {
+    const savedLang = localStorage.getItem("zena.lang");
+    if (savedLang && LANG[savedLang]) _currentLang = savedLang;
+    const savedTheme = localStorage.getItem("zena.theme");
+    if (savedTheme === "dark" || savedTheme === "light") _currentTheme = savedTheme;
+    const savedTooltips = localStorage.getItem("zena.tooltips");
+    if (savedTooltips === "0") _tooltipsEnabled = false;
+  } catch (e) {}
+  document.documentElement.setAttribute("lang", _currentLang);
+  document.documentElement.setAttribute("dir", _currentLang === "he" ? "rtl" : "ltr");
+  document.documentElement.setAttribute("data-theme", _currentTheme);
+})();
+
 // ── Boot ─────────────────────────────────────────────────────────────────────
 _restoreInputs();          // bring back values from a previous session
 _wireInputPersistence();   // start auto-saving on input/change
@@ -2162,6 +4106,10 @@ _studioPaintLoss();        // draw the empty Studio loss chart
 loadModels();
 updateSidebar();
 initBrainArchitect();
+// Apply i18n + theme + tooltip preference now that the DOM is built
+applyI18n();
+setTheme(_currentTheme);
+if (!_tooltipsEnabled) toggleTooltips();  // this flips back to off
 </script>
 </body>
 </html>

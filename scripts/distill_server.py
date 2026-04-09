@@ -276,6 +276,13 @@ _METRICS_PIPELINE_STAGE: str = "idle"
 _METRICS_TOK_S: float = 0.0
 _METRICS_ETA: str = ""
 
+# Pipeline cancel machinery -- the Studio UI is the ONE place the pipeline
+# can be launched, but any tab (or /api/pipeline/stop) can cancel it. Only
+# one pipeline runs at a time, so a single active-proc slot is enough.
+_PIPELINE_LOCK = threading.Lock()
+_ACTIVE_PROC: subprocess.Popen | None = None
+_CANCEL_REQUESTED: bool = False
+
 
 def _read_nvidia_smi() -> dict:
     """Best-effort GPU stats via nvidia-smi. Returns zeros on failure."""
@@ -545,7 +552,14 @@ def _run_script(cmd: list[str], timeout: int = 7200) -> tuple[int, str, str]:
 
 
 def _popen(cmd: list[str]) -> subprocess.Popen:
-    return subprocess.Popen(
+    """Spawn a child process AND register it as the active pipeline proc.
+
+    The UI exposes a STOP button that hits /api/pipeline/stop; that endpoint
+    kills whatever proc is currently registered here, which lets a user
+    cancel the pipeline mid-stage without needing to close the browser tab.
+    """
+    global _ACTIVE_PROC  # noqa: PLW0603
+    proc = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -553,6 +567,53 @@ def _popen(cmd: list[str]) -> subprocess.Popen:
         cwd=str(ROOT_DIR),
         env={**os.environ, "PYTHONUTF8": "1"},
     )
+    with _PIPELINE_LOCK:
+        _ACTIVE_PROC = proc
+    return proc
+
+
+def _clear_active_proc(proc: subprocess.Popen | None = None) -> None:
+    """Unregister the active proc once a stage finishes cleanly.
+
+    If ``proc`` is passed, we only clear the slot when it still points at
+    that specific proc (avoids a race where a later stage has already
+    registered its own subprocess).
+    """
+    global _ACTIVE_PROC  # noqa: PLW0603
+    with _PIPELINE_LOCK:
+        if proc is None or _ACTIVE_PROC is proc:
+            _ACTIVE_PROC = None
+
+
+def _is_cancel_requested() -> bool:
+    with _PIPELINE_LOCK:
+        return _CANCEL_REQUESTED
+
+
+def _reset_cancel_flag() -> None:
+    global _CANCEL_REQUESTED  # noqa: PLW0603
+    with _PIPELINE_LOCK:
+        _CANCEL_REQUESTED = False
+
+
+def _request_cancel() -> dict:
+    """Flip the cancel flag and (best effort) kill the active subprocess.
+
+    Returns a small summary dict the /api/pipeline/stop endpoint echoes back
+    so the caller knows whether anything was actually running.
+    """
+    global _CANCEL_REQUESTED  # noqa: PLW0603
+    with _PIPELINE_LOCK:
+        _CANCEL_REQUESTED = True
+        proc = _ACTIVE_PROC
+    killed = False
+    if proc is not None and proc.poll() is None:
+        try:
+            proc.kill()
+            killed = True
+        except OSError:
+            pass
+    return {"cancel_requested": True, "killed_proc": killed, "had_active_proc": proc is not None}
 
 
 # ---------------------------------------------------------------------------
@@ -622,6 +683,16 @@ def _get_dean(gguf: str):
 @app.get("/")
 async def index():
     return FileResponse(str(FRONTEND_HTML))
+
+
+@app.get("/zena.png")
+async def zena_avatar():
+    """Serve the Zena avatar image used in the top bar hamburger/settings button."""
+    # Prefer the 256x256 version for crispness on hi-DPI displays; fall back to zena.png.
+    for candidate in (ROOT_DIR / "zena_256x256.png", ROOT_DIR / "zena.png"):
+        if candidate.exists():
+            return FileResponse(str(candidate), media_type="image/png")
+    return JSONResponse({"error": "zena.png not found"}, status_code=404)
 
 
 # ── Scan for GGUF models ────────────────────────────────────────────────────
@@ -954,10 +1025,22 @@ class PipelineReq(BaseModel):
     student_model: str = "Qwen/Qwen2.5-0.5B-Instruct"
     cpu_safe: bool = True
     saves_tag: str = "distill_auto"
+    # Studio toggles -- honor the "Run eval after training" and
+    # "Postmortem report on completion" checkboxes. Both default to True so
+    # Recipes-style callers keep their historical behavior.
+    run_eval: bool = True
+    run_postmortem: bool = True
     # Curriculum: skills & languages the student enrolled for
     skills: list[str] = []       # e.g. ["translation", "ocr_cleanup"]
     languages: list[str] = []    # e.g. ["en", "de", "fr"]
     code_langs: list[str] = []   # e.g. ["python", "rust"]
+    # Sequential batch training: when the Studio has 2+ enrolled students the
+    # frontend submits the full list here. Stages 1-3 (teacher gen + halluc +
+    # purify) still run ONCE shared, then stages 4-10 loop per student with a
+    # per-student saves tag. If empty, behave exactly as before (single
+    # student -- uses student_model / saves_tag / skills / languages from the
+    # flat fields above).
+    students_batch: list[dict] = []
 
 
 # Prompt-ID prefix → skill mapping
@@ -1064,6 +1147,8 @@ async def pipeline_start(req: PipelineReq):
         # output directory so postmortem_agent.py can pick it up later.
         _set_metrics_sink(saves_dir)
         _set_metrics_stage("starting")
+        # Fresh run -- clear any cancel flag left over from a previous run
+        _reset_cancel_flag()
 
         if not req.teachers:
             yield _sse({"type": "error", "msg": "No teachers listed."})
@@ -1372,218 +1457,324 @@ async def pipeline_start(req: PipelineReq):
             yield _sse({"type": "done_all", "gold": gold_n, "silver": silver_n, "drop": drop_n})
             return
 
-        # ── Stage 4: Gen configs ────────────────────────────────────────────
-        sft_yaml = config_out / "distill_auto_sft.yaml"
-        dpo_yaml = config_out / "distill_auto_dpo.yaml"
-        if sft_yaml.is_file():
-            yield _ev("configs", "skip", "Configs exist -- skipping.")
-        else:
-            yield _ev("configs", "running", f"Generating configs for {req.student_model}...")
-            cmd_cfg = [
-                PYTHON, str(SCRIPTS_DIR / "gen_distill_configs.py"),
-                "--student", req.student_model,
-                "--data-dir", req.output_dir,
-                "--out-dir", str(config_out),
-                "--tag", "distill_auto",
+        # ── Sequential batch: normalize students into a list ───────────────
+        # When students_batch is populated the Studio is running multi-student
+        # training. Stages 1-3 (generate/halluc/purify) already ran ONCE above,
+        # producing a single GOLD/SILVER dataset that every student in the
+        # batch shares. The loop below re-runs stages 4-11 once per student
+        # with a unique saves tag so adapters/merged/gguf don't collide.
+        if req.students_batch:
+            batch = [
+                {
+                    "name":     (s.get("name") or f"student_{i+1}").strip(),
+                    "hf_id":    (s.get("hf_id") or s.get("student_model") or req.student_model).strip(),
+                    "cpu_safe": bool(s.get("cpu_safe", req.cpu_safe)),
+                }
+                for i, s in enumerate(req.students_batch)
             ]
-            if req.cpu_safe:
-                cmd_cfg.append("--cpu-safe")
-            rc, _, err = _run_script(cmd_cfg, timeout=120)
-            if rc != 0:
-                yield _ev("configs", "fail", err[-300:])
-                return
-            # Verify the SFT yaml was actually created
-            if not sft_yaml.is_file():
-                yield _ev("configs", "fail",
-                          f"Config generation succeeded but {sft_yaml.name} was not created. "
-                          f"This usually means consensus_sft.jsonl is missing or empty (GOLD=0). "
-                          f"Check purification output.")
-                return
-            yield _ev("configs", "done", "Configs ready.")
-
-        # ── Stage 5: SFT ────────────────────────────────────────────────────
-        sft_flag = saves_dir / "sft_complete.flag"
-        if sft_flag.is_file():
-            yield _ev("sft", "skip", "SFT already done.")
         else:
-            yield _ev("sft", "running", "SFT training started (may take 20-120 min)...")
-            proc_sft = _popen([sys.executable, "-m", "llamafactory.cli", "train", str(sft_yaml)])
-            loop = asyncio.get_event_loop()
-            assert proc_sft.stdout is not None
-            _last_metrics_emit = 0.0
-            while proc_sft.poll() is None:
-                line = await loop.run_in_executor(None, proc_sft.stdout.readline)
-                if line:
-                    yield _sse({"type": "log", "stage": "sft", "text": line.rstrip()})
-                    prog = _parse_train_progress(line)
-                    if prog:
-                        yield _sse({"type": "train_progress", "stage": "sft", **prog})
-                # Emit a metrics frame at most once per second so the rail
-                # stays alive even when training stdout is silent.
-                now_ts = time.time()
-                if now_ts - _last_metrics_emit >= 1.0:
-                    frame = _metrics_frame()
-                    if frame:
-                        yield frame
-                    _last_metrics_emit = now_ts
-            rc = proc_sft.wait()
-            if rc != 0:
-                yield _ev("sft", "fail", f"SFT failed (exit {rc}).")
-                return
-            sft_flag.touch()
-            yield _ev("sft", "done", "SFT complete.")
+            batch = [{
+                "name":     req.saves_tag or "student",
+                "hf_id":    req.student_model,
+                "cpu_safe": req.cpu_safe,
+            }]
 
-        # ── Stage 6: DPO ────────────────────────────────────────────────────
-        dpo_flag = saves_dir / "dpo_complete.flag"
-        if not dpo_yaml.is_file():
-            yield _ev("dpo", "skip", "No DPO config (no SILVER data).")
-        elif dpo_flag.is_file():
-            yield _ev("dpo", "skip", "DPO already done.")
-        else:
-            yield _ev("dpo", "running", "DPO training...")
-            proc_dpo = _popen([sys.executable, "-m", "llamafactory.cli", "train", str(dpo_yaml)])
-            loop = asyncio.get_event_loop()
-            assert proc_dpo.stdout is not None
-            _last_metrics_emit = 0.0
-            while proc_dpo.poll() is None:
-                line = await loop.run_in_executor(None, proc_dpo.stdout.readline)
-                if line:
-                    yield _sse({"type": "log", "stage": "dpo", "text": line.rstrip()})
-                    prog = _parse_train_progress(line)
-                    if prog:
-                        yield _sse({"type": "train_progress", "stage": "dpo", **prog})
-                now_ts = time.time()
-                if now_ts - _last_metrics_emit >= 1.0:
-                    frame = _metrics_frame()
-                    if frame:
-                        yield frame
-                    _last_metrics_emit = now_ts
-            rc = proc_dpo.wait()
-            if rc != 0:
-                yield _ev("dpo", "fail", f"DPO failed (exit {rc}).")
-                return
-            dpo_flag.touch()
-            yield _ev("dpo", "done", "DPO complete.")
-
-        # ── Stage 7: Merge ───────────────────────────────────────────────────
-        merge_yaml = config_out / "distill_auto_merge.yaml"
-        merged_dir = saves_dir / "merged"
-        if (merged_dir / "config.json").is_file():
-            yield _ev("merge", "skip", "Merged model exists.")
-        elif not merge_yaml.is_file():
-            yield _ev("merge", "skip", "No merge config.")
-        else:
-            yield _ev("merge", "running", "Merging LoRA adapters...")
-            proc_m = _popen([sys.executable, "-m", "llamafactory.cli", "export", str(merge_yaml)])
-            loop = asyncio.get_event_loop()
-            assert proc_m.stdout is not None
-            while proc_m.poll() is None:
-                line = await loop.run_in_executor(None, proc_m.stdout.readline)
-                if line:
-                    yield _sse({"type": "log", "stage": "merge", "text": line.rstrip()})
-            rc = proc_m.wait()
-            if rc != 0:
-                yield _ev("merge", "fail", f"Merge failed (exit {rc}).")
-                return
-            yield _ev("merge", "done", "Merge complete.")
-
-        # ── Stage 8: GGUF ────────────────────────────────────────────────────
-        gguf_dir = saves_dir / "gguf"
-        if (gguf_dir / "slim_down_results.jsonl").is_file():
-            yield _ev("gguf", "skip", "GGUF already exported.")
-        elif not merged_dir.is_dir():
-            yield _ev("gguf", "skip", "No merged model -- skipping GGUF.")
-        else:
-            yield _ev("gguf", "running", "Converting to GGUF Q4_K_M...")
-            gguf_dir.mkdir(parents=True, exist_ok=True)
-            cmd_gguf = [
-                PYTHON, str(SCRIPTS_DIR / "slim_down.py"),
-                "--model-dir", str(merged_dir),
-                "--out-dir", str(gguf_dir),
-                "--tag", tag,
-                "--quant", "q4_k_m",
-            ]
-            proc_g = _popen(cmd_gguf)
-            loop = asyncio.get_event_loop()
-            assert proc_g.stdout is not None
-            while proc_g.poll() is None:
-                line = await loop.run_in_executor(None, proc_g.stdout.readline)
-                if line:
-                    yield _sse({"type": "log", "stage": "gguf", "text": line.rstrip()})
-            rc = proc_g.wait()
-            if rc != 0:
-                yield _ev("gguf", "fail", f"GGUF export failed (exit {rc}).")
-            else:
-                yield _ev("gguf", "done", "GGUF export complete.")
-
-        # ── Stage 9: Eval ────────────────────────────────────────────────────
-        probes_path = next(
-            (str(p) for p in [
-                out / "eval_probes.jsonl",
-                out / "purified" / "eval_probes.jsonl",
-                Path(req.prompts_path),
-            ] if Path(str(p)).is_file()),
-            None,
-        )
-        if (saves_dir / "eval_scorecards.jsonl").is_file():
-            yield _ev("eval", "skip", "Scorecards exist.")
-        elif probes_path is None:
-            yield _ev("eval", "skip", "No eval_probes.jsonl.")
-        else:
-            yield _ev("eval", "running", "Running graduation exam...")
-            cmd_ev = [
-                PYTHON, str(SCRIPTS_DIR / "eval_student_panel.py"),
-                "--saves-tag", tag,
-                "--probes", probes_path,
-            ]
-            proc_ev = _popen(cmd_ev)
-            loop = asyncio.get_event_loop()
-            assert proc_ev.stdout is not None
-            while proc_ev.poll() is None:
-                line = await loop.run_in_executor(None, proc_ev.stdout.readline)
-                if line:
-                    yield _sse({"type": "log", "stage": "eval", "text": line.rstrip()})
-            rc = proc_ev.wait()
-            if rc != 0:
-                yield _ev("eval", "fail", f"Exam failed (exit {rc}).")
-            else:
-                yield _ev("eval", "done", "Exam complete.")
-
-        # ── Stage 10: Dashboard ──────────────────────────────────────────────
-        yield _ev("dashboard", "running", "Generating graduation report...")
-        rpt_md = saves_dir / "graduation_report.md"
-        rc, _, err = _run_script([
-            PYTHON, str(SCRIPTS_DIR / "graduation_dashboard.py"),
-            "--saves-tag", tag,
-            "--export-markdown", str(rpt_md),
-        ], timeout=120)
         report_text = ""
-        if rc == 0 and rpt_md.is_file():
-            report_text = rpt_md.read_text(encoding="utf-8")
-            yield _ev("dashboard", "done", f"Report: {rpt_md}")
-        else:
-            yield _ev("dashboard", "fail", err[-200:])
+        last_student_status = "done"
 
-        # ── Iter 1: Postmortem ──────────────────────────────────────────────
-        # Auto-run the postmortem agent over the just-completed run so the
-        # next iteration can pick up YAML auto-tune suggestions.
-        try:
-            postmortem_dir = ROOT_DIR / "docs" / "postmortem"
-            postmortem_dir.mkdir(parents=True, exist_ok=True)
-            rc_pm, _, err_pm = _run_script(
-                [PYTHON, str(SCRIPTS_DIR / "postmortem_agent.py"),
-                 str(saves_dir), "--report-dir", str(postmortem_dir)],
-                timeout=120,
-            )
-            if rc_pm == 0:
-                pm_path = postmortem_dir / f"RUN_{saves_dir.name}.md"
-                yield _ev("postmortem", "done", f"Recommendations: {pm_path}")
+        for _s_idx, _s in enumerate(batch):
+            # Honor STOP between students -- don't start the next one.
+            if _is_cancel_requested():
+                yield _sse({"type": "log", "stage": "batch",
+                            "text": f"Batch cancelled before student {_s_idx+1}/{len(batch)}."})
+                last_student_status = "cancelled"
+                break
+
+            # Per-student saves tag + dir. For a single student we reuse the
+            # caller's tag verbatim so existing runs/flags stay compatible.
+            if len(batch) > 1:
+                _safe_name = re.sub(r"[^A-Za-z0-9_.-]+", "_", _s["name"]).strip("_") or f"s{_s_idx+1}"
+                s_tag = f"{tag}_{_safe_name}"
             else:
-                yield _ev("postmortem", "fail", err_pm[-200:] if err_pm else "postmortem failed")
-        except Exception as exc:  # noqa: BLE001
-            yield _ev("postmortem", "fail", f"postmortem error: {exc}")
+                s_tag = tag
+            s_saves_dir = ROOT_DIR / "saves" / s_tag
+            s_saves_dir.mkdir(parents=True, exist_ok=True)
+            _set_metrics_sink(s_saves_dir)
 
-        # Stop streaming metrics into the run sidecar -- the run is over.
+            # Drop a curriculum sidecar next to each student's saves so
+            # postmortem_agent.py can report per-student context.
+            if req.skills:
+                (s_saves_dir / "curriculum.json").write_text(
+                    json.dumps({
+                        "skills": req.skills,
+                        "languages": req.languages,
+                        "code_langs": req.code_langs,
+                        "student_name": _s["name"],
+                        "student_model": _s["hf_id"],
+                    }, indent=2),
+                    encoding="utf-8",
+                )
+
+            def _student_end(status: str) -> str:
+                return _sse({
+                    "type": "student_end",
+                    "idx": _s_idx, "total": len(batch),
+                    "name": _s["name"], "tag": s_tag, "status": status,
+                })
+
+            yield _sse({
+                "type": "student_begin",
+                "idx": _s_idx, "total": len(batch),
+                "name": _s["name"], "hf_id": _s["hf_id"], "tag": s_tag,
+            })
+
+            # ── Stage 4: Gen configs ────────────────────────────────────────
+            sft_yaml = config_out / f"{s_tag}_sft.yaml"
+            dpo_yaml = config_out / f"{s_tag}_dpo.yaml"
+            if sft_yaml.is_file():
+                yield _ev("configs", "skip", "Configs exist -- skipping.")
+            else:
+                yield _ev("configs", "running", f"Generating configs for {_s['hf_id']}...")
+                cmd_cfg = [
+                    PYTHON, str(SCRIPTS_DIR / "gen_distill_configs.py"),
+                    "--student", _s["hf_id"],
+                    "--data-dir", req.output_dir,
+                    "--out-dir", str(config_out),
+                    "--tag", s_tag,
+                ]
+                if _s["cpu_safe"]:
+                    cmd_cfg.append("--cpu-safe")
+                rc, _, err = _run_script(cmd_cfg, timeout=120)
+                if rc != 0:
+                    yield _ev("configs", "fail", err[-300:])
+                    last_student_status = "fail"
+                    yield _student_end("fail")
+                    break
+                # Verify the SFT yaml was actually created
+                if not sft_yaml.is_file():
+                    yield _ev("configs", "fail",
+                              f"Config generation succeeded but {sft_yaml.name} was not created. "
+                              f"This usually means consensus_sft.jsonl is missing or empty (GOLD=0). "
+                              f"Check purification output.")
+                    last_student_status = "fail"
+                    yield _student_end("fail")
+                    break
+                yield _ev("configs", "done", "Configs ready.")
+
+            # ── Stage 5: SFT ────────────────────────────────────────────────
+            sft_flag = s_saves_dir / "sft_complete.flag"
+            if sft_flag.is_file():
+                yield _ev("sft", "skip", "SFT already done.")
+            else:
+                yield _ev("sft", "running", "SFT training started (may take 20-120 min)...")
+                proc_sft = _popen([sys.executable, "-m", "llamafactory.cli", "train", str(sft_yaml)])
+                loop = asyncio.get_event_loop()
+                assert proc_sft.stdout is not None
+                _last_metrics_emit = 0.0
+                while proc_sft.poll() is None:
+                    line = await loop.run_in_executor(None, proc_sft.stdout.readline)
+                    if line:
+                        yield _sse({"type": "log", "stage": "sft", "text": line.rstrip()})
+                        prog = _parse_train_progress(line)
+                        if prog:
+                            yield _sse({"type": "train_progress", "stage": "sft", **prog})
+                    # Emit a metrics frame at most once per second so the rail
+                    # stays alive even when training stdout is silent.
+                    now_ts = time.time()
+                    if now_ts - _last_metrics_emit >= 1.0:
+                        frame = _metrics_frame()
+                        if frame:
+                            yield frame
+                        _last_metrics_emit = now_ts
+                rc = proc_sft.wait()
+                if rc != 0:
+                    cancelled = _is_cancel_requested()
+                    yield _ev("sft", "fail",
+                              "SFT cancelled by user." if cancelled else f"SFT failed (exit {rc}).")
+                    last_student_status = "cancelled" if cancelled else "fail"
+                    yield _student_end(last_student_status)
+                    break
+                sft_flag.touch()
+                yield _ev("sft", "done", "SFT complete.")
+
+            # ── Stage 6: DPO ────────────────────────────────────────────────
+            dpo_flag = s_saves_dir / "dpo_complete.flag"
+            if not dpo_yaml.is_file():
+                yield _ev("dpo", "skip", "No DPO config (no SILVER data).")
+            elif dpo_flag.is_file():
+                yield _ev("dpo", "skip", "DPO already done.")
+            else:
+                yield _ev("dpo", "running", "DPO training...")
+                proc_dpo = _popen([sys.executable, "-m", "llamafactory.cli", "train", str(dpo_yaml)])
+                loop = asyncio.get_event_loop()
+                assert proc_dpo.stdout is not None
+                _last_metrics_emit = 0.0
+                while proc_dpo.poll() is None:
+                    line = await loop.run_in_executor(None, proc_dpo.stdout.readline)
+                    if line:
+                        yield _sse({"type": "log", "stage": "dpo", "text": line.rstrip()})
+                        prog = _parse_train_progress(line)
+                        if prog:
+                            yield _sse({"type": "train_progress", "stage": "dpo", **prog})
+                    now_ts = time.time()
+                    if now_ts - _last_metrics_emit >= 1.0:
+                        frame = _metrics_frame()
+                        if frame:
+                            yield frame
+                        _last_metrics_emit = now_ts
+                rc = proc_dpo.wait()
+                if rc != 0:
+                    cancelled = _is_cancel_requested()
+                    yield _ev("dpo", "fail",
+                              "DPO cancelled by user." if cancelled else f"DPO failed (exit {rc}).")
+                    last_student_status = "cancelled" if cancelled else "fail"
+                    yield _student_end(last_student_status)
+                    break
+                dpo_flag.touch()
+                yield _ev("dpo", "done", "DPO complete.")
+
+            # ── Stage 7: Merge ──────────────────────────────────────────────
+            merge_yaml = config_out / f"{s_tag}_merge.yaml"
+            merged_dir = s_saves_dir / "merged"
+            if (merged_dir / "config.json").is_file():
+                yield _ev("merge", "skip", "Merged model exists.")
+            elif not merge_yaml.is_file():
+                yield _ev("merge", "skip", "No merge config.")
+            else:
+                yield _ev("merge", "running", "Merging LoRA adapters...")
+                proc_m = _popen([sys.executable, "-m", "llamafactory.cli", "export", str(merge_yaml)])
+                loop = asyncio.get_event_loop()
+                assert proc_m.stdout is not None
+                while proc_m.poll() is None:
+                    line = await loop.run_in_executor(None, proc_m.stdout.readline)
+                    if line:
+                        yield _sse({"type": "log", "stage": "merge", "text": line.rstrip()})
+                rc = proc_m.wait()
+                if rc != 0:
+                    cancelled = _is_cancel_requested()
+                    yield _ev("merge", "fail",
+                              "Merge cancelled by user." if cancelled else f"Merge failed (exit {rc}).")
+                    last_student_status = "cancelled" if cancelled else "fail"
+                    yield _student_end(last_student_status)
+                    break
+                yield _ev("merge", "done", "Merge complete.")
+
+            # ── Stage 8: GGUF ───────────────────────────────────────────────
+            gguf_dir = s_saves_dir / "gguf"
+            if (gguf_dir / "slim_down_results.jsonl").is_file():
+                yield _ev("gguf", "skip", "GGUF already exported.")
+            elif not merged_dir.is_dir():
+                yield _ev("gguf", "skip", "No merged model -- skipping GGUF.")
+            else:
+                yield _ev("gguf", "running", "Converting to GGUF Q4_K_M...")
+                gguf_dir.mkdir(parents=True, exist_ok=True)
+                cmd_gguf = [
+                    PYTHON, str(SCRIPTS_DIR / "slim_down.py"),
+                    "--model-dir", str(merged_dir),
+                    "--out-dir", str(gguf_dir),
+                    "--tag", s_tag,
+                    "--quant", "q4_k_m",
+                ]
+                proc_g = _popen(cmd_gguf)
+                loop = asyncio.get_event_loop()
+                assert proc_g.stdout is not None
+                while proc_g.poll() is None:
+                    line = await loop.run_in_executor(None, proc_g.stdout.readline)
+                    if line:
+                        yield _sse({"type": "log", "stage": "gguf", "text": line.rstrip()})
+                rc = proc_g.wait()
+                if rc != 0:
+                    yield _ev("gguf", "fail", f"GGUF export failed (exit {rc}).")
+                else:
+                    yield _ev("gguf", "done", "GGUF export complete.")
+
+            # ── Stage 9: Eval ───────────────────────────────────────────────
+            probes_path = next(
+                (str(p) for p in [
+                    out / "eval_probes.jsonl",
+                    out / "purified" / "eval_probes.jsonl",
+                    Path(req.prompts_path),
+                ] if Path(str(p)).is_file()),
+                None,
+            )
+            if not req.run_eval:
+                yield _ev("eval", "skip", "Disabled in Studio.")
+                yield _ev("dashboard", "skip", "Eval disabled -- no report.")
+            elif (s_saves_dir / "eval_scorecards.jsonl").is_file():
+                yield _ev("eval", "skip", "Scorecards exist.")
+            elif probes_path is None:
+                yield _ev("eval", "skip", "No eval_probes.jsonl.")
+            else:
+                yield _ev("eval", "running", "Running graduation exam...")
+                cmd_ev = [
+                    PYTHON, str(SCRIPTS_DIR / "eval_student_panel.py"),
+                    "--saves-tag", s_tag,
+                    "--probes", probes_path,
+                ]
+                proc_ev = _popen(cmd_ev)
+                loop = asyncio.get_event_loop()
+                assert proc_ev.stdout is not None
+                while proc_ev.poll() is None:
+                    line = await loop.run_in_executor(None, proc_ev.stdout.readline)
+                    if line:
+                        yield _sse({"type": "log", "stage": "eval", "text": line.rstrip()})
+                rc = proc_ev.wait()
+                if rc != 0:
+                    yield _ev("eval", "fail", f"Exam failed (exit {rc}).")
+                else:
+                    yield _ev("eval", "done", "Exam complete.")
+
+            # ── Stage 10: Dashboard ─────────────────────────────────────────
+            if not req.run_eval:
+                pass  # dashboard already reported as skipped above
+            else:
+                yield _ev("dashboard", "running", "Generating graduation report...")
+                rpt_md = s_saves_dir / "graduation_report.md"
+                rc, _, err = _run_script([
+                    PYTHON, str(SCRIPTS_DIR / "graduation_dashboard.py"),
+                    "--saves-tag", s_tag,
+                    "--export-markdown", str(rpt_md),
+                ], timeout=120)
+                if rc == 0 and rpt_md.is_file():
+                    student_report = rpt_md.read_text(encoding="utf-8")
+                    if len(batch) > 1:
+                        report_text += (
+                            f"\n\n## Student {_s_idx+1}/{len(batch)}: "
+                            f"{_s['name']}\n\n{student_report}"
+                        )
+                    else:
+                        report_text = student_report
+                    yield _ev("dashboard", "done", f"Report: {rpt_md}")
+                else:
+                    yield _ev("dashboard", "fail", err[-200:])
+
+            # ── Stage 11: Postmortem ────────────────────────────────────────
+            # Auto-run the postmortem agent over the just-completed student
+            # so the next iteration can pick up YAML auto-tune suggestions.
+            if not req.run_postmortem:
+                yield _ev("postmortem", "skip", "Disabled in Studio.")
+            else:
+                try:
+                    postmortem_dir = ROOT_DIR / "docs" / "postmortem"
+                    postmortem_dir.mkdir(parents=True, exist_ok=True)
+                    rc_pm, _, err_pm = _run_script(
+                        [PYTHON, str(SCRIPTS_DIR / "postmortem_agent.py"),
+                         str(s_saves_dir), "--report-dir", str(postmortem_dir)],
+                        timeout=120,
+                    )
+                    if rc_pm == 0:
+                        pm_path = postmortem_dir / f"RUN_{s_saves_dir.name}.md"
+                        yield _ev("postmortem", "done", f"Recommendations: {pm_path}")
+                    else:
+                        yield _ev("postmortem", "fail", err_pm[-200:] if err_pm else "postmortem failed")
+                except Exception as exc:  # noqa: BLE001
+                    yield _ev("postmortem", "fail", f"postmortem error: {exc}")
+
+            # Student completed successfully
+            last_student_status = "done"
+            yield _student_end("done")
+
+        # Stop streaming metrics into the run sidecar -- the batch is over.
         _set_metrics_sink(None)
         _set_metrics_stage("idle")
 
@@ -1591,9 +1782,23 @@ async def pipeline_start(req: PipelineReq):
             "type": "done_all",
             "gold": gold_n, "silver": silver_n, "drop": drop_n,
             "report": report_text,
+            "batch_size": len(batch),
+            "batch_status": last_student_status,
         })
 
     return StreamingResponse(_gen(), media_type="text/event-stream")
+
+
+@app.post("/api/pipeline/stop")
+async def pipeline_stop() -> JSONResponse:
+    """Cancel the currently running pipeline.
+
+    Flips the cancel flag and kills the active subprocess (if any). Stages
+    check the flag between iterations and bail out cleanly. Returns a small
+    summary so the UI can show "nothing to stop" when idle.
+    """
+    summary = _request_cancel()
+    return JSONResponse(summary)
 
 
 # ---------------------------------------------------------------------------
