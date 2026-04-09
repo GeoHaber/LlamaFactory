@@ -19,11 +19,25 @@ Uses Optuna TPE sampler to optimise LoRA rank, learning rate, and epoch count
 across Forge Matrix variants. Each Optuna trial runs one complete training variant
 and returns the final SFT loss as the objective.
 
+Iteration 1 additions:
+* ``--pruner`` chooses an Optuna pruner (``none`` | ``hyperband`` | ``median``
+  | ``successive_halving``). Hyperband cuts total trial-hours by ~3x compared
+  to running every trial to completion under TPE alone.
+* ``--enable-liger`` / ``--use-muon`` propagate the Liger Kernel and Muon
+  optimizer flags into every per-trial YAML, matching the
+  ``examples/distillation/*_fast.yaml`` profiles.
+* Trials now stream intermediate losses from ``trainer_log.jsonl`` while the
+  subprocess is alive, calling ``trial.report()`` and ``trial.should_prune()``
+  so the pruner can actually kill bad trials early.
+
 Usage:
     python scripts/bayesian_forge.py \
         --base-matrix data/forge_matrix/zena007_matrix.yaml \
         --tag zena007_bayes \
         --n-trials 20 \
+        --pruner hyperband \
+        --enable-liger \
+        --use-muon \
         --study-name zena007_hyperparam \
         --py .venv-py314/Scripts/python.exe
 
@@ -36,6 +50,7 @@ import argparse
 import json
 import sys
 import time
+from collections.abc import Callable
 from pathlib import Path
 
 
@@ -51,6 +66,25 @@ except ImportError:
     raise SystemExit(1)
 
 
+def _parse_trainer_log_entry(entry: dict) -> tuple[int | None, float | None, float | None]:
+    """Extract (step, loss, eval_loss) from one trainer_log.jsonl entry.
+
+    Returns (None, None, None) for entries that contain neither loss nor eval_loss.
+    """
+    if not isinstance(entry, dict):
+        return None, None, None
+    step = entry.get("current_steps") or entry.get("step")
+    loss = entry.get("loss")
+    eval_loss = entry.get("eval_loss")
+    if loss is None and eval_loss is None:
+        return None, None, None
+    try:
+        step_i = int(step) if step is not None else None
+    except (TypeError, ValueError):
+        step_i = None
+    return step_i, loss, eval_loss
+
+
 def _run_single_trial(
     trial_id: str,
     model: str,
@@ -63,11 +97,22 @@ def _run_single_trial(
     cpu_safe: bool,
     py: str,
     eval_probes: str = "",
+    enable_liger: bool = False,
+    use_muon: bool = False,
+    intermediate_callback: Callable[[int, float], bool] | None = None,
+    poll_interval: float = 5.0,
 ) -> float | None:
     """Run a single SFT training variant and return objective metric.
 
-    If eval_probes is provided, returns validation loss (eval_loss) to avoid
-    overfitting. Otherwise falls back to final training loss.
+    If ``eval_probes`` is provided, returns validation loss (``eval_loss``) to
+    avoid overfitting. Otherwise falls back to final training loss.
+
+    If ``intermediate_callback`` is provided, this function polls the
+    ``trainer_log.jsonl`` file once per ``poll_interval`` seconds while the
+    training subprocess is alive. For each new (step, loss) pair the callback
+    is invoked. If the callback returns ``True``, the subprocess is killed and
+    the function returns ``None`` (caller should treat as
+    ``optuna.TrialPruned``).
     """
     import subprocess
 
@@ -104,6 +149,12 @@ def _run_single_trial(
         "fp16": False,
     }
 
+    # Iter 1: optional Liger Kernel + Muon optimizer (require CUDA + liger-kernel pkg).
+    if enable_liger:
+        cfg["enable_liger_kernel"] = True
+    if use_muon:
+        cfg["use_muon"] = True
+
     # If eval probes provided, add eval config for validation loss
     if eval_probes:
         cfg["eval_dataset"] = eval_probes
@@ -115,23 +166,77 @@ def _run_single_trial(
     with yaml_path.open("w", encoding="utf-8") as f:
         yaml.dump(cfg, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
 
-    proc = subprocess.run(
-        [py, "-m", "llamafactory.cli", "train", str(yaml_path)],
-        capture_output=True,
-        text=True,
-    )
+    # Redirect subprocess output to a per-trial log file so the parent doesn't
+    # have to drain a PIPE (which can deadlock with long runs).
+    trial_log_path = yaml_path.parent / "trial.log"
+    trial_log_fh = trial_log_path.open("wb")
 
-    if proc.returncode != 0:
-        return None
-
-    # Read final metric from trainer_log.jsonl
-    # Prefer eval_loss (validation) over loss (training) to avoid overfitting
     log_path = Path(output_dir) / "trainer_log.jsonl"
-    if not log_path.exists():
-        return None
+    last_loss: float | None = None
+    last_eval_loss: float | None = None
 
-    last_loss = None
-    last_eval_loss = None
+    try:
+        proc = subprocess.Popen(
+            [py, "-m", "llamafactory.cli", "train", str(yaml_path)],
+            stdout=trial_log_fh,
+            stderr=subprocess.STDOUT,
+        )
+
+        seen_lines = 0
+        pruned = False
+
+        while proc.poll() is None:
+            time.sleep(poll_interval)
+            if intermediate_callback is None or not log_path.exists():
+                continue
+            try:
+                lines = log_path.read_text(encoding="utf-8").splitlines()
+            except OSError:
+                continue
+            new_lines = lines[seen_lines:]
+            seen_lines = len(lines)
+            for raw in new_lines:
+                raw = raw.strip()
+                if not raw:
+                    continue
+                try:
+                    entry = json.loads(raw)
+                except (json.JSONDecodeError, ValueError):
+                    continue
+                step, loss, eval_loss = _parse_trainer_log_entry(entry)
+                if eval_loss is not None:
+                    last_eval_loss = eval_loss
+                if loss is not None:
+                    last_loss = loss
+                if step is None:
+                    continue
+                report_value = eval_loss if eval_loss is not None else loss
+                if report_value is None:
+                    continue
+                if intermediate_callback(step, float(report_value)):
+                    pruned = True
+                    break
+            if pruned:
+                break
+
+        if pruned:
+            try:
+                proc.kill()
+            except OSError:
+                pass
+            proc.wait()
+            return None
+
+        proc.wait()
+        if proc.returncode != 0:
+            return None
+    finally:
+        trial_log_fh.close()
+
+    # Final read: pick up any tail lines flushed after the last poll tick.
+    if not log_path.exists():
+        return last_eval_loss if last_eval_loss is not None else last_loss
+
     for line in log_path.read_text(encoding="utf-8").splitlines():
         line = line.strip()
         if not line:
@@ -140,10 +245,11 @@ def _run_single_trial(
             entry = json.loads(line)
         except (json.JSONDecodeError, ValueError):
             continue
-        if "eval_loss" in entry:
-            last_eval_loss = entry["eval_loss"]
-        if "loss" in entry:
-            last_loss = entry["loss"]
+        _, loss, eval_loss = _parse_trainer_log_entry(entry)
+        if eval_loss is not None:
+            last_eval_loss = eval_loss
+        if loss is not None:
+            last_loss = loss
 
     # Return eval_loss if available (better generalization signal), else training loss
     return last_eval_loss if last_eval_loss is not None else last_loss
@@ -176,6 +282,47 @@ examples:
     parser.add_argument("--epoch-max", type=int, default=5, help="Max epochs.")
     parser.add_argument("--timeout", type=int, default=0, help="Total search timeout in seconds (0=unlimited).")
     parser.add_argument("--eval-probes", default="", help="Eval probes dataset name for validation loss (prevents overfitting).")
+    parser.add_argument(
+        "--pruner",
+        choices=["none", "hyperband", "median", "successive_halving"],
+        default="none",
+        help="Optuna pruner: 'hyperband' / 'successive_halving' give ~3x trial-hour savings.",
+    )
+    parser.add_argument(
+        "--pruner-min-resource",
+        type=int,
+        default=100,
+        help="Min training steps a trial must run before becoming prunable (Hyperband / SH only).",
+    )
+    parser.add_argument(
+        "--pruner-max-resource",
+        type=int,
+        default=2000,
+        help="Max training steps the pruner will plan for (Hyperband only).",
+    )
+    parser.add_argument(
+        "--pruner-reduction-factor",
+        type=int,
+        default=3,
+        help="Reduction factor for Hyperband / Successive Halving (default 3).",
+    )
+    parser.add_argument(
+        "--enable-liger",
+        action="store_true",
+        help="Enable Liger Kernel (~+20%% throughput / -60%% peak VRAM) in every trial. "
+             "Requires CUDA + `pip install liger-kernel`.",
+    )
+    parser.add_argument(
+        "--use-muon",
+        action="store_true",
+        help="Use the Muon optimizer for 2D params in every trial (~52%% AdamW FLOPs).",
+    )
+    parser.add_argument(
+        "--poll-interval",
+        type=float,
+        default=5.0,
+        help="Seconds between trainer_log.jsonl polls for intermediate pruning (default 5).",
+    )
     args = parser.parse_args()
 
     matrix = yaml.safe_load(Path(args.base_matrix).read_text(encoding="utf-8"))
@@ -192,18 +339,44 @@ examples:
 
     rank_choices = [int(r.strip()) for r in args.rank_choices.split(",")]
 
+    # Build the requested pruner. Hyperband is the recommended default for
+    # multi-fidelity HPO and is ~3x faster than running every trial to
+    # completion under TPE alone.
+    pruner: optuna.pruners.BasePruner
+    if args.pruner == "hyperband":
+        pruner = optuna.pruners.HyperbandPruner(
+            min_resource=args.pruner_min_resource,
+            max_resource=args.pruner_max_resource,
+            reduction_factor=args.pruner_reduction_factor,
+        )
+    elif args.pruner == "successive_halving":
+        pruner = optuna.pruners.SuccessiveHalvingPruner(
+            min_resource=args.pruner_min_resource,
+            reduction_factor=args.pruner_reduction_factor,
+        )
+    elif args.pruner == "median":
+        pruner = optuna.pruners.MedianPruner(n_startup_trials=5, n_warmup_steps=args.pruner_min_resource)
+    else:
+        pruner = optuna.pruners.NopPruner()
+
     print("=== Bayesian Hyperparameter Search ===")
-    print(f"Model:      {model}")
-    print(f"Trials:     {args.n_trials}")
-    print(f"LR range:   [{args.lr_min}, {args.lr_max}]")
-    print(f"Rank opts:  {rank_choices}")
-    print(f"Epoch range: [{args.epoch_min}, {args.epoch_max}]")
+    print(f"Model:        {model}")
+    print(f"Trials:       {args.n_trials}")
+    print(f"LR range:     [{args.lr_min}, {args.lr_max}]")
+    print(f"Rank opts:    {rank_choices}")
+    print(f"Epoch range:  [{args.epoch_min}, {args.epoch_max}]")
+    print(f"Pruner:       {args.pruner}")
+    if args.enable_liger:
+        print("Liger Kernel: ENABLED (requires CUDA + liger-kernel)")
+    if args.use_muon:
+        print("Muon:         ENABLED (2D params only; AdamW for 1D/embed/head)")
     print()
 
     study = optuna.create_study(
         study_name=args.study_name,
         direction="minimize",
         sampler=optuna.samplers.TPESampler(seed=42),
+        pruner=pruner,
     )
 
     def objective(trial: optuna.Trial) -> float:
@@ -213,6 +386,17 @@ examples:
 
         trial_id = f"trial_{trial.number:03d}"
         print(f"\n--- Trial {trial.number}: rank={lora_rank}, lr={lr:.2e}, epochs={epochs} ---")
+
+        def report_and_check(step: int, loss_value: float) -> bool:
+            """Report intermediate loss; return True if Optuna says prune."""
+            try:
+                trial.report(loss_value, step)
+            except Exception:  # noqa: BLE001 - Optuna can raise various pruner errors
+                return False
+            if trial.should_prune():
+                print(f"  Trial {trial.number} pruned at step {step} (loss={loss_value:.4f})")
+                return True
+            return False
 
         t0 = time.time()
         loss = _run_single_trial(
@@ -227,11 +411,17 @@ examples:
             cpu_safe=cpu_safe,
             py=args.py,
             eval_probes=args.eval_probes,
+            enable_liger=args.enable_liger,
+            use_muon=args.use_muon,
+            intermediate_callback=report_and_check if args.pruner != "none" else None,
+            poll_interval=args.poll_interval,
         )
         elapsed = time.time() - t0
 
         if loss is None:
-            print(f"  Trial {trial.number} FAILED ({elapsed:.0f}s)")
+            # Either a hard failure or the pruner killed the subprocess; either
+            # way Optuna treats this as a pruned trial.
+            print(f"  Trial {trial.number} pruned/failed ({elapsed:.0f}s)")
             raise optuna.TrialPruned()
 
         print(f"  Trial {trial.number} => loss={loss:.4f} ({elapsed:.0f}s)")

@@ -1,0 +1,56 @@
+### Iteration 1 "fast" variant of student_dpo_distill.yaml.
+### Adds Liger Kernel (auto-disables fused-linear-CE for DPO since
+### preference loss requires logits; other fused kernels still apply)
+### and the Muon optimizer. Requires CUDA + `pip install liger-kernel`.
+
+### model
+model_name_or_path: Qwen/Qwen2.5-Coder-14B-Instruct
+trust_remote_code: true
+enable_liger_kernel: true   # FLCE auto-off for DPO; RMSNorm/RoPE/SwiGLU still fused
+
+### method
+stage: dpo
+do_train: true
+finetuning_type: lora
+lora_rank: 16
+lora_target: all
+use_muon: true              # Muon for 2D params
+
+### dataset
+# Input: conflict_dpo.jsonl produced by purify_teacher_outputs.py
+# Contains preference pairs where teachers disagreed (consensus = chosen,
+# dissenting teacher = rejected).
+dataset_dir: data
+dataset: distill_python_rust_pref
+template: qwen
+cutoff_len: 8192
+max_samples: 100000
+preprocessing_num_workers: 16
+dataloader_num_workers: 4
+
+### output
+output_dir: saves/qwen2.5-coder-14b/lora/distill_dpo_fast
+logging_steps: 10
+save_steps: 500
+plot_loss: true
+overwrite_output_dir: true
+save_only_model: false
+report_to: none
+
+### train
+per_device_train_batch_size: 1
+gradient_accumulation_steps: 16
+learning_rate: 5.0e-5
+num_train_epochs: 1.0
+lr_scheduler_type: cosine
+warmup_ratio: 0.03
+bf16: true
+pref_beta: 0.1
+pref_loss: sigmoid
+ddp_timeout: 180000000
+
+### eval
+val_size: 0.01
+per_device_eval_batch_size: 1
+eval_strategy: steps
+eval_steps: 500

@@ -138,13 +138,48 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 #chat-send{background:#3b82f6;border:none;color:#fff;padding:0 13px;border-radius:6px;cursor:pointer;font-weight:700;font-size:12px;flex-shrink:0}
 #chat-send:hover{background:#2563eb}
 
+/* ── Studio tab — Unsloth-style flat 3-column layout ──────── */
+#studio-wrap{display:flex;flex-direction:column;gap:10px}
+.studio-card{background:#0d1421;border:1px solid #1e2d3d;border-radius:8px;padding:12px}
+.studio-card-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#60a5fa;margin-bottom:8px}
+.studio-row{display:flex;gap:10px;align-items:flex-end}
+.studio-cols{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.studio-stat-row{display:flex;gap:10px;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid #1e2d3d;font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.studio-start-row{display:flex;align-items:center;gap:14px}
+.studio-start-btn{flex:0 0 auto;background:#10b981!important;color:#062a17!important;font-size:13px;font-weight:800;padding:14px 28px;border-radius:8px;letter-spacing:.04em}
+.studio-start-btn:hover{background:#34d399!important}
+.studio-start-btn:disabled{background:#1e2d3d!important;color:#4a6180!important;cursor:not-allowed}
+.studio-start-hint{font-size:10px;color:#4a6180;font-style:italic}
+#studio-stage-strip{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;font-size:10px}
+#studio-stage-strip .sss{padding:3px 8px;border-radius:10px;background:#0a1119;border:1px solid #1e2d3d;color:#94a3b8}
+#studio-stage-strip .sss.run{background:#06402130;color:#34d399;border-color:#065f46}
+#studio-stage-strip .sss.done{background:#1e3a5f30;color:#60a5fa;border-color:#1e40af50}
+#studio-stage-strip .sss.fail{background:#7f1d1d30;color:#f87171;border-color:#7f1d1d}
+@media (max-width: 1100px){.studio-cols{grid-template-columns:1fr}}
+
 /* ── Tabs ─────────────────────────────────────────────────── */
 #tabs-header{display:flex;border-bottom:1px solid #1e2d3d;background:#111827;flex-shrink:0}
 .tab-btn{padding:9px 16px;font-size:11px;font-weight:700;color:#4a6180;border:none;background:transparent;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;letter-spacing:.02em;text-transform:uppercase}
 .tab-btn.active{color:#60a5fa;border-bottom-color:#3b82f6}
 .tab-btn:hover:not(.active){color:#94a3b8}
+.tab-group-sep{display:inline-flex;align-items:center;color:#1e2d3d;padding:0 4px;font-size:9px;font-weight:700}
 #tabs-body{flex:1;overflow:auto;padding:14px 16px}
 .tab-pane{display:none}.tab-pane.active{display:block}
+
+/* ── Global activity ribbon — visible regardless of which tab is active ── */
+#activity-ribbon{display:flex;align-items:center;gap:14px;padding:6px 14px;
+  background:#0d1421;border-bottom:1px solid #1e2d3d;font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#94a3b8;flex-shrink:0;flex-wrap:wrap}
+#activity-ribbon .ar-cell{display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+#activity-ribbon .ar-key{font-size:9px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em}
+#activity-ribbon .ar-val{color:#e2e8f0;font-weight:700}
+#activity-ribbon .ar-val.gold{color:#fbbf24}
+#activity-ribbon .ar-val.silver{color:#c7d2fe}
+#activity-ribbon .ar-val.drop{color:#94a3b8}
+#activity-ribbon .ar-stage{padding:2px 8px;border-radius:10px;background:#1e3a5f40;color:#60a5fa;border:1px solid #1e40af50;font-size:10px;font-weight:700}
+#activity-ribbon .ar-stage.running{background:#06402130;color:#34d399;border-color:#065f46}
+#activity-ribbon .ar-stage.fail{background:#7f1d1d30;color:#f87171;border-color:#7f1d1d}
+#activity-ribbon .ar-saved{margin-left:auto;color:#4a6180;font-size:10px}
+#activity-ribbon .ar-saved.dirty{color:#fbbf24}
 
 /* ── Model grid ───────────────────────────────────────────── */
 #enroll-wrap{display:flex;flex-direction:column;gap:10px}
@@ -183,11 +218,12 @@ html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sa
 .cp{font-size:9px;padding:1px 5px;border-radius:9px;font-weight:700;letter-spacing:.02em}
 
 /* quant bar */
-.qbar{display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.qbar{display:flex;align-items:center;gap:5px;margin-bottom:2px}
 .qbar-lbl{font-size:8px;color:#4a6180;width:32px;flex-shrink:0}
 .qbar-track{flex:1;height:3px;background:#1e2d3d;border-radius:2px;overflow:hidden}
 .qbar-fill{height:100%;border-radius:2px;transition:width .4s}
 .qbar-pct{font-size:8px;font-weight:700;width:24px;text-align:right;flex-shrink:0}
+.qbar-desc{font-size:8px;color:#5a7a9a;margin-bottom:6px;padding-left:2px;font-style:italic}
 
 /* card action buttons */
 .mcard-acts{display:flex;gap:4px}
@@ -224,6 +260,12 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
 .stat-val{font-size:22px;font-weight:800;line-height:1}
 .stat-lbl{font-size:8px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
 .stat-box.gold .stat-val{color:#f59e0b}.stat-box.silver .stat-val{color:#94a3b8}.stat-box.drop .stat-val{color:#f87171}
+.gen-stats{display:flex;gap:16px;align-items:center;padding:6px 10px;background:#0a1117;border:1px solid #1e2d3d;border-radius:6px;margin-bottom:4px;font-family:monospace;font-size:11px;color:#94a3b8;display:none}
+.gen-stats b{color:#e2e8f0;font-weight:600}
+.gen-stats .gs-eta{color:#fbbf24}
+.gen-stats .gs-rate{color:#34d399}
+.gen-stats .gs-elapsed{color:#60a5fa}
+.gen-stats .gs-done{color:#c4b5fd}
 .progress-wrap{margin:8px 0}
 .prog-track{background:#161e2b;border-radius:4px;height:5px;overflow:hidden}
 .prog-fill{height:100%;background:linear-gradient(90deg,#3b82f6,#818cf8);border-radius:4px;transition:width .6s}
@@ -253,6 +295,26 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
 .bar-track{flex:1;height:4px;background:#1e2d3d;border-radius:2px}
 .bar-fill{height:100%;border-radius:2px;transition:width .4s}
 .bar-pct{font-size:9px;font-weight:700;color:#94a3b8;width:28px}
+
+/* Iter 1: live metrics rail (always visible at the bottom of the viewport) */
+#metrics-rail{position:fixed;left:0;right:0;bottom:0;height:30px;
+  background:#0a1119;border-top:1px solid #1e2d3d;display:flex;align-items:center;
+  gap:14px;padding:0 14px;font:11px/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  color:#94a3b8;z-index:200;overflow-x:auto;white-space:nowrap}
+#metrics-rail .mr-cell{display:inline-flex;align-items:center;gap:5px;flex-shrink:0}
+#metrics-rail .mr-key{font-size:9px;color:#4a6180;text-transform:uppercase;letter-spacing:.06em}
+#metrics-rail .mr-val{color:#e2e8f0;font-weight:700}
+#metrics-rail .mr-val.warn{color:#fbbf24}
+#metrics-rail .mr-val.crit{color:#f87171}
+#metrics-rail .mr-val.ok{color:#34d399}
+#metrics-rail .mr-stage{padding:2px 8px;border-radius:10px;background:#1e3a5f40;
+  color:#60a5fa;border:1px solid #1e40af50;font-size:10px;font-weight:700}
+#metrics-rail .mr-bottle{margin-left:auto;font-size:10px;font-weight:700;
+  padding:2px 9px;border-radius:10px;background:#0f172a;border:1px solid #1e2d3d}
+#metrics-rail .mr-bottle.warn{background:#78350f30;color:#fbbf24;border-color:#78350f}
+#metrics-rail .mr-bottle.crit{background:#7f1d1d30;color:#f87171;border-color:#7f1d1d}
+#metrics-rail .mr-bottle.ok{background:#06402130;color:#34d399;border-color:#065f46}
+#app{padding-bottom:30px}  /* leave space for the rail */
 </style>
 </head>
 <body>
@@ -266,7 +328,9 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
       <div class="brand-sub">Dean Zena &mdash; Multi-Teacher Knowledge Transfer</div>
     </div>
     <div class="steps">
-      <span class="step active" onclick="switchTab('enrollment')">1 Enrollment</span>
+      <span class="step active" onclick="switchTab('studio')">Studio</span>
+      <span class="step-sep">/</span>
+      <span class="step" onclick="switchTab('enrollment')">1 Enrollment</span>
       <span class="step-sep">/</span>
       <span class="step" onclick="switchTab('teaching')">2 Teaching</span>
       <span class="step-sep">/</span>
@@ -274,6 +338,19 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
       <span class="step-sep">/</span>
       <span class="step" onclick="switchTab('exam')">4 Exam</span>
     </div>
+  </div>
+
+  <!-- GLOBAL ACTIVITY RIBBON -- always visible, fed by _lastInfo -->
+  <div id="activity-ribbon" aria-label="Pipeline activity overview">
+    <div class="ar-cell"><span class="ar-stage" id="ar-stage">idle</span></div>
+    <div class="ar-cell"><span class="ar-key">GOLD</span><span class="ar-val gold" id="ar-gold">0</span></div>
+    <div class="ar-cell"><span class="ar-key">SILVER</span><span class="ar-val silver" id="ar-silver">0</span></div>
+    <div class="ar-cell"><span class="ar-key">DROP</span><span class="ar-val drop" id="ar-drop">0</span></div>
+    <div class="ar-cell"><span class="ar-key">STEP</span><span class="ar-val" id="ar-step">--</span></div>
+    <div class="ar-cell"><span class="ar-key">LOSS</span><span class="ar-val" id="ar-loss">--</span></div>
+    <div class="ar-cell"><span class="ar-key">EPOCH</span><span class="ar-val" id="ar-epoch">--</span></div>
+    <div class="ar-cell"><span class="ar-key">ETA</span><span class="ar-val" id="ar-eta">--</span></div>
+    <div class="ar-saved" id="ar-saved" title="Inputs auto-save to your browser">inputs saved</div>
   </div>
 
   <div id="main">
@@ -335,15 +412,131 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
     <!-- RIGHT: tabbed wizard -->
     <div id="right">
       <div id="tabs-header">
-        <button class="tab-btn active" data-tab="enrollment">Phase 1 &mdash; Enrollment</button>
-        <button class="tab-btn" data-tab="teaching">Phase 2 &mdash; Teaching</button>
-        <button class="tab-btn" data-tab="graduation">Phase 3 &mdash; Graduation</button>
-        <button class="tab-btn" data-tab="exam">Phase 4 &mdash; Exam</button>
+        <button class="tab-btn active" data-tab="studio">Studio</button>
+        <span class="tab-group-sep">|</span>
+        <button class="tab-btn" data-tab="enrollment">Recipes &middot; 1 Enroll</button>
+        <button class="tab-btn" data-tab="teaching">2 Teach</button>
+        <button class="tab-btn" data-tab="graduation">3 Graduate</button>
+        <button class="tab-btn" data-tab="exam">4 Exam</button>
       </div>
       <div id="tabs-body">
 
+        <!-- ══ STUDIO: Unsloth-style flat 3-column layout, default tab ══ -->
+        <div class="tab-pane active" id="tab-studio">
+          <div id="studio-wrap">
+
+            <!-- Row 1 — Model bar -->
+            <div class="studio-card studio-model-row">
+              <div class="studio-card-title">Model</div>
+              <div class="studio-row">
+                <div class="field" style="flex:2">
+                  <label>Student model (HF id)</label>
+                  <input type="text" id="studio-model" value="Qwen/Qwen2.5-0.5B-Instruct" placeholder="HuggingFace model id">
+                </div>
+                <div class="field" style="flex:1">
+                  <label>Saves tag</label>
+                  <input type="text" id="studio-tag" value="studio_run" placeholder="output name">
+                </div>
+                <div class="field" style="flex:1">
+                  <label>Backend</label>
+                  <select id="studio-backend">
+                    <option value="inprocess">inprocess</option>
+                    <option value="server">server</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 2 — three columns: Dataset / Parameters / Training -->
+            <div class="studio-cols">
+              <!-- Dataset -->
+              <div class="studio-card">
+                <div class="studio-card-title">Dataset</div>
+                <div class="field"><label>Prompts (.jsonl)</label>
+                  <input type="text" id="studio-prompts" value="data/zena007_prompts.jsonl"></div>
+                <div class="field"><label>Output dir</label>
+                  <input type="text" id="studio-out" value="data/purified"></div>
+                <div class="field-row">
+                  <div class="field"><label>Max tokens</label>
+                    <input type="number" id="studio-max-tokens" value="512" min="64" max="4096"></div>
+                  <div class="field"><label>Temperature</label>
+                    <input type="number" id="studio-temp" value="0.7" min="0" max="2" step="0.05"></div>
+                </div>
+                <label class="check-lbl"><input type="checkbox" id="studio-halluc" checked>
+                  Hallucination filter</label>
+              </div>
+
+              <!-- Parameters -->
+              <div class="studio-card">
+                <div class="studio-card-title">Parameters</div>
+                <div class="field-row">
+                  <div class="field"><label>LoRA rank</label>
+                    <input type="number" id="studio-lora" value="16" min="4" max="256"></div>
+                  <div class="field"><label>LR</label>
+                    <input type="number" id="studio-lr" value="0.0002" min="0" max="0.01" step="0.0001"></div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><label>Epochs</label>
+                    <input type="number" id="studio-epochs" value="3" min="1" max="20"></div>
+                  <div class="field"><label>Batch size</label>
+                    <input type="number" id="studio-bs" value="2" min="1" max="64"></div>
+                </div>
+                <div class="field-row">
+                  <div class="field"><label>Grad accum</label>
+                    <input type="number" id="studio-gas" value="16" min="1" max="64"></div>
+                  <div class="field"><label>Cutoff len</label>
+                    <input type="number" id="studio-cutoff" value="2048" min="256" max="8192"></div>
+                </div>
+                <label class="check-lbl"><input type="checkbox" id="studio-liger" checked>
+                  Liger Kernel (+20% speed, &minus;60% VRAM)</label>
+                <label class="check-lbl"><input type="checkbox" id="studio-muon">
+                  Muon optimizer (~52% AdamW FLOPs)</label>
+              </div>
+
+              <!-- Training -->
+              <div class="studio-card">
+                <div class="studio-card-title">Training</div>
+                <div class="field"><label>Stages</label>
+                  <select id="studio-stages">
+                    <option value="all">SFT &rarr; DPO &rarr; Merge &rarr; GGUF</option>
+                    <option value="sft">SFT only</option>
+                    <option value="sft_dpo">SFT &rarr; DPO</option>
+                    <option value="merge_gguf">Merge &rarr; GGUF</option>
+                  </select></div>
+                <label class="check-lbl"><input type="checkbox" id="studio-cpu-safe">
+                  CPU-safe (no bf16)</label>
+                <label class="check-lbl"><input type="checkbox" id="studio-eval" checked>
+                  Run eval after training</label>
+                <label class="check-lbl"><input type="checkbox" id="studio-postmortem" checked>
+                  Postmortem report on completion</label>
+                <div class="studio-stat-row">
+                  <span class="ar-key">STEPS</span><span class="ar-val" id="studio-stat-steps">--</span>
+                  <span class="ar-key">EPOCH</span><span class="ar-val" id="studio-stat-epoch">--</span>
+                  <span class="ar-key">LOSS</span><span class="ar-val" id="studio-stat-loss">--</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Row 3 — Big green Start -->
+            <div class="studio-start-row">
+              <button class="btn btn-primary studio-start-btn" id="studio-start-btn"
+                      onclick="studioStart()">&#9658;&nbsp;&nbsp;Start Training</button>
+              <span class="studio-start-hint">Reuses the full pipeline backend &mdash; same SFT&rarr;DPO&rarr;Merge as Recipes</span>
+            </div>
+
+            <!-- Row 4 — live loss chart + stage strip -->
+            <div class="studio-card">
+              <div class="studio-card-title">Live training loss</div>
+              <canvas id="studio-loss-canvas" width="900" height="160"
+                      style="width:100%;height:160px;background:#0a1119;border:1px solid #1e2d3d;border-radius:6px"></canvas>
+              <div id="studio-stage-strip"></div>
+            </div>
+
+          </div>
+        </div>
+
         <!-- ══ PHASE 1: Card-based model browser ══ -->
-        <div class="tab-pane active" id="tab-enrollment">
+        <div class="tab-pane" id="tab-enrollment">
           <div id="enroll-wrap">
 
             <!-- Search + filter row -->
@@ -474,7 +667,7 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
             <div class="field"><label>GOLD threshold</label><input type="number" id="answer-th" value="0.6" min="0" max="1" step="0.05"></div>
             <div class="field"><label>SILVER threshold</label><input type="number" id="reason-th" value="0.5" min="0" max="1" step="0.05"></div>
           </div>
-          <label class="check-lbl"><input type="checkbox" id="enable-halluc" checked> Enable hallucination gates (5-gate pipeline)</label>
+          <label class="check-lbl"><input type="checkbox" id="enable-halluc" checked> Reduce Hallucinations (5-gate filter)</label>
           <div style="display:flex;gap:8px;margin-bottom:14px">
             <button class="btn btn-ghost btn-sm" onclick="refreshProgress()">&#8635; Refresh Progress</button>
             <button class="btn btn-primary" id="run-all-btn" onclick="runPipeline()">&#9658; Run Full Pipeline (all 10 stages)</button>
@@ -483,6 +676,12 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
             <div class="stat-box gold"><div class="stat-val" id="gold-n">0</div><div class="stat-lbl">GOLD (SFT)</div></div>
             <div class="stat-box silver"><div class="stat-val" id="silver-n">0</div><div class="stat-lbl">SILVER (DPO)</div></div>
             <div class="stat-box drop"><div class="stat-val" id="drop-n">0</div><div class="stat-lbl">DROP</div></div>
+          </div>
+          <div class="gen-stats" id="gen-stats">
+            <span class="gs-done" id="gs-done">0 / 0 responses</span>
+            <span class="gs-elapsed" id="gs-elapsed">Elapsed <b>--</b></span>
+            <span class="gs-eta" id="gs-eta">ETA <b>--</b></span>
+            <span class="gs-rate" id="gs-rate"></span>
           </div>
           <div class="progress-wrap" id="gen-progress-wrap" style="display:none">
             <div class="prog-track"><div class="prog-fill" id="gen-progress-fill" style="width:0%"></div></div>
@@ -539,6 +738,20 @@ input[type=checkbox]{accent-color:#3b82f6;width:13px;height:13px;cursor:pointer;
   </div>
 </div>
 
+<!-- ══ METRICS RAIL — fixed bottom strip, 1Hz updates from backend ══ -->
+<div id="metrics-rail" aria-label="Live system metrics">
+  <div class="mr-cell"><span class="mr-stage" id="mr-stage">idle</span></div>
+  <div class="mr-cell"><span class="mr-key">GPU</span><span class="mr-val" id="mr-gpu">--</span></div>
+  <div class="mr-cell"><span class="mr-key">VRAM</span><span class="mr-val" id="mr-vram">--</span></div>
+  <div class="mr-cell"><span class="mr-key">CPU</span><span class="mr-val" id="mr-cpu">--</span></div>
+  <div class="mr-cell"><span class="mr-key">RAM</span><span class="mr-val" id="mr-ram">--</span></div>
+  <div class="mr-cell"><span class="mr-key">DISK</span><span class="mr-val" id="mr-disk">--</span></div>
+  <div class="mr-cell"><span class="mr-key">NET</span><span class="mr-val" id="mr-net">--</span></div>
+  <div class="mr-cell"><span class="mr-key">TOK/S</span><span class="mr-val" id="mr-tok">--</span></div>
+  <div class="mr-cell"><span class="mr-key">ETA</span><span class="mr-val" id="mr-eta">--</span></div>
+  <div class="mr-bottle" id="mr-bottle">--</div>
+</div>
+
 <script>
 "use strict";
 const API = "";
@@ -551,10 +764,86 @@ function esc(s) {
   return d.innerHTML;
 }
 
+// ── Global activity store + ribbon ──────────────────────────────────────────
+// _lastInfo survives tab switches: populated by handleEvent, drained by
+// paintActivityRibbon() and re-applied whenever the user enters a tab. This
+// is what stops the "ghost town" effect — counts and stage are visible from
+// every tab, not trapped inside whichever pane was active when the event hit.
+const _lastInfo = {
+  stage: "idle", stageStatus: "",
+  gold: 0, silver: 0, drop: 0,
+  step: null, totalSteps: null, loss: null, epoch: null, eta: null,
+};
+function paintActivityRibbon() {
+  const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  const stageEl = document.getElementById("ar-stage");
+  if (stageEl) {
+    stageEl.textContent = String(_lastInfo.stage || "idle").slice(0, 20);
+    stageEl.classList.remove("running","fail");
+    if (_lastInfo.stageStatus === "running" || _lastInfo.stageStatus === "starting") stageEl.classList.add("running");
+    else if (_lastInfo.stageStatus === "fail") stageEl.classList.add("fail");
+  }
+  setText("ar-gold",   String(_lastInfo.gold ?? 0));
+  setText("ar-silver", String(_lastInfo.silver ?? 0));
+  setText("ar-drop",   String(_lastInfo.drop ?? 0));
+  setText("ar-step",   _lastInfo.step != null ? `${_lastInfo.step}/${_lastInfo.totalSteps ?? "--"}` : "--");
+  setText("ar-loss",   _lastInfo.loss != null ? Number(_lastInfo.loss).toFixed(4) : "--");
+  setText("ar-epoch",  _lastInfo.epoch != null ? Number(_lastInfo.epoch).toFixed(2) : "--");
+  setText("ar-eta",    _lastInfo.eta || "--");
+}
+
+// ── Input persistence — survives refresh and crash recovery ─────────────────
+const _STATE_KEY = "distill_state_v1";
+let _saveTimer = null;
+function _persistInputs() {
+  try {
+    const data = {};
+    document.querySelectorAll("input[id], select[id], textarea[id]").forEach(el => {
+      if (!el.id) return;
+      if (el.type === "checkbox" || el.type === "radio") data[el.id] = !!el.checked;
+      else data[el.id] = el.value;
+    });
+    localStorage.setItem(_STATE_KEY, JSON.stringify({ts: Date.now(), data}));
+    const s = document.getElementById("ar-saved");
+    if (s) { s.textContent = "inputs saved"; s.classList.remove("dirty"); }
+  } catch (e) { /* localStorage may be full or disabled */ }
+}
+function _restoreInputs() {
+  try {
+    const raw = localStorage.getItem(_STATE_KEY);
+    if (!raw) return;
+    const obj = JSON.parse(raw);
+    if (!obj || !obj.data) return;
+    Object.keys(obj.data).forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === "checkbox" || el.type === "radio") el.checked = !!obj.data[id];
+      else if (typeof obj.data[id] === "string" || typeof obj.data[id] === "number") el.value = obj.data[id];
+    });
+  } catch (e) { /* corrupt state — ignore */ }
+}
+function _wireInputPersistence() {
+  document.addEventListener("input", (e) => {
+    if (!e.target || !e.target.id) return;
+    const s = document.getElementById("ar-saved");
+    if (s) { s.textContent = "saving..."; s.classList.add("dirty"); }
+    if (_saveTimer) clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(_persistInputs, 250);
+  });
+  document.addEventListener("change", (e) => {
+    if (!e.target || !e.target.id) return;
+    if (_saveTimer) clearTimeout(_saveTimer);
+    _saveTimer = setTimeout(_persistInputs, 50);
+  });
+}
+
 // ── Tab switching ───────────────────────────────────────────────────────────
 function switchTab(id) {
   document.querySelectorAll(".tab-pane").forEach(p => p.classList.remove("active"));
   document.querySelectorAll(".tab-btn, .step").forEach(b => b.classList.remove("active"));
+  // Re-paint the activity ribbon every time the user enters a tab so the
+  // global counters stay visible regardless of where the events arrived.
+  paintActivityRibbon();
   const pane = document.getElementById("tab-" + id);
   if (pane) pane.classList.add("active");
   document.querySelectorAll(".tab-btn").forEach(b => { if (b.dataset.tab === id) b.classList.add("active"); });
@@ -594,6 +883,9 @@ const LANGUAGES = [
   { code: "hi", name: "Hindi",      flag: "\u{1F1EE}\u{1F1F3}" },
   { code: "tr", name: "Turkish",    flag: "\u{1F1F9}\u{1F1F7}" },
   { code: "pl", name: "Polish",     flag: "\u{1F1F5}\u{1F1F1}" },
+  { code: "ro", name: "Romanian",   flag: "\u{1F1F7}\u{1F1F4}" },
+  { code: "hu", name: "Hungarian",  flag: "\u{1F1ED}\u{1F1FA}" },
+  { code: "he", name: "Hebrew",     flag: "\u{1F1EE}\u{1F1F1}" },
   { code: "id", name: "Indonesian", flag: "\u{1F1EE}\u{1F1E9}" },
 ];
 
@@ -874,7 +1166,6 @@ window._filter    = "all";
 
 const getTeacherPaths    = () => window._teachers.map(t => t.path.replace(/\\/g, "/"));
 const getDeanPath        = () => (window._dean?.path || "").replace(/\\/g, "/");
-const getStudentVariants = () => window._students;
 
 // ── Capability colour palette ───────────────────────────────────────────────
 const CAP = {
@@ -902,6 +1193,7 @@ async function loadModels() {
     const res = await fetch(API + "/api/scan");
     window._allModels = await res.json();
     renderGrid();
+    _restoreSelections();
   } catch(e) {
     grid.innerHTML = `<div class="banner err" style="grid-column:span 2">Scan error: ${esc(e)}</div>`;
   }
@@ -953,10 +1245,11 @@ function renderCard(m, i) {
       <div class="mcard-meta">${esc(m.maker)}&nbsp;&bull;&nbsp;${esc(m.params||"?")}&nbsp;&bull;&nbsp;${esc(m.quant)}&nbsp;&bull;&nbsp;${m.size_gb} GB&nbsp;&bull;&nbsp;~${m.ram_gb} GB RAM</div>
       <div class="mcard-caps">${capHtml}</div>
       <div class="qbar">
-        <span class="qbar-lbl">Quality</span>
+        <span class="qbar-lbl">${esc(m.quant)}</span>
         <div class="qbar-track"><div class="qbar-fill" style="width:${m.quant_quality}%;background:${qColor}"></div></div>
         <span class="qbar-pct" style="color:${qColor}">${m.quant_quality}%</span>
       </div>
+      <div class="qbar-desc">${esc(m.quant_tip || '')}</div>
       <div class="mcard-acts">
         <button class="ma ma-dean ${isDean?'on':''}"       onclick="selectDean(${i})">${deanLbl}</button>
         <button class="ma ma-teacher ${isTeacher?'on':''}" onclick="toggleTeacher(${i})">${teachLbl}</button>
@@ -1088,7 +1381,61 @@ function updatePhase3Summary() {
   if (st && window._students[0]) st.value = window._students[0].name;
 }
 
+// ── Selection persistence (localStorage) ────────────────────────────────────
+const _LS_KEY = "distill_selections";
+let _modelsLoaded = false;  // Guard: don't save until models are loaded
+
+function _saveSelections() {
+  if (!_modelsLoaded) return;  // Skip save before restore has run
+  try {
+    const data = {
+      dean_path:     window._dean?.path || null,
+      teacher_paths: window._teachers.map(t => t.path),
+      students:      window._students,
+    };
+    localStorage.setItem(_LS_KEY, JSON.stringify(data));
+    console.log("[persist] saved:", data.dean_path ? "dean" : "-",
+                data.teacher_paths.length + "T", data.students.length + "S");
+  } catch(e) { console.warn("[persist] save error:", e); }
+}
+
+function _restoreSelections() {
+  try {
+    const raw = localStorage.getItem(_LS_KEY);
+    if (!raw) { console.log("[persist] no saved selections"); return; }
+    const saved = JSON.parse(raw);
+    const byPath = Object.fromEntries(window._allModels.map(m => [m.path, m]));
+    console.log("[persist] restoring:", JSON.stringify(saved).slice(0, 200));
+    // Restore dean
+    if (saved.dean_path && byPath[saved.dean_path]) {
+      window._dean = byPath[saved.dean_path];
+      console.log("[persist] dean restored:", saved.dean_path);
+    } else if (saved.dean_path) {
+      console.warn("[persist] dean path not found:", saved.dean_path);
+    }
+    // Restore teachers
+    if (Array.isArray(saved.teacher_paths)) {
+      window._teachers = saved.teacher_paths
+        .map(p => byPath[p])
+        .filter(Boolean);
+      console.log("[persist] teachers restored:", window._teachers.length);
+    }
+    // Restore students (these are plain objects, not model refs)
+    if (Array.isArray(saved.students) && saved.students.length) {
+      window._students = saved.students;
+      console.log("[persist] students restored:", window._students.length);
+    }
+    renderGrid();
+    updatePhase3Summary();
+  } catch(e) { console.warn("[persist] restore error:", e); }
+  // Enable saving BEFORE calling updateSidebar so the restored state gets persisted
+  _modelsLoaded = true;
+  updateSidebar();
+}
+
 function updateSidebar() {
+  // Persist selections to localStorage for crash recovery
+  _saveSelections();
   // ── Dean slot ──
   const dEmpty  = document.getElementById("dean-empty");
   const dFilled = document.getElementById("dean-filled");
@@ -1302,9 +1649,16 @@ async function refreshProgress() {
     if (data.total_target > 0) {
       document.getElementById("gen-progress-wrap").style.display = "";
       document.getElementById("gen-progress-fill").style.width = data.pct + "%";
-      const eta = data.eta_s ? " — ETA " + fmtEta(data.eta_s) : "";
+      const eta = data.eta_s ? " -- ETA " + fmtEta(data.eta_s) : "";
       document.getElementById("gen-progress-label").textContent =
         `${data.total_done} / ${data.total_target} responses (${data.pct}%)${eta}`;
+      // Also update gen-stats bar
+      const gs = document.getElementById("gen-stats");
+      gs.style.display = "flex";
+      document.getElementById("gs-done").innerHTML = "<b>" + Number(data.total_done) + "</b> / <b>" + Number(data.total_target) + "</b> responses"; // xray: ignore[SEC-002] — numeric coercion, safe
+      if (data.eta_s) {
+        document.getElementById("gs-eta").innerHTML = "ETA <b>" + fmtEta(data.eta_s) + "</b>"; // xray: ignore[SEC-002] — fmtEta returns static number format
+      }
     }
   } catch(e) { console.warn("Progress error:", e); }
 }
@@ -1435,6 +1789,151 @@ async function runPipeline() {
   finally { btn.disabled = false; }
 }
 
+// ── Studio tab — flat one-page launcher, reuses /api/pipeline/start ─────────
+const _studioLossSeries = [];
+function _studioPaintLoss() {
+  const cv = document.getElementById("studio-loss-canvas");
+  if (!cv) return;
+  const ctx = cv.getContext("2d");
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0, 0, W, H);
+  // grid
+  ctx.strokeStyle = "#1e2d3d"; ctx.lineWidth = 1;
+  for (let i = 1; i < 5; i++) {
+    const y = (H / 5) * i;
+    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+  }
+  if (_studioLossSeries.length < 2) {
+    ctx.fillStyle = "#4a6180"; ctx.font = "11px ui-monospace,monospace";
+    ctx.fillText("waiting for training...", 12, H / 2);
+    return;
+  }
+  const losses = _studioLossSeries.map(p => p.loss).filter(v => Number.isFinite(v));
+  if (losses.length < 2) return;
+  const lo = Math.min(...losses), hi = Math.max(...losses);
+  const span = Math.max(hi - lo, 1e-6);
+  const n = _studioLossSeries.length;
+  ctx.strokeStyle = "#34d399"; ctx.lineWidth = 2;
+  ctx.beginPath();
+  _studioLossSeries.forEach((p, i) => {
+    const x = (i / (n - 1)) * (W - 20) + 10;
+    const y = H - 10 - ((p.loss - lo) / span) * (H - 20);
+    if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+  // axis labels
+  ctx.fillStyle = "#4a6180"; ctx.font = "10px ui-monospace,monospace";
+  ctx.fillText(hi.toFixed(3), 4, 12);
+  ctx.fillText(lo.toFixed(3), 4, H - 4);
+}
+function studioRecordLoss(step, loss, epoch) {
+  if (!Number.isFinite(loss)) return;
+  _studioLossSeries.push({step, loss, epoch});
+  if (_studioLossSeries.length > 500) _studioLossSeries.shift();
+  _studioPaintLoss();
+  const setText = (id, t) => { const el = document.getElementById(id); if (el) el.textContent = t; };
+  setText("studio-stat-steps", String(step ?? "--"));
+  setText("studio-stat-epoch", epoch != null ? Number(epoch).toFixed(2) : "--");
+  setText("studio-stat-loss",  Number(loss).toFixed(4));
+}
+function _studioStageStrip(stage, status) {
+  const strip = document.getElementById("studio-stage-strip");
+  if (!strip) return;
+  let cell = strip.querySelector(`[data-st="${stage}"]`);
+  if (!cell) {
+    cell = document.createElement("span");
+    cell.className = "sss";
+    cell.dataset.st = stage;
+    cell.textContent = stage;
+    strip.appendChild(cell);
+  }
+  cell.classList.remove("run","done","fail");
+  if (status === "running" || status === "starting") cell.classList.add("run");
+  else if (status === "done") cell.classList.add("done");
+  else if (status === "fail") cell.classList.add("fail");
+}
+async function studioStart() {
+  const btn = document.getElementById("studio-start-btn");
+  if (!btn) return;
+  btn.disabled = true;
+  _studioLossSeries.length = 0;
+  _studioPaintLoss();
+  // Reset the stage strip
+  const strip = document.getElementById("studio-stage-strip");
+  if (strip) strip.innerHTML = "";
+
+  // Studio mode submits a minimal payload -- backend reuses pipeline.
+  // Teachers/Dean still come from the Recipes side if the user has
+  // enrolled them; otherwise the backend will fail loudly and the user
+  // can pick them in Phase 1.
+  const teachers = (typeof getTeacherPaths === "function") ? getTeacherPaths() : [];
+  const dean     = (typeof getDeanPath     === "function") ? getDeanPath()     : "";
+  const s0       = (window._students || [{}])[0] || {};
+  const body = {
+    teachers,
+    prompts_path:  document.getElementById("studio-prompts").value.trim(),
+    backend:       document.getElementById("studio-backend").value,
+    output_dir:    document.getElementById("studio-out").value.trim(),
+    max_tokens:    parseInt(document.getElementById("studio-max-tokens").value) || 512,
+    temperature:   parseFloat(document.getElementById("studio-temp").value) || 0.7,
+    enable_halluc: document.getElementById("studio-halluc").checked,
+    zena_gguf:     dean,
+    do_train:      true,
+    student_model: document.getElementById("studio-model").value.trim(),
+    cpu_safe:      document.getElementById("studio-cpu-safe").checked,
+    saves_tag:     document.getElementById("studio-tag").value.trim() || "studio_run",
+    skills:        s0.skills || [],
+    languages:     s0.languages || [],
+    code_langs:    s0.code_langs || [],
+    // Studio-only knobs (the backend ignores fields it does not use)
+    lora_rank:     parseInt(document.getElementById("studio-lora").value) || 16,
+    learning_rate: parseFloat(document.getElementById("studio-lr").value) || 2e-4,
+    num_train_epochs: parseFloat(document.getElementById("studio-epochs").value) || 3,
+    per_device_train_batch_size: parseInt(document.getElementById("studio-bs").value) || 2,
+    gradient_accumulation_steps: parseInt(document.getElementById("studio-gas").value) || 16,
+    cutoff_len:    parseInt(document.getElementById("studio-cutoff").value) || 2048,
+    enable_liger_kernel: document.getElementById("studio-liger").checked,
+    use_muon:      document.getElementById("studio-muon").checked,
+  };
+
+  try {
+    const res = await fetch(API + "/api/pipeline/start", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      alert("Server error " + res.status + " — try the Recipes tab if Studio is missing fields.");
+      return;
+    }
+    const reader = res.body.getReader();
+    const dec    = new TextDecoder();
+    let buf = "";
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      const frames = buf.split("\n\n");
+      buf = frames.pop();
+      for (const frame of frames) {
+        const dl = frame.split("\n").find(l => l.startsWith("data: "));
+        if (!dl) continue;
+        const evt = JSON.parse(dl.slice(6));
+        // Forward to the main handler so Recipes mirrors stay in sync
+        handleEvent(evt);
+        // And paint Studio's own widgets
+        if (evt.type === "stage") _studioStageStrip(evt.stage, evt.status);
+        if (evt.type === "train_progress" && evt.loss != null) {
+          studioRecordLoss(evt.step, evt.loss, evt.epoch);
+        }
+      }
+    }
+  } catch (e) {
+    alert("Connection error: " + e);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 const STAGE_LABELS = {sft:"SFT Training", dpo:"DPO Training", merge:"LoRA Merge"};
 
 function updateTrainProgress(evt) {
@@ -1447,49 +1946,178 @@ function updateTrainProgress(evt) {
   }
   if (evt.step !== undefined && evt.total !== undefined) {
     document.getElementById("tp-steps").innerHTML = "Step <b>" + Number(evt.step) + "</b> / <b>" + Number(evt.total) + "</b>";
+    _lastInfo.step = Number(evt.step);
+    _lastInfo.totalSteps = Number(evt.total);
   }
   if (evt.eta) {
     document.getElementById("tp-eta").textContent = "ETA " + evt.eta;
+    _lastInfo.eta = String(evt.eta);
   }
   if (evt.elapsed) {
     document.getElementById("tp-elapsed").innerHTML = "Elapsed <b>" + esc(String(evt.elapsed)) + "</b>";
   }
   if (evt.loss !== undefined && evt.loss !== null) {
     document.getElementById("tp-loss").innerHTML = "Loss <b>" + Number(evt.loss).toFixed(4) + "</b>"; // xray: ignore[SEC-002] — numeric coercion, safe
+    _lastInfo.loss = Number(evt.loss);
   }
   if (evt.epoch !== undefined && evt.epoch !== null) {
     document.getElementById("tp-epoch").innerHTML = "Epoch <b>" + Number(evt.epoch).toFixed(2) + "</b>"; // xray: ignore[SEC-002] — numeric coercion, safe
+    _lastInfo.epoch = Number(evt.epoch);
   }
   if (evt.lr !== undefined && evt.lr !== null) {
     document.getElementById("tp-lr").innerHTML = "LR <b>" + Number(evt.lr).toExponential(2) + "</b>";
+  }
+  paintActivityRibbon();
+}
+
+// ── Metrics rail — paints bottom strip from /api/metrics SSE frames ─────────
+function _mrFmtBytes(b) {
+  if (b == null || isNaN(b)) return "--";
+  if (b < 1024) return b.toFixed(0) + "B";
+  if (b < 1048576) return (b/1024).toFixed(0) + "K";
+  if (b < 1073741824) return (b/1048576).toFixed(0) + "M";
+  return (b/1073741824).toFixed(1) + "G";
+}
+function _mrSetVal(id, text, level) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = text;
+  el.classList.remove("warn","crit","ok");
+  if (level) el.classList.add(level);
+}
+function _mrLevel(pct, warnAt, critAt) {
+  if (pct == null || isNaN(pct)) return null;
+  if (pct >= critAt) return "crit";
+  if (pct >= warnAt) return "warn";
+  return "ok";
+}
+function updateMetricsRail(evt) {
+  // Backend uses dotted keys (gpu.util_pct, ram.pct, etc.) — bracket-access required.
+  // Stage badge
+  if (evt.stage) {
+    const s = document.getElementById("mr-stage");
+    if (s) s.textContent = String(evt.stage).slice(0, 24);
+  }
+  // GPU util %  (low = warn, since underuse is a problem during training)
+  const gpuPct = (evt["gpu.util_pct"] != null) ? Number(evt["gpu.util_pct"]) : null;
+  if (gpuPct != null) {
+    let lvl = null;
+    if (gpuPct < 30) lvl = "warn";
+    else if (gpuPct >= 70) lvl = "ok";
+    _mrSetVal("mr-gpu", gpuPct.toFixed(0) + "%", lvl);
+  }
+  // VRAM %  (high = crit)
+  const vUsed = evt["gpu.mem_used_mb"];
+  const vTot  = evt["gpu.mem_total_mb"];
+  if (vUsed != null && vTot && Number(vTot) > 0) {
+    const pct = (Number(vUsed) / Number(vTot)) * 100;
+    _mrSetVal("mr-vram", pct.toFixed(0) + "%", _mrLevel(pct, 85, 92));
+  }
+  // CPU %
+  const cpuPct = evt["cpu.util_pct"];
+  if (cpuPct != null) {
+    _mrSetVal("mr-cpu", Number(cpuPct).toFixed(0) + "%",
+              _mrLevel(Number(cpuPct), 80, 95));
+  }
+  // RAM %
+  const ramPct = evt["ram.pct"];
+  if (ramPct != null) {
+    _mrSetVal("mr-ram", Number(ramPct).toFixed(0) + "%",
+              _mrLevel(Number(ramPct), 85, 92));
+  }
+  // Disk read MB/s
+  const dRead = evt["disk.read_mb_s"];
+  if (dRead != null) {
+    _mrSetVal("mr-disk", Number(dRead).toFixed(0) + "MB/s", null);
+  }
+  // Net MB/s (tx + rx)
+  const nTx = Number(evt["net.tx_mb_s"] || 0);
+  const nRx = Number(evt["net.rx_mb_s"] || 0);
+  if (evt["net.tx_mb_s"] != null || evt["net.rx_mb_s"] != null) {
+    _mrSetVal("mr-net", (nTx + nRx).toFixed(1) + "MB/s", null);
+  }
+  // Tok/s
+  if (evt.tok_s != null && Number(evt.tok_s) > 0) {
+    _mrSetVal("mr-tok", Number(evt.tok_s).toFixed(1), "ok");
+  }
+  // ETA
+  if (evt.eta) {
+    _mrSetVal("mr-eta", String(evt.eta), null);
+  }
+  // Bottleneck verdict
+  if (evt.bottleneck) {
+    const b = document.getElementById("mr-bottle");
+    if (b) {
+      b.textContent = String(evt.bottleneck).slice(0, 32);
+      b.classList.remove("warn","crit","ok");
+      const lower = String(evt.bottleneck).toLowerCase();
+      if (lower.includes("healthy") || lower.includes("gpu-bound")) {
+        b.classList.add("ok");
+      } else if (lower.includes("vram") || lower.includes("oom") || lower.includes("pressured")) {
+        b.classList.add("crit");
+      } else if (lower.includes("cpu") || lower.includes("i/o") || lower.includes("stall") || lower.includes("under")) {
+        b.classList.add("warn");
+      }
+    }
   }
 }
 
 function handleEvent(evt) {
   if (evt.type === "stage") {
     updateStage(evt.stage, evt.status, evt.msg || "");
+    // Mirror to global activity ribbon (visible from any tab)
+    _lastInfo.stage = evt.stage || _lastInfo.stage;
+    _lastInfo.stageStatus = evt.status || _lastInfo.stageStatus;
     // Hide training progress when stage completes or fails
     if (evt.status === "done" || evt.status === "fail" || evt.status === "skip") {
       if (["sft","dpo","merge"].includes(evt.stage)) {
         document.getElementById("train-progress-panel").style.display = "none";
       }
     }
-    if (evt.gold   !== undefined) document.getElementById("gold-n").textContent   = evt.gold;
-    if (evt.silver !== undefined) document.getElementById("silver-n").textContent = evt.silver;
-    if (evt.drop   !== undefined) document.getElementById("drop-n").textContent   = evt.drop;
+    if (evt.gold   !== undefined) { document.getElementById("gold-n").textContent   = evt.gold;   _lastInfo.gold   = Number(evt.gold)   || 0; }
+    if (evt.silver !== undefined) { document.getElementById("silver-n").textContent = evt.silver; _lastInfo.silver = Number(evt.silver) || 0; }
+    if (evt.drop   !== undefined) { document.getElementById("drop-n").textContent   = evt.drop;   _lastInfo.drop   = Number(evt.drop)   || 0; }
+    paintActivityRibbon();
     if (evt.pct    !== undefined) {
       document.getElementById("gen-progress-wrap").style.display = "";
       document.getElementById("gen-progress-fill").style.width   = evt.pct + "%";
       document.getElementById("gen-progress-label").textContent  = evt.pct + "%";
     }
+    // Generation stats: elapsed, ETA, rate, done/total
+    if (evt.done !== undefined && evt.total !== undefined) {
+      const gs = document.getElementById("gen-stats");
+      gs.style.display = "flex";
+      document.getElementById("gs-done").innerHTML = "<b>" + Number(evt.done) + "</b> / <b>" + Number(evt.total) + "</b> responses"; // xray: ignore[SEC-002] — numeric coercion, safe
+    }
+    if (evt.elapsed) {
+      document.getElementById("gen-stats").style.display = "flex";
+      document.getElementById("gs-elapsed").innerHTML = "Elapsed <b>" + esc(String(evt.elapsed)) + "</b>"; // xray: ignore[SEC-002] — esc() sanitized
+    }
+    if (evt.eta) {
+      document.getElementById("gen-stats").style.display = "flex";
+      document.getElementById("gs-eta").innerHTML = "ETA <b>" + esc(String(evt.eta)) + "</b>";
+    } else if (evt.done !== undefined) {
+      document.getElementById("gs-eta").innerHTML = "ETA <b>--</b>";
+    }
+    if (evt.rate) {
+      document.getElementById("gs-rate").innerHTML = "<b>" + esc(String(evt.rate)) + "</b>";
+    }
   } else if (evt.type === "train_progress") {
     updateTrainProgress(evt);
+  } else if (evt.type === "metrics") {
+    updateMetricsRail(evt);
   } else if (evt.type === "log") {
     appendLog(evt.stage || "", evt.text || "");
   } else if (evt.type === "done_all") {
     document.getElementById("gold-n").textContent   = evt.gold   || 0;
     document.getElementById("silver-n").textContent = evt.silver || 0;
     document.getElementById("drop-n").textContent   = evt.drop   || 0;
+    _lastInfo.gold   = Number(evt.gold)   || 0;
+    _lastInfo.silver = Number(evt.silver) || 0;
+    _lastInfo.drop   = Number(evt.drop)   || 0;
+    _lastInfo.stage  = "complete";
+    _lastInfo.stageStatus = "done";
+    paintActivityRibbon();
     if (evt.report) {
       const rb = document.getElementById("report-box");
       rb.textContent = evt.report; rb.style.display = "";
@@ -1501,10 +2129,36 @@ function handleEvent(evt) {
       `<span style="color:#34d399">Complete. Check saves/${esc(tag)}/</span>`;
   } else if (evt.type === "error") {
     appendLog("error", evt.msg || "Unknown error");
+    _lastInfo.stageStatus = "fail";
+    paintActivityRibbon();
   }
 }
 
+// ── Idle metrics poller — keeps the bottom rail live when SSE isn't streaming
+async function _pollMetricsIdle() {
+  try {
+    const r = await fetch(API + "/api/metrics?history=3");
+    if (r.ok) {
+      const j = await r.json();
+      if (j && j.current) {
+        const frame = Object.assign({}, j.current, {
+          type: "metrics",
+          bottleneck: j.bottleneck || "",
+          stage: j.current.stage || "idle",
+        });
+        updateMetricsRail(frame);
+      }
+    }
+  } catch (e) { /* sampler not yet ready */ }
+}
+setInterval(_pollMetricsIdle, 2000);
+_pollMetricsIdle();
+
 // ── Boot ─────────────────────────────────────────────────────────────────────
+_restoreInputs();          // bring back values from a previous session
+_wireInputPersistence();   // start auto-saving on input/change
+paintActivityRibbon();     // initial paint with default _lastInfo
+_studioPaintLoss();        // draw the empty Studio loss chart
 loadModels();
 updateSidebar();
 initBrainArchitect();

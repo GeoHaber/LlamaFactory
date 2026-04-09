@@ -185,6 +185,28 @@ def _parse_model_meta(name: str, path: str, size_gb: float) -> dict:
         display = re.sub(r"[-_.]" + re.escape(pat) + r"$", "", display, flags=re.IGNORECASE)
     display = re.sub(r"^(google_|ms_|msft_)", "", display, flags=re.IGNORECASE)
     display = display.rstrip("-_.")
+    # Append quant tag so different quantizations are distinguishable
+    if quant:
+        display = f"{display} ({quant})"
+
+    # Human-readable quant explanation
+    _QUANT_TIPS: dict[str, str] = {
+        "F32":   "Full 32-bit -- lossless, huge RAM cost",
+        "F16":   "Half 16-bit -- near-lossless, 2x smaller than F32",
+        "Q8":    "8-bit -- excellent quality, ~2x smaller than F16",
+        "Q6K":   "6-bit -- very good quality, noticeable RAM savings",
+        "Q5KL":  "5-bit large -- good quality, solid RAM/quality balance",
+        "Q5KM":  "5-bit medium -- good quality, recommended sweet-spot",
+        "Q5KS":  "5-bit small -- decent, slightly lower than Q5KM",
+        "Q4KM":  "4-bit medium -- popular choice, 4x smaller than F16, minor quality loss",
+        "Q4KS":  "4-bit small -- compact, some quality loss on hard tasks",
+        "Q4":    "4-bit basic -- smaller than Q4KM but less accurate",
+        "Q3KM":  "3-bit -- significant quality loss, use only if RAM-limited",
+        "Q2K":   "2-bit -- heavy quality loss, last resort for tiny RAM",
+        "I2S":   "2-bit importance -- experimental, lowest quality",
+        "MXFP4": "Microscaling FP4 -- hardware-accelerated 4-bit",
+    }
+    quant_tip = _QUANT_TIPS.get(quant, f"{quant} quantization")
 
     return {
         "path":          path,
@@ -198,6 +220,7 @@ def _parse_model_meta(name: str, path: str, size_gb: float) -> dict:
         "params":        params,
         "quant":         quant,
         "quant_quality": quant_quality,
+        "quant_tip":     quant_tip,
         "caps":          caps,
         "role":          role,
         "role_label":    role_label,
@@ -225,6 +248,236 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ---------------------------------------------------------------------------
+# Iter 1 metrics rail -- per-second telemetry sampler
+# ---------------------------------------------------------------------------
+# Samples six categories every second (GPU/CPU/RAM/Disk/Net/Pipeline) and
+# pushes them to:
+#   1. an in-memory ring buffer (last 60 ticks) accessible via /api/metrics
+#   2. an append-only metrics.jsonl sidecar in the active output_dir
+#   3. the existing /api/pipeline/start SSE stream as `type: "metrics"` frames
+#
+# psutil is a hard requirement; nvidia-smi is best-effort (returns zeros on
+# CPU-only boxes). The sampler runs in a daemon thread started at module import.
+
+try:
+    import psutil  # xray: ignore[SEC-015]
+    _PSUTIL_OK = True
+except ImportError:
+    psutil = None  # type: ignore[assignment]
+    _PSUTIL_OK = False
+
+_METRICS_RING: list[dict] = []
+_METRICS_RING_MAX = 60
+_METRICS_LOCK = threading.Lock()
+_METRICS_SINK_PATH: Path | None = None  # set by /api/pipeline/start
+_METRICS_PIPELINE_STAGE: str = "idle"
+_METRICS_TOK_S: float = 0.0
+_METRICS_ETA: str = ""
+
+
+def _read_nvidia_smi() -> dict:
+    """Best-effort GPU stats via nvidia-smi. Returns zeros on failure."""
+    try:
+        out = subprocess.check_output(
+            [
+                "nvidia-smi",
+                "--query-gpu=utilization.gpu,memory.used,memory.total,power.draw,temperature.gpu",
+                "--format=csv,noheader,nounits",
+            ],
+            stderr=subprocess.DEVNULL,
+            timeout=2,
+        )
+    except (FileNotFoundError, subprocess.SubprocessError, OSError):
+        return {
+            "gpu.util_pct": 0.0,
+            "gpu.mem_used_mb": 0.0,
+            "gpu.mem_total_mb": 0.0,
+            "gpu.power_w": 0.0,
+            "gpu.temp_c": 0.0,
+        }
+    line = out.decode("utf-8", errors="ignore").strip().splitlines()
+    if not line:
+        return {
+            "gpu.util_pct": 0.0,
+            "gpu.mem_used_mb": 0.0,
+            "gpu.mem_total_mb": 0.0,
+            "gpu.power_w": 0.0,
+            "gpu.temp_c": 0.0,
+        }
+    # If multiple GPUs, average the first 4 fields and sum memory.
+    util_vals: list[float] = []
+    mem_used: list[float] = []
+    mem_total: list[float] = []
+    power_vals: list[float] = []
+    temp_vals: list[float] = []
+    for row in line:
+        parts = [p.strip() for p in row.split(",")]
+        if len(parts) < 5:
+            continue
+        try:
+            util_vals.append(float(parts[0]))
+            mem_used.append(float(parts[1]))
+            mem_total.append(float(parts[2]))
+            power_vals.append(float(parts[3]))
+            temp_vals.append(float(parts[4]))
+        except ValueError:
+            continue
+    if not util_vals:
+        return {
+            "gpu.util_pct": 0.0,
+            "gpu.mem_used_mb": 0.0,
+            "gpu.mem_total_mb": 0.0,
+            "gpu.power_w": 0.0,
+            "gpu.temp_c": 0.0,
+        }
+    return {
+        "gpu.util_pct":   sum(util_vals) / len(util_vals),
+        "gpu.mem_used_mb": sum(mem_used),
+        "gpu.mem_total_mb": sum(mem_total),
+        "gpu.power_w":    sum(power_vals) / len(power_vals),
+        "gpu.temp_c":     max(temp_vals),
+    }
+
+
+_LAST_DISK_IO: dict | None = None
+_LAST_NET_IO: dict | None = None
+_LAST_IO_TS: float = 0.0
+
+
+def _sample_metrics_once() -> dict:
+    """Sample one metric tick from psutil + nvidia-smi. Cheap (~1 ms)."""
+    global _LAST_DISK_IO, _LAST_NET_IO, _LAST_IO_TS  # noqa: PLW0603
+    now = time.time()
+    tick: dict = {
+        "ts": now,
+        "stage": _METRICS_PIPELINE_STAGE,
+        "tok_s": _METRICS_TOK_S,
+        "eta": _METRICS_ETA,
+    }
+    if _PSUTIL_OK:
+        try:
+            tick["cpu.util_pct"] = float(psutil.cpu_percent(interval=None))
+            vm = psutil.virtual_memory()
+            tick["ram.used_gb"] = vm.used / 1e9
+            tick["ram.total_gb"] = vm.total / 1e9
+            tick["ram.pct"] = vm.percent
+            sw = psutil.swap_memory()
+            tick["swap.used_gb"] = sw.used / 1e9
+            disk = psutil.disk_usage("/")
+            tick["disk.free_gb"] = disk.free / 1e9
+            io = psutil.disk_io_counters()
+            net = psutil.net_io_counters()
+            elapsed = max(now - _LAST_IO_TS, 0.001) if _LAST_IO_TS else 1.0
+            if io is not None:
+                if _LAST_DISK_IO is not None:
+                    tick["disk.read_mb_s"]  = max(0.0, (io.read_bytes  - _LAST_DISK_IO["read_bytes"])  / elapsed / 1e6)
+                    tick["disk.write_mb_s"] = max(0.0, (io.write_bytes - _LAST_DISK_IO["write_bytes"]) / elapsed / 1e6)
+                else:
+                    tick["disk.read_mb_s"] = 0.0
+                    tick["disk.write_mb_s"] = 0.0
+                _LAST_DISK_IO = {"read_bytes": io.read_bytes, "write_bytes": io.write_bytes}
+            if net is not None:
+                if _LAST_NET_IO is not None:
+                    tick["net.tx_mb_s"] = max(0.0, (net.bytes_sent - _LAST_NET_IO["bytes_sent"]) / elapsed / 1e6)
+                    tick["net.rx_mb_s"] = max(0.0, (net.bytes_recv - _LAST_NET_IO["bytes_recv"]) / elapsed / 1e6)
+                else:
+                    tick["net.tx_mb_s"] = 0.0
+                    tick["net.rx_mb_s"] = 0.0
+                _LAST_NET_IO = {"bytes_sent": net.bytes_sent, "bytes_recv": net.bytes_recv}
+            _LAST_IO_TS = now
+        except (OSError, AttributeError):
+            pass
+    tick.update(_read_nvidia_smi())
+    return tick
+
+
+def _classify_bottleneck(ticks: list[dict]) -> str:
+    """One-line bottleneck verdict over the most recent ticks."""
+    if not ticks:
+        return "idle"
+    n = len(ticks)
+    avg_gpu = sum(float(t.get("gpu.util_pct", 0) or 0) for t in ticks) / n
+    avg_cpu = sum(float(t.get("cpu.util_pct", 0) or 0) for t in ticks) / n
+    avg_io_r = sum(float(t.get("disk.read_mb_s", 0) or 0) for t in ticks) / n
+    ram_pct = float(ticks[-1].get("ram.pct", 0) or 0)
+    if avg_gpu < 50 and avg_cpu > 80:
+        return "CPU-bound (dataloader?)"
+    if avg_gpu < 50 and avg_io_r > 200:
+        return "I/O-bound (slow disk?)"
+    if avg_gpu < 50 and avg_cpu < 50:
+        return "Idle / sync stall"
+    if avg_gpu > 90 and ram_pct > 92:
+        return "VRAM/RAM-pressured"
+    if avg_gpu > 80:
+        return "GPU-bound (healthy)"
+    return "Mixed"
+
+
+def _metrics_loop() -> None:
+    """Background sampler -- 1 Hz. Started as a daemon at import time."""
+    while True:
+        try:
+            tick = _sample_metrics_once()
+            with _METRICS_LOCK:
+                _METRICS_RING.append(tick)
+                if len(_METRICS_RING) > _METRICS_RING_MAX:
+                    _METRICS_RING.pop(0)
+                sink = _METRICS_SINK_PATH
+            if sink is not None:
+                try:
+                    with sink.open("a", encoding="utf-8") as fh:
+                        fh.write(json.dumps(tick) + "\n")
+                except OSError:
+                    pass
+        except Exception:  # noqa: BLE001 - sampler must never crash
+            pass
+        time.sleep(1.0)
+
+
+# Start the sampler thread once, at import time. Daemon = dies with the server.
+threading.Thread(target=_metrics_loop, daemon=True, name="metrics-sampler").start()
+
+
+def _set_metrics_sink(output_dir: Path | None) -> None:
+    """Point the sampler at a metrics.jsonl sidecar in the run output_dir."""
+    global _METRICS_SINK_PATH  # noqa: PLW0603
+    if output_dir is None:
+        _METRICS_SINK_PATH = None
+        return
+    output_dir.mkdir(parents=True, exist_ok=True)
+    _METRICS_SINK_PATH = output_dir / "metrics.jsonl"
+
+
+def _set_metrics_stage(stage: str) -> None:
+    global _METRICS_PIPELINE_STAGE  # noqa: PLW0603
+    _METRICS_PIPELINE_STAGE = stage
+
+
+def _set_metrics_throughput(tok_s: float, eta: str = "") -> None:
+    global _METRICS_TOK_S, _METRICS_ETA  # noqa: PLW0603
+    _METRICS_TOK_S = tok_s
+    _METRICS_ETA = eta
+
+
+@app.get("/api/metrics")
+async def get_metrics(history: int = 30) -> JSONResponse:
+    """Return the most recent metric ticks + bottleneck classification.
+
+    Query params:
+        history: number of recent ticks to return (default 30, max 60).
+    """
+    history = max(1, min(int(history or 30), _METRICS_RING_MAX))
+    with _METRICS_LOCK:
+        ticks = list(_METRICS_RING[-history:])
+    return JSONResponse({
+        "current": ticks[-1] if ticks else {},
+        "history": ticks,
+        "bottleneck": _classify_bottleneck(ticks),
+        "psutil_ok": _PSUTIL_OK,
+    })
+
 
 # ---------------------------------------------------------------------------
 # Subprocess helpers
@@ -302,15 +555,6 @@ def _popen(cmd: list[str]) -> subprocess.Popen:
     )
 
 
-def _collect(proc: subprocess.Popen, timeout: int = 86400) -> tuple[int, str]:
-    try:
-        out, _ = proc.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
-        proc.kill()
-        out, _ = proc.communicate()
-    return proc.returncode, out or ""
-
-
 # ---------------------------------------------------------------------------
 # SSE helper
 # ---------------------------------------------------------------------------
@@ -318,19 +562,6 @@ def _collect(proc: subprocess.Popen, timeout: int = 86400) -> tuple[int, str]:
 def _sse(data: Any) -> str:
     """Encode one SSE data frame."""
     return f"data: {json.dumps(data)}\n\n"
-
-
-async def _stream_proc(proc: subprocess.Popen) -> AsyncGenerator[str, None]:
-    """Stream subprocess stdout line-by-line as SSE, then emit exit code."""
-    loop = asyncio.get_event_loop()
-    assert proc.stdout is not None
-    while True:
-        line = await loop.run_in_executor(None, proc.stdout.readline)
-        if not line:
-            break
-        yield _sse({"type": "log", "text": line.rstrip()})
-    rc = proc.wait()
-    yield _sse({"type": "done", "rc": rc})
 
 
 # ---------------------------------------------------------------------------
@@ -807,7 +1038,19 @@ async def pipeline_start(req: PipelineReq):
     async def _gen() -> AsyncGenerator[str, None]:
 
         def _ev(stage: str, status: str, msg: str = "", **extra) -> str:
+            # Side effect: keep the metrics rail in sync with the stage label.
+            if status in ("running", "starting"):
+                _set_metrics_stage(stage)
             return _sse({"type": "stage", "stage": stage, "status": status, "msg": msg, **extra})
+
+        def _metrics_frame() -> str:
+            """One SSE frame containing the latest metric tick + bottleneck verdict."""
+            with _METRICS_LOCK:
+                ticks = list(_METRICS_RING[-30:])
+            if not ticks:
+                return ""
+            payload = {"type": "metrics", **ticks[-1], "bottleneck": _classify_bottleneck(ticks)}
+            return _sse(payload)
 
         out = Path(req.output_dir)
         out.mkdir(parents=True, exist_ok=True)
@@ -816,6 +1059,11 @@ async def pipeline_start(req: PipelineReq):
         saves_dir = ROOT_DIR / "saves" / tag
         saves_dir.mkdir(parents=True, exist_ok=True)
         config_out = ROOT_DIR / "examples" / "distillation" / "auto"
+
+        # Iter 1: route the metrics sampler to write a sidecar jsonl into this run's
+        # output directory so postmortem_agent.py can pick it up later.
+        _set_metrics_sink(saves_dir)
+        _set_metrics_stage("starting")
 
         if not req.teachers:
             yield _sse({"type": "error", "msg": "No teachers listed."})
@@ -893,13 +1141,39 @@ async def pipeline_start(req: PipelineReq):
             yield _ev("generate", "skip", "teacher_responses.jsonl exists -- skipping.")
         else:
             yield _ev("generate", "running", "Building teacher manifest...")
-            # Write manifest
+            # Write manifest with hardware-aware acceleration settings
             manifest_path = out / "teacher_manifest.json"
             teachers_data = [{"name": Path(t).stem, "gguf": t} for t in req.teachers]
+            n_teachers = max(len(teachers_data), 1)
+            # Auto-detect optimal inference config via zen_core_libs
+            try:
+                from zen_core_libs.common.device import auto_configure_inference
+                hw_config = auto_configure_inference(num_concurrent_models=n_teachers)
+                llama_cpp_accel: dict[str, Any] = {
+                    k: v for k, v in hw_config.items() if not k.startswith("_")
+                }
+                gpu_info = hw_config.get("_note", "auto-detected")
+            except ImportError:
+                cpu_count = os.cpu_count() or 8
+                threads_per_model = max(2, (cpu_count - 2) // n_teachers)
+                llama_cpp_accel = {
+                    "n_threads": threads_per_model,
+                    "n_batch": 512,
+                    "n_ubatch": 512,
+                }
+                gpu_info = f"CPU-only ({cpu_count} cores, {threads_per_model} threads/model)"
+            manifest_data = {
+                "backend": req.backend,
+                "teachers": teachers_data,
+                "max_models": n_teachers,
+                "n_ctx": 4096,
+                "llama_cpp": llama_cpp_accel,
+            }
             manifest_path.write_text(
-                json.dumps({"backend": req.backend, "teachers": teachers_data}, indent=2),
+                json.dumps(manifest_data, indent=2),
                 encoding="utf-8",
             )
+            yield _ev("generate", "running", f"Manifest: {n_teachers} teachers, {gpu_info}")
 
             cmd_gen = [
                 PYTHON, str(SCRIPTS_DIR / "multi_teacher_generate.py"),
@@ -908,6 +1182,9 @@ async def pipeline_start(req: PipelineReq):
                 "--out", out_jsonl,
                 "--max-tokens", str(int(req.max_tokens)),
                 "--temperature", str(req.temperature),
+                "--dispatch-mode", "teacher-fifo",
+                "--fifo-size", "0",
+                "--adaptive-budgets",
             ]
             if req.profile_path and Path(req.profile_path).is_file():
                 cmd_gen.extend(["--profile", req.profile_path])
@@ -915,29 +1192,84 @@ async def pipeline_start(req: PipelineReq):
             yield _ev("generate", "running", "Expert teachers generating responses...")
             proc = _popen(cmd_gen)
             last_eta_check = 0.0
+            gen_start_time = time.time()
+            prev_done = 0
+            # Suppress known-harmless llama_cpp cleanup noise (AttributeError in __del__)
+            _noise = (
+                "object has no attribute 'sampler'",
+                "Exception ignored in:",
+                "in __del__",
+                "self.close()",
+                "if self.sampler is not None",
+                "^^^^^^^^^^",
+            )
             loop = asyncio.get_event_loop()
             assert proc.stdout is not None
             while proc.poll() is None:
                 line = await loop.run_in_executor(None, proc.stdout.readline)
                 if line:
-                    yield _sse({"type": "log", "stage": "generate", "text": line.rstrip()})
+                    stripped = line.rstrip()
+                    if not any(n in stripped for n in _noise):
+                        yield _sse({"type": "log", "stage": "generate", "text": stripped})
                 now = time.time()
-                if now - last_eta_check > 8:
+                if now - last_eta_check > 5:
                     last_eta_check = now
                     # Quick ETA from checkpoint progress
                     ckpt_dir = out / "checkpoints"
                     done_total = 0
+                    elapsed_samples: list[float] = []
                     if ckpt_dir.is_dir():
                         for tp in req.teachers:
                             ckpt = ckpt_dir / f"{_sanitize(Path(tp).stem)}.jsonl"
                             if ckpt.is_file():
                                 try:
-                                    done_total += sum(1 for l in open(ckpt, encoding="utf-8") if l.strip())
+                                    for ckline in open(ckpt, encoding="utf-8"):
+                                        ckline = ckline.strip()
+                                        if not ckline:
+                                            continue
+                                        done_total += 1
+                                        try:
+                                            rec = json.loads(ckline)
+                                            es = rec.get("response", {}).get("elapsed_s")
+                                            if isinstance(es, (int, float)) and es > 0:
+                                                elapsed_samples.append(float(es))
+                                        except (json.JSONDecodeError, KeyError, ValueError):
+                                            pass
                                 except OSError:
                                     pass
                     tgt = n_teachers * n_prompts
                     pct = round(100.0 * done_total / tgt, 1) if tgt else 0
-                    yield _ev("generate", "running", f"Progress: {done_total}/{tgt} responses ({pct}%)", pct=pct)
+                    wall_elapsed = now - gen_start_time
+                    # ETA from per-response elapsed times (trimmed mean)
+                    eta_s: float | None = None
+                    rate_str = ""
+                    if elapsed_samples and tgt > done_total:
+                        trimmed = sorted(elapsed_samples)[:max(1, int(len(elapsed_samples) * 0.9))]
+                        avg_s = sum(trimmed) / len(trimmed)
+                        eta_s = round((tgt - done_total) * avg_s)
+                    # Fallback: wall-clock rate
+                    if eta_s is None and done_total > 0 and tgt > done_total:
+                        wall_per = wall_elapsed / done_total
+                        eta_s = round((tgt - done_total) * wall_per)
+                    if done_total > 0 and wall_elapsed > 0:
+                        rps = done_total / wall_elapsed
+                        if rps >= 1:
+                            rate_str = f"{rps:.1f} resp/s"
+                        else:
+                            rate_str = f"{1/rps:.1f} s/resp"
+                    # Format elapsed
+                    def _fmt_hms(secs: float) -> str:
+                        h = int(secs) // 3600
+                        m = (int(secs) % 3600) // 60
+                        s = int(secs) % 60
+                        return f"{h}h {m:02d}m {s:02d}s" if h else f"{m}m {s:02d}s"
+                    elapsed_str = _fmt_hms(wall_elapsed)
+                    eta_str = _fmt_hms(eta_s) if eta_s else ""
+                    msg = f"Progress: {done_total}/{tgt} responses ({pct}%)"
+                    yield _ev("generate", "running", msg, pct=pct,
+                              done=done_total, total=tgt,
+                              elapsed=elapsed_str, eta=eta_str,
+                              rate=rate_str)
             rc = proc.wait()
             if rc != 0:
                 yield _ev("generate", "fail", f"Generation failed (exit {rc}).")
@@ -1078,6 +1410,7 @@ async def pipeline_start(req: PipelineReq):
             proc_sft = _popen([sys.executable, "-m", "llamafactory.cli", "train", str(sft_yaml)])
             loop = asyncio.get_event_loop()
             assert proc_sft.stdout is not None
+            _last_metrics_emit = 0.0
             while proc_sft.poll() is None:
                 line = await loop.run_in_executor(None, proc_sft.stdout.readline)
                 if line:
@@ -1085,6 +1418,14 @@ async def pipeline_start(req: PipelineReq):
                     prog = _parse_train_progress(line)
                     if prog:
                         yield _sse({"type": "train_progress", "stage": "sft", **prog})
+                # Emit a metrics frame at most once per second so the rail
+                # stays alive even when training stdout is silent.
+                now_ts = time.time()
+                if now_ts - _last_metrics_emit >= 1.0:
+                    frame = _metrics_frame()
+                    if frame:
+                        yield frame
+                    _last_metrics_emit = now_ts
             rc = proc_sft.wait()
             if rc != 0:
                 yield _ev("sft", "fail", f"SFT failed (exit {rc}).")
@@ -1103,6 +1444,7 @@ async def pipeline_start(req: PipelineReq):
             proc_dpo = _popen([sys.executable, "-m", "llamafactory.cli", "train", str(dpo_yaml)])
             loop = asyncio.get_event_loop()
             assert proc_dpo.stdout is not None
+            _last_metrics_emit = 0.0
             while proc_dpo.poll() is None:
                 line = await loop.run_in_executor(None, proc_dpo.stdout.readline)
                 if line:
@@ -1110,6 +1452,12 @@ async def pipeline_start(req: PipelineReq):
                     prog = _parse_train_progress(line)
                     if prog:
                         yield _sse({"type": "train_progress", "stage": "dpo", **prog})
+                now_ts = time.time()
+                if now_ts - _last_metrics_emit >= 1.0:
+                    frame = _metrics_frame()
+                    if frame:
+                        yield frame
+                    _last_metrics_emit = now_ts
             rc = proc_dpo.wait()
             if rc != 0:
                 yield _ev("dpo", "fail", f"DPO failed (exit {rc}).")
@@ -1215,6 +1563,29 @@ async def pipeline_start(req: PipelineReq):
             yield _ev("dashboard", "done", f"Report: {rpt_md}")
         else:
             yield _ev("dashboard", "fail", err[-200:])
+
+        # ── Iter 1: Postmortem ──────────────────────────────────────────────
+        # Auto-run the postmortem agent over the just-completed run so the
+        # next iteration can pick up YAML auto-tune suggestions.
+        try:
+            postmortem_dir = ROOT_DIR / "docs" / "postmortem"
+            postmortem_dir.mkdir(parents=True, exist_ok=True)
+            rc_pm, _, err_pm = _run_script(
+                [PYTHON, str(SCRIPTS_DIR / "postmortem_agent.py"),
+                 str(saves_dir), "--report-dir", str(postmortem_dir)],
+                timeout=120,
+            )
+            if rc_pm == 0:
+                pm_path = postmortem_dir / f"RUN_{saves_dir.name}.md"
+                yield _ev("postmortem", "done", f"Recommendations: {pm_path}")
+            else:
+                yield _ev("postmortem", "fail", err_pm[-200:] if err_pm else "postmortem failed")
+        except Exception as exc:  # noqa: BLE001
+            yield _ev("postmortem", "fail", f"postmortem error: {exc}")
+
+        # Stop streaming metrics into the run sidecar -- the run is over.
+        _set_metrics_sink(None)
+        _set_metrics_stage("idle")
 
         yield _sse({
             "type": "done_all",
