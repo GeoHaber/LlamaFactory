@@ -72,6 +72,18 @@ FRONTEND_HTML = SCRIPTS_DIR / "distill.html"
 sys.path.insert(0, str(SCRIPTS_DIR))
 
 # ---------------------------------------------------------------------------
+# Process guard — kills child process trees on exit/signal so a crashed
+# server doesn't leave a 56 GB multi_teacher_generate.py orphaned in RAM.
+# Imported eagerly so install() runs before any subprocess is spawned.
+# ---------------------------------------------------------------------------
+try:
+    import process_guard  # type: ignore  # xray: ignore[SEC-015]
+    _PROCESS_GUARD_OK = True
+except ImportError:
+    process_guard = None  # type: ignore[assignment]
+    _PROCESS_GUARD_OK = False
+
+# ---------------------------------------------------------------------------
 # Rich model metadata parser
 # ---------------------------------------------------------------------------
 
@@ -557,6 +569,11 @@ def _popen(cmd: list[str]) -> subprocess.Popen:
     The UI exposes a STOP button that hits /api/pipeline/stop; that endpoint
     kills whatever proc is currently registered here, which lets a user
     cancel the pipeline mid-stage without needing to close the browser tab.
+
+    The PID is also registered with ``process_guard`` so that an unclean
+    server exit (Ctrl-C, signal, crash) walks the entire descendant tree
+    and force-kills it instead of leaving orphans like the 56 GB
+    multi_teacher_generate.py we observed in the wild.
     """
     global _ACTIVE_PROC  # noqa: PLW0603
     proc = subprocess.Popen(
@@ -569,6 +586,11 @@ def _popen(cmd: list[str]) -> subprocess.Popen:
     )
     with _PIPELINE_LOCK:
         _ACTIVE_PROC = proc
+    if _PROCESS_GUARD_OK and process_guard is not None:
+        # Use the script name as a human-friendly label so the recovery
+        # file is readable
+        label = " ".join(cmd[:2]) if len(cmd) >= 2 else (cmd[0] if cmd else f"pid={proc.pid}")
+        process_guard.register_child(proc.pid, label)
     return proc
 
 
@@ -578,11 +600,16 @@ def _clear_active_proc(proc: subprocess.Popen | None = None) -> None:
     If ``proc`` is passed, we only clear the slot when it still points at
     that specific proc (avoids a race where a later stage has already
     registered its own subprocess).
+
+    Also unregisters from ``process_guard`` so the recovery file stays
+    accurate.
     """
     global _ACTIVE_PROC  # noqa: PLW0603
     with _PIPELINE_LOCK:
         if proc is None or _ACTIVE_PROC is proc:
             _ACTIVE_PROC = None
+    if proc is not None and _PROCESS_GUARD_OK and process_guard is not None:
+        process_guard.unregister_child(proc.pid)
 
 
 def _is_cancel_requested() -> bool:
@@ -597,23 +624,39 @@ def _reset_cancel_flag() -> None:
 
 
 def _request_cancel() -> dict:
-    """Flip the cancel flag and (best effort) kill the active subprocess.
+    """Flip the cancel flag and kill the active subprocess + its descendants.
 
-    Returns a small summary dict the /api/pipeline/stop endpoint echoes back
-    so the caller knows whether anything was actually running.
+    proc.kill() alone only kills the direct child. Many of our pipeline
+    stages (multi_teacher_generate, llamafactory-cli train) spawn their own
+    subprocesses (vllm, llama-server, torch.distributed workers) which
+    would be orphaned by a shallow kill — that's the bug that left a 56 GB
+    multi_teacher_generate.py running after a crash. Using
+    ``process_guard.kill_all()`` walks the registered tree and force-kills
+    every descendant, which is what the STOP button should have done all
+    along.
     """
     global _CANCEL_REQUESTED  # noqa: PLW0603
     with _PIPELINE_LOCK:
         _CANCEL_REQUESTED = True
         proc = _ACTIVE_PROC
     killed = False
-    if proc is not None and proc.poll() is None:
+    tree_killed = 0
+    if _PROCESS_GUARD_OK and process_guard is not None:
+        tree_killed = process_guard.kill_all()
+        killed = tree_killed > 0
+    elif proc is not None and proc.poll() is None:
+        # Fallback: shallow kill if process_guard isn't available
         try:
             proc.kill()
             killed = True
         except OSError:
             pass
-    return {"cancel_requested": True, "killed_proc": killed, "had_active_proc": proc is not None}
+    return {
+        "cancel_requested": True,
+        "killed_proc": killed,
+        "had_active_proc": proc is not None,
+        "tree_killed": tree_killed,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1965,7 +2008,17 @@ def main() -> None:
     parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", "7870")))
     parser.add_argument("--host", default="0.0.0.0")
     args = parser.parse_args()
-    print(f"Starting server on http://{args.host}:{args.port}")
+
+    # Install process guard FIRST so we sweep any orphans from a previous
+    # crashed run before we start spawning new children. Idempotent.
+    if _PROCESS_GUARD_OK and process_guard is not None:
+        swept = process_guard.install()
+        if swept:
+            print(f"[process_guard] startup sweep killed {swept} orphan process(es)")  # xray: ignore[PY-004]
+    else:
+        print("[process_guard] not available — child crashes may leave orphans. Install psutil.")  # xray: ignore[PY-004]
+
+    print(f"Starting server on http://{args.host}:{args.port}")  # xray: ignore[PY-004]
     uvicorn.run(app, host=args.host, port=args.port, log_level="info")
 
 

@@ -407,6 +407,15 @@ def _write_report(report_path: Path, stats: dict) -> None:
 # ---------------------------------------------------------------------------
 
 def main() -> int:
+    # Install process_guard before spawning anything so a Ctrl-C kills the
+    # whole subprocess tree (llamafactory-cli + its torch workers) instead
+    # of leaving a 56 GB orphan.
+    try:
+        import process_guard  # type: ignore  # xray: ignore[SEC-015]
+        process_guard.install()
+    except ImportError:
+        pass
+
     parser = argparse.ArgumentParser(
         description="Overnight Speed Graduation pipeline for the Distillation Studio.",
         formatter_class=argparse.RawDescriptionHelpFormatter,

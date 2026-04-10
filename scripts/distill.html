@@ -800,6 +800,22 @@ html[dir="rtl"] #topbar,html[dir="rtl"] #main{direction:rtl}
                 <span data-i18n="studio.speedrun.title">Speed-Run</span>
                 <span class="studio-hint" data-i18n="studio.speedrun.hint">&mdash; skip teacher generation, boot training from a pre-distilled HF dataset in &lt;60s</span>
               </div>
+
+              <!-- One-Click Overnight button: configures the overnight CPU-safe preset
+                   (Speed-Run ON, Roman opus-4.6 10000x, max-rows=2000, cpu-safe, epochs=1,
+                   saves-tag=overnight_grad) and presses Start Training in a single click.
+                   Big, purple, unmissable — this is the "press before bed" button. -->
+              <div class="studio-oneclick-row" style="margin-bottom:10px; display:flex; align-items:center; gap:12px; padding:10px 12px; background:linear-gradient(90deg, rgba(139,92,246,0.12), rgba(139,92,246,0.04)); border:1px solid rgba(139,92,246,0.35); border-radius:8px">
+                <button class="btn btn-primary" id="studio-oneclick-btn"
+                        onclick="studioOneClickOvernight()"
+                        title="One-click overnight preset: Speed-Run ON, Roman opus-4.6 10000x, 2000 rows, cpu-safe, epochs=1, tag=overnight_grad, then Start."
+                        data-i18n-title="studio.oneclick.tooltip"
+                        style="background:linear-gradient(135deg,#8b5cf6,#6366f1); border:none; color:#fff; font-weight:700; font-size:13px; padding:10px 18px; border-radius:6px; cursor:pointer; letter-spacing:0.3px; box-shadow:0 2px 8px rgba(139,92,246,0.35); white-space:nowrap">
+                  <span data-i18n="studio.oneclick.title">▶ One-Click Overnight</span>
+                </button>
+                <span class="studio-oneclick-sub" style="color:#9ca3b5; font-size:11px; line-height:1.4" data-i18n="studio.oneclick.sub">Fires off a full CPU-safe Speed-Run training in one click &mdash; safe to leave running overnight</span>
+              </div>
+
               <label class="check-lbl" title="Import a pre-distilled reasoning dataset (Claude 4.6 Opus traces, etc.) straight into consensus_sft.jsonl as GOLD. Skips stages 1-3 entirely (generate / halluc / purify). No teachers or prompts file required." data-i18n-title="studio.speedrun.toggle.tooltip">
                 <input type="checkbox" id="studio-speedrun" onchange="updateSpeedRunUI()">
                 <span data-i18n-html="studio.speedrun.toggle"><b>Enable Speed-Run</b> &mdash; replace stages 1-3 with a HuggingFace dataset download</span>
@@ -2481,6 +2497,151 @@ function updateSpeedRunUI() {
       : "Reuses the full pipeline backend -- same SFT\u2192DPO\u2192Merge as Recipes";
   }
 }
+
+// One-Click Overnight preset: the browser-side mirror of
+// scripts/speed_graduation.py. Fills in the overnight CPU-safe defaults for
+// every knob the Studio exposes, then shows a confirmation dialog so the
+// user can verify the plan before training kicks off.
+//
+// What this OVERRIDES (the "preset"):
+//   - Speed-Run toggle = ON
+//   - Upstream dataset = Roman1111111/claude-opus-4.6-10000x (biggest Opus set)
+//   - Max rows         = 2000 (overnight-safe CPU budget)
+//   - Stages           = all (SFT -> DPO -> Merge -> GGUF; DPO auto-skips
+//                        because Speed-Run produces no conflict_dpo.jsonl)
+//   - CPU-safe         = ON
+//   - Hyperparams      = LoRA r=32 / lr=5e-5 / 1 epoch / cutoff=4096 /
+//                        bs=1 / grad_accum=8  (Jackrong recipe, CPU-tuned)
+//   - Hallucination gates = OFF (Speed-Run already disables them)
+//
+// What this PRESERVES (the user's personal choices):
+//   - Student name           (studio-model picker -- the WHO)
+//   - Skills / languages     (inherited from the enrolled student -- the WHAT)
+//   - Saves tag              (studio-tag -- only defaulted to "overnight_grad"
+//                             if the user still has the factory default)
+//   - Backend                (inprocess/server -- user preference)
+//   - Prompts path           (unused by Speed-Run anyway, left alone)
+//   - Output dir             (unused by Speed-Run anyway, left alone)
+//   - Max tokens / temperature (unused by Speed-Run, left alone)
+//   - Run eval / Postmortem checkboxes (user preference)
+//
+// Only after the user clicks "OK" on the confirmation dialog does this call
+// studioStart(). Clicking "Cancel" leaves the preset filled in so the user
+// can tweak a few fields and press the normal Start button manually.
+function studioOneClickOvernight() {
+  // --- OVERRIDES ---------------------------------------------------------
+  // 1) Speed-Run ON + dataset + max-rows
+  const speed = document.getElementById("studio-speedrun");
+  if (speed) speed.checked = true;
+  const ds = document.getElementById("studio-upstream-dataset");
+  if (ds) ds.value = "Roman1111111/claude-opus-4.6-10000x";
+  const mr = document.getElementById("studio-upstream-max-rows");
+  if (mr) mr.value = "2000";
+  updateSpeedRunUI();
+
+  // 2) CPU-safe + overnight-friendly hyperparams (Jackrong recipe, CPU-tuned)
+  const cpu = document.getElementById("studio-cpu-safe");
+  if (cpu) cpu.checked = true;
+  const setVal = (id, val) => {
+    const el = document.getElementById(id);
+    if (el) el.value = String(val);
+  };
+  setVal("studio-epochs", 1);
+  setVal("studio-cutoff", 4096);
+  setVal("studio-bs", 1);
+  setVal("studio-gas", 8);
+  setVal("studio-lora", 32);
+  setVal("studio-lr", 0.00005);
+
+  // 3) Stages: full SFT -> Merge -> GGUF (DPO auto-skips because Speed-Run
+  //    produces no conflict_dpo.jsonl)
+  setVal("studio-stages", "all");
+
+  // --- PRESERVATIONS -----------------------------------------------------
+  // 4) Saves tag: keep the user's if they've set one; default to
+  //    "overnight_grad" ONLY if it's empty or still the factory default.
+  const tagEl = document.getElementById("studio-tag");
+  const currentTag = (tagEl && tagEl.value.trim()) || "";
+  if (!currentTag || currentTag === "studio_run") {
+    if (tagEl) tagEl.value = "overnight_grad";
+  }
+  // 5) Student: preserve the user's enrolled pick. Only fall back to
+  //    Qwen2.5-1.5B-Instruct if NOTHING is picked (brand-new install).
+  const modelField = document.getElementById("studio-model");
+  if (modelField && !modelField.value.trim()) {
+    modelField.value = "Qwen/Qwen2.5-1.5B-Instruct";
+  }
+
+  // --- CONFIRMATION DIALOG -----------------------------------------------
+  // Resolve the student + skills so we can show the user what's about to
+  // train. Everything comes from the form fields / _students array so the
+  // dialog reflects the *current* state, including the user's enrolled pick.
+  const allStudents = (window._students || []);
+  const s0 = allStudents[_studioStudentIdx] || allStudents[0] || {};
+  const studentName = s0.name || (modelField && modelField.value.trim()) || "(default)";
+  const studentBase = s0.hf_id || (modelField && modelField.value.trim()) || "Qwen/Qwen2.5-1.5B-Instruct";
+  const studentSkills = (s0.skills && s0.skills.length) ? s0.skills.join(", ") : "(all — no curriculum filter)";
+  const studentLangs = (s0.languages && s0.languages.length) ? s0.languages.join(", ") : "(all)";
+  const finalTag = (tagEl && tagEl.value.trim()) || "overnight_grad";
+
+  const planLines = [
+    "Ready to launch OVERNIGHT TRAINING with these settings:",
+    "",
+    "  STUDENT",
+    "    Name:      " + studentName,
+    "    Base:      " + studentBase,
+    "    Skills:    " + studentSkills,
+    "    Languages: " + studentLangs,
+    "",
+    "  DATASET (skipping teacher generation)",
+    "    Upstream:  Roman1111111/claude-opus-4.6-10000x",
+    "    Max rows:  2000  (Claude 4.6 Opus reasoning traces)",
+    "",
+    "  HYPERPARAMS (Jackrong recipe, CPU-safe)",
+    "    LoRA rank: 32",
+    "    LR:        5e-5",
+    "    Epochs:    1",
+    "    Cutoff:    4096",
+    "    Batch:     1  (grad_accum 8  ->  effective batch 8)",
+    "",
+    "  PIPELINE",
+    "    Stages:    SFT -> Merge -> GGUF  (DPO auto-skipped)",
+    "    CPU-safe:  ON  (no bf16)",
+    "    Saves tag: " + finalTag,
+    "",
+    "  ESTIMATED WALL-CLOCK",
+    "    CPU only:  6-12 hours    (safe to leave running overnight)",
+    "    Single GPU: 20-60 minutes",
+    "",
+    "Start now?",
+    "  OK     -> begin training immediately",
+    "  Cancel -> preset stays filled in, tweak fields and press Start manually",
+  ];
+  const ok = window.confirm(planLines.join("\n"));
+  if (!ok) {
+    const hint = document.querySelector(".studio-start-hint");
+    if (hint) {
+      hint.textContent = "Overnight preset filled in. Tweak any field and press Start Training when ready.";
+      hint.style.color = "#a78bfa";
+    }
+    console.info("[oneclick-overnight] user cancelled at confirm(); preset remains filled in");
+    return;
+  }
+
+  // --- FIRE --------------------------------------------------------------
+  const hint = document.querySelector(".studio-start-hint");
+  if (hint) {
+    hint.textContent = "Overnight preset locked in. Starting pipeline\u2026";
+    hint.style.color = "#a78bfa";
+  }
+  console.info("[oneclick-overnight] preset applied + confirmed, calling studioStart()");
+  try {
+    studioStart();
+  } catch (e) {
+    console.error("[oneclick-overnight] studioStart threw:", e);
+    alert("One-Click Overnight: failed to start pipeline -- " + (e && e.message || e));
+  }
+}
 async function studioStart() {
   const btn = document.getElementById("studio-start-btn");
   if (!btn) return;
@@ -3170,6 +3331,21 @@ const LANG = {
     "studio.start": "Start Training",
     "studio.start.hint": "Reuses the full pipeline backend — same SFT→DPO→Merge as Recipes",
     "studio.loss.title": "Live training loss",
+    // Speed-Run card (import pre-distilled HF dataset, skip stages 1-3)
+    "studio.speedrun.title": "Speed-Run",
+    "studio.speedrun.hint": "— skip teacher generation, boot training from a pre-distilled HF dataset in <60s",
+    "studio.speedrun.toggle": "<b>Enable Speed-Run</b> — replace stages 1-3 with a HuggingFace dataset download",
+    "studio.speedrun.toggle.tooltip": "Import a pre-distilled reasoning dataset (Claude 4.6 Opus traces, etc.) straight into consensus_sft.jsonl as GOLD. Skips stages 1-3 entirely (generate / halluc / purify). No teachers or prompts file required.",
+    "studio.speedrun.dataset": "Upstream dataset",
+    "studio.speedrun.dataset.tooltip": "Which pre-distilled HuggingFace dataset to import as the GOLD set. Each has a different size / focus — pick one that matches your student size + domain.",
+    "studio.speedrun.maxrows": "Max rows (0 = all)",
+    "studio.speedrun.maxrows.tooltip": "Hard cap on how many rows to import from the upstream dataset. 0 = unlimited (use the whole dataset).",
+    "studio.speedrun.explanation": "<b style=\"color:#a78bfa\">What happens:</b> the pipeline downloads the chosen dataset, converts it to <code>consensus_sft.jsonl</code> as pre-purified GOLD, then jumps straight to SFT training.<br><b style=\"color:#a78bfa\">No teachers or prompts file required.</b> Training starts in &lt;60 seconds for the small datasets.",
+    // One-Click Overnight button
+    "studio.oneclick.title": "▶ One-Click Overnight",
+    "studio.oneclick.sub": "Fires off a full CPU-safe Speed-Run training in one click — safe to leave running overnight",
+    "studio.oneclick.tooltip": "One-click overnight preset: enables Speed-Run, picks Roman1111111/claude-opus-4.6-10000x as the upstream dataset, caps at 2000 rows, forces cpu-safe mode, sets epochs=1, saves-tag=overnight_grad, and presses Start Training. Safe to leave running overnight on a CPU-only laptop.",
+    "studio.oneclick.preset": "Overnight preset applied: Speed-Run ON, dataset=Roman opus-4.6 10000x, max-rows=2000, cpu-safe=ON, epochs=1, tag=overnight_grad. Starting pipeline…",
     // Run status card
     "runstatus.stage": "Current stage",
     "runstatus.starting": "STARTING",
@@ -4064,26 +4240,43 @@ function t(key, fallback) {
   if (LANG.en[key] != null) return LANG.en[key];
   return fallback != null ? fallback : key;
 }
+// Returns the translation for `key` IF the key exists in the current language
+// dict or the English fallback dict. Returns null otherwise, so callers can
+// decide whether to overwrite the baked-in HTML or leave it alone. This is the
+// safe companion to `t(key)` which always returns SOMETHING (the key itself as
+// a last resort) -- using it in applyI18n() caused raw keys like
+// "STUDIO.SPEEDRUN.TITLE" to leak into the DOM when a string was missing.
+function tStrict(key) {
+  const dict = LANG[_currentLang] || LANG.en;
+  if (dict[key] != null) return dict[key];
+  if (LANG.en[key] != null) return LANG.en[key];
+  return null;
+}
 function applyI18n() {
-  // Text content
+  // Text content -- only overwrite when we have a real translation, otherwise
+  // leave the HTML's baked-in default in place.
   document.querySelectorAll("[data-i18n]").forEach(el => {
     const key = el.getAttribute("data-i18n");
-    el.textContent = t(key);
+    const val = tStrict(key);
+    if (val != null) el.textContent = val;
   });
   // Inner HTML (for labels that contain child spans / formatting)
   document.querySelectorAll("[data-i18n-html]").forEach(el => {
     const key = el.getAttribute("data-i18n-html");
-    el.innerHTML = t(key);
+    const val = tStrict(key);
+    if (val != null) el.innerHTML = val;
   });
   // title="" attributes (tooltips)
   document.querySelectorAll("[data-i18n-title]").forEach(el => {
     const key = el.getAttribute("data-i18n-title");
-    el.setAttribute("title", t(key));
+    const val = tStrict(key);
+    if (val != null) el.setAttribute("title", val);
   });
   // placeholder="" attributes
   document.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
     const key = el.getAttribute("data-i18n-placeholder");
-    el.setAttribute("placeholder", t(key));
+    const val = tStrict(key);
+    if (val != null) el.setAttribute("placeholder", val);
   });
   // Re-sync the _RS_STAGE_LABELS dict so dynamic stage label updates stay
   // translated after the next stage event.

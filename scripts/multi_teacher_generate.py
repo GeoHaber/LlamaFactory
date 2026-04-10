@@ -500,6 +500,16 @@ def _make_server_backend(manifest: dict):
 # ---------------------------------------------------------------------------
 
 def main() -> int:
+    # Install process_guard so a Ctrl-C / SIGTERM kills any helper processes
+    # this script may have spawned (currently none — InProcessAdapter loads
+    # GGUFs in-process — but defensive in case future backends fork helpers).
+    # The atexit-driven model cleanup at line ~212 still runs first.
+    try:
+        import process_guard  # type: ignore  # xray: ignore[SEC-015]
+        process_guard.install()
+    except ImportError:
+        pass
+
     parser = argparse.ArgumentParser(
         description="Generate responses from multiple teachers via zen_core_libs llama.cpp.",
         epilog="""\
