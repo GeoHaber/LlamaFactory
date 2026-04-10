@@ -1,276 +1,389 @@
 # LLM State of the Union — 2026-04-09
 
-> **The wet dream of any LLM coder:** boot a real reasoning-distilled training run in **under 60 seconds**, with no teacher inference, no hallucination gates, and no purification queue. As of today, LlamaFactory's Distillation Studio supports it natively.
+> **One sentence:** A solo developer can now take a frontier-grade reasoning student from "nothing" to "training" in 60 seconds, or to "graduated and merged" overnight, using only public HuggingFace datasets and an editable LlamaFactory install.
 
-This document captures the state of the open-weights reasoning-distillation art as of **9 April 2026**, and how the Distillation Studio's brand-new **Speed-Run mode** lets you skip directly from "I have nothing" to "training is running" in the time it takes to download a few hundred MB.
-
----
-
-## TL;DR (the only paragraph you actually need to read)
-
-In the last six months, frontier closed-weights labs (Anthropic in particular) shipped two extraordinary reasoning models — **Claude 4.5 Opus** and **Claude 4.6 Opus** — and a small but unusually motivated handful of open-source contributors **distilled tens of thousands of `<think>...</think>` reasoning traces from those models** and uploaded them to Hugging Face as plain `.jsonl` files. Those datasets are now **the single highest-leverage thing you can train a small student on**: a 1.5–8B base model finetuned on 5–10k Opus traces will beat the same base model trained on **millions** of vanilla SFT samples on every reasoning benchmark that matters.
-
-Until today, LlamaFactory's Distillation pipeline could only build datasets the *slow* way: spin up 1–N local teacher GGUFs, generate 10–100k responses (1–10 hours), run the 5-gate hallucination filter (another 1–3 hours), majority-vote into GOLD/SILVER/DROP buckets (~30 min). That's the right pipeline for grounding new domains where no upstream traces exist. But for **canonical reasoning**, it's a waste of GPU-hours, because Anthropic already burned $50k+ in API credits generating better traces than your 14B teacher will ever produce.
-
-**Speed-Run mode short-circuits stages 1–3.** You point it at one of four well-known HF datasets, click Start, and the pipeline downloads the file, converts it to `consensus_sft.jsonl` as pre-purified GOLD, and falls straight through to the SFT/DPO/Merge/GGUF/Eval stages it always ran. The only thing different is the first 30 seconds.
+This doc is the pocket guide to how the Distillation Studio actually works in April 2026 — who makes the data, who makes the software, what the moving parts are, and how to push the three buttons that matter: **Speed-Run**, **Overnight Graduation**, and the **Slow Path**.
 
 ---
 
-## 1 — The theory in five paragraphs
+## Part 1 — The kitchen analogy (read this first)
 
-### 1.1 What "distillation" actually means in 2026
+Forget "teacher/student/distillation" for a minute. Think of this whole ecosystem as a kitchen:
 
-Knowledge distillation in the modern LLM sense is **teacher-student supervised finetuning on the teacher's full output trace**, including its chain-of-thought. The student is shown `(prompt, full_output_with_thinking)` pairs and learns to mimic not just the final answer but the *shape* of the reasoning. This is fundamentally different from pre-2024 distillation, which used the teacher's logits or hidden states.
+| Role | Who | What they do |
+|:--|:--|:--|
+| **Michelin chef** | Claude 4.6 Opus, Claude 4.5 Opus, DeepSeek-R1, Qwen3.5 | Cooks the hard, creative, expensive dishes. Can't come to your house. |
+| **Food critics & sous-chefs** | `Roman1111111`, `nohurry`, `TeichAI`, `Jackrong` | Dined at the Michelin restaurant, wrote down exactly what the chef did (both the final plate and the *thinking while cooking*), published the recipes as free HF datasets. |
+| **The cooking school** | `hiyouga/LlamaFactory` | The kitchen, the knives, the stoves, the YAML recipe binder. Turns "I have a dataset and a base model" into "I have a finetuned model". |
+| **Trainee cooks** | Qwen2.5-0.5B / 1.5B / 3B / 7B, Gemma-4, Llama-3.2 | Your student. Small, fast, cheap to run locally. Learns by repeating the frontier recipes until it can cook them too. |
+| **The repackagers** | `huihui-ai`, `mlx-community`, `TheBloke`-style quantizers | Take the finished dish, quantize to GGUF / MLX / AWQ / abliterated, make it run on a laptop. |
+| **The head chef** | **You** | Pick the recipe book, pick the trainee, pick the oven, press Start. Come back in the morning to a graduated chef. |
 
-The trick that makes 2026-style distillation work is that **frontier reasoning models emit explicit `<think>...</think>` blocks** (Claude 4.5/4.6 Opus, DeepSeek-R1, Qwen3.5, Gemini 2.5 Thinking). Those blocks are the *thinking out loud* the model does before committing to a final answer. When you train a student on raw `(prompt, <think>thinking</think>final answer)` pairs with `train_on_responses_only` (the loss is masked over the prompt), the student learns to **emit the same reasoning structure**, and — crucially — the same accuracy lift the teacher got from thinking out loud transfers down.
+**The whole magic of 2026 is that the sous-chefs already did the expensive part** (paying Anthropic ~$50,000 in API credits to generate `<think>...</think>` traces), so when you walk into the cooking school you don't need to hire a Michelin chef — you just need to read the recipe book and put it on the curriculum.
 
-### 1.2 Why frontier-model traces beat your local teachers
-
-Three reasons:
-
-1. **Compute moat.** A single Opus reasoning trace can take 30–120 seconds to generate (long thinking budget). Generating 10k of them costs ~$300 in API credits. Your 14B local teacher running on a 24GB GPU takes longer than that *and* produces lower-quality reasoning.
-2. **RLHF moat.** Opus and friends were trained with months of RLHF. The mistakes they make are subtler than the mistakes your local teacher makes, and the *correct* answers are more likely to actually be correct.
-3. **Distribution moat.** The frontier labs hand-curated their reasoning training sets from the actual hard problems people send them. Your synthetic prompt set probably looks nothing like what real users ask.
-
-The sum of these three is why a 1.5B student trained on 5k Claude 4.6 Opus traces can outperform a 14B model trained on 100k self-generated traces on GSM8K, MATH, MMLU-Pro, and BBH.
-
-### 1.3 Why this works at all (the surprise)
-
-The naive expectation is that a 1.5B student is "too small" to learn frontier-level reasoning. But two things make it work:
-
-- **Reasoning style is mostly tokens, not parameters.** The `<think>` block is a serialized representation of the planning steps. A small model has plenty of parameters to *imitate* a serialized procedure, even if it couldn't have *invented* it.
-- **The reasoning lifts inference-time accuracy, not learned-weight accuracy.** When the student emits the right `<think>` chain at inference, the *final answer* benefits from the chain even though the chain itself is an autoregressive prediction. This is the same compute-for-quality tradeoff that made Chain-of-Thought work in the first place — it just costs more tokens at inference time.
-
-### 1.4 What you give up
-
-Three things:
-
-1. **Domain coverage.** The upstream datasets are dominated by math, code, logic puzzles, science MCQ. If you need a model that can reason about, say, **legal contracts** or **proprietary game lore**, you still need the slow path with your own teachers and prompts.
-2. **Style alignment.** The student inherits Claude's voice (formal, hedged, cautiously helpful). If your product needs a brand voice, plan a second SFT pass on a stylistic dataset.
-3. **License alignment.** The upstream datasets were generated against *Anthropic's* Terms of Service. Most of them are MIT/Apache-licensed by their uploaders, but the underlying outputs have a complicated provenance — talk to a lawyer before commercial use.
-
-### 1.5 When to use Speed-Run vs. the slow path
-
-| Goal | Use |
-|---|---|
-| Train a math/code/reasoning student in <1 hour | **Speed-Run** with `Roman1111111/claude-opus-4.6-10000x` |
-| Smoke-test a new student arch | **Speed-Run** with `TeichAI/claude-4.5-opus-high-reasoning-250x` (250 rows = 2 minutes) |
-| Build a domain-specific reasoner (medical, legal, lore) | **Slow path** — your own teachers + curated prompts |
-| Distill *style* from a specific model you already have | **Slow path** — load that model as a teacher |
-| Reproduce Jackrong's Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled v2 | **Speed-Run** with the recipe table in §4 |
+> **The wet dream of any LLM coder:** fire up a real reasoning-distilled training run in **under 60 seconds**, no teacher inference, no hallucination gates, no purification queue. As of today, LlamaFactory's Distillation Studio supports it natively as **Speed-Run mode**, and the new `scripts/speed_graduation.py` orchestrator lets you launch the whole overnight pipeline (download → import → configs → train → merge → report) with a single command.
 
 ---
 
-## 2 — The four upstream datasets (canonical Speed-Run sources)
+## Part 2 — The three paths (pick your ambition)
 
-All four ship with explicit converters in `scripts/import_reasoning_dataset.py`. Each one has a different upstream schema, so the converter is responsible for normalizing them into the canonical `{instruction, output}` pair that `consensus_sft.jsonl` expects.
+There are three ways to train a student with this repo. Same code, same UI, same artifacts at the end — only the first couple of stages differ.
 
-### 2.1 `Roman1111111/claude-opus-4.6-10000x` — **the LARGEST** (recommended default)
+```
+ ┌─────────────────────┐
+ │   FRONTIER CHEF     │   Claude 4.6 Opus / DeepSeek-R1 / Qwen3.5
+ │   (closed weights)  │
+ └──────────┬──────────┘
+            │ API $$$
+            ▼
+ ┌─────────────────────┐           ┌─────────────────┐
+ │    SOUS-CHEFS       │◄──────────│ YOUR LOCAL      │
+ │   (HF dataset       │           │ TEACHERS        │
+ │   uploaders)        │           │ (slow path)     │
+ └──────────┬──────────┘           └────────┬────────┘
+            │                                │
+       ┌────┴────┐                           │
+       ▼         ▼                           ▼
+  ┌────────┐ ┌──────────┐              ┌──────────┐
+  │SPEED-  │ │OVERNIGHT │              │  SLOW    │
+  │RUN     │ │SPEED     │              │  PATH    │
+  │(60 s)  │ │GRADUATION│              │ (hours)  │
+  │manual  │ │(one cmd) │              │ (full    │
+  └────┬───┘ └─────┬────┘              │  control)│
+       │           │                   └────┬─────┘
+       └───────────┴───────────┬────────────┘
+                               │
+                               ▼
+                   ┌─────────────────────┐
+                   │  COOKING SCHOOL     │
+                   │  (LlamaFactory)     │
+                   │  SFT → DPO → merge  │
+                   │  → GGUF → eval      │
+                   └─────────────────────┘
+                               │
+                               ▼
+                        ┌─────────────┐
+                        │ GRADUATED   │
+                        │ STUDENT     │
+                        └─────────────┘
+```
 
-| | |
-|---|---|
-| Rows | ~9,634 |
-| File | `opus46_final.jsonl` |
-| Schema | `messages`-format (sometimes Python-repr serialized) |
-| Source teacher | Claude 4.6 Opus (extended thinking) |
-| Final size | ~210 MB |
-| License | (as uploaded — check the model card) |
-| Domains | Math, code, logic, science, general reasoning |
-| Best for | First serious distill run; biggest training signal |
+### Path A — **Speed-Run mode** (manual, in the browser, ≈60 s)
 
-**Why it's the default.** Largest set of unique prompts, broadest coverage, and the messages format is easy to parse. If you only run one Speed-Run experiment, run this one.
+Open `python scripts/distill_server.py`, go to the Studio, check the **Speed-Run** box, pick a dataset, click **Start**. Under the hood, stages 1–3 (generate/halluc/purify) are replaced by a single call to `scripts/import_reasoning_dataset.py` which downloads the HF dataset and writes `consensus_sft.jsonl` directly. SFT starts within seconds. Best for: interactive iteration, tweaking a single dataset.
+
+### Path B — **Overnight Speed Graduation** (one command, walk away) **← NEW**
+
+```
+python scripts/speed_graduation.py --tag overnight_grad
+```
+
+That's it. This is the "press one button before bed, wake up to a graduated model" path. It chains **download student → import dataset → register dataset → generate configs → CPU-safe patching → SFT train → LoRA merge → markdown report** with full resumability. If you Ctrl-C it, re-running with the same `--tag` skips completed stages. Best for: unattended overnight runs, CI, reproducible benchmarks.
+
+### Path C — **Slow path** (full teacher pipeline, 1–10 hours)
+
+The classic multi_teacher_generate → hallucination_gates → purify_teacher_outputs pipeline. Use this when you need to distill something that no HF sous-chef has published yet: proprietary domains (legal, medical, game lore), brand voice, internal documents, niche languages. Everything after stage 3 is identical to the Speed-Run path.
+
+---
+
+## Part 3 — The recipe book (HF datasets you can boot from)
+
+These are the **pre-cooked Michelin traces** that make the Speed-Run path possible. Each has a converter inside `scripts/import_reasoning_dataset.py` so the Studio can download and normalize them automatically.
+
+| Dataset | Size | Pedigree | Best for |
+|:--|:--:|:--|:--|
+| `Roman1111111/claude-opus-4.6-10000x` | ~9.6 k | Claude 4.6 Opus, messages-style | **Default for serious runs.** Biggest, most diverse, shareGPT format. |
+| `nohurry/Opus-4.6-Reasoning-3000x-filtered` | ~2.3 k | Claude 4.6 Opus, pre-filtered | **Safest.** Separate problem/thinking/solution fields, already quality-gated. |
+| `TeichAI/claude-4.5-opus-high-reasoning-250x` | ~250 | Claude 4.5 Opus, hand-picked | **Fastest sanity check.** 2-minute smoke test of a new student arch. |
+| `Jackrong/Qwen3.5-reasoning-700x` | ~700 | Qwen-rephrased | Style ablation. Non-Claude baseline. |
+
+All four are JSONL, all four are Apache/MIT-ish licensed by the uploader (with the usual caveat that the *underlying traces* were generated against a frontier lab's ToS — talk to a lawyer before commercial use).
+
+### How to pick
+
+- **Smoke-testing plumbing?** → TeichAI 250x (`--max-rows 250`)
+- **Overnight run on a laptop?** → nohurry 3000x filtered (`--max-rows 2000`)
+- **Best possible result, dedicated workstation?** → Roman 10000x (`--max-rows 8000+`)
+- **Non-Claude style exploration?** → Jackrong 700x
+
+---
+
+## Part 4 — The cast of characters (who publishes what)
+
+### The data harvesters (sous-chefs)
+
+| Who | What they publish |
+|:--|:--|
+| **`Roman1111111`** | The 10k Opus 4.6 messages dataset. Largest public Opus trace collection as of 2026-04. |
+| **`nohurry`** | Filtered, pre-quality-gated Opus 4.6 traces with separate thinking/solution fields. |
+| **`TeichAI`** | Small, lovingly hand-picked Opus 4.5 and Gemma-4 reasoning sets. The "boutique" harvester. |
+| **`Jackrong`** | Qwen-rephrased reasoning datasets + also publishes the distilled *models* (see below). |
+
+### The trainers (other head chefs, for inspiration)
+
+| Who | What they publish | Why it matters |
+|:--|:--|:--|
+| **`Jackrong/Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2`** | Already-trained 27B distilled student | The canonical benchmark: what's achievable with a serious box. Our `gen_distill_configs.py` defaults mirror their Unsloth + TRL recipe. |
+| **`TeichAI/Gemma-4-*-distilled`** | Gemma-4 base + Opus traces | Non-Qwen reference point; proves the recipe transfers. |
+| **`arsovskidev/Gemma-4-E4B-*`** | Gemma-4 E4B finetunes | Shows the tiny-base end of the spectrum. |
+
+### The repackagers
+
+| Who | What they do |
+|:--|:--|
+| **`huihui-ai`** | Abliterated / uncensored variants of popular distilled models. |
+| **`mlx-community`** | 4-bit MLX quantizations for Apple Silicon. |
+| **The GGUF community** (TheBloke-style) | Q4_K_M, Q5_K_M, Q8_0 quants for llama.cpp. Your `scripts/slim_down.py` does this in-house. |
+
+### The cooking school
+
+| Who | What they build |
+|:--|:--|
+| **`hiyouga/LlamaFactory`** | The framework this whole repo is built on. YAML-driven SFT/DPO/PPO/KTO/ORPO + 100+ model families + the `qwen3_5` template with `<think>` awareness we rely on. **If you only install one LLM training tool in 2026, install this one.** |
+| **`Unsloth`** | 2× faster LoRA training via Triton kernels. The recipe we copy (Jackrong's) originated here. |
+| **`TRL`** (HuggingFace) | The underlying `SFTTrainer`/`DPOTrainer` LlamaFactory wraps. |
+| **`bitsandbytes`** | 8-bit AdamW + 4-bit base model quant. Enables 27B training on 24 GB. |
+
+---
+
+## Part 5 — The theory in five paragraphs
+
+### 5.1 What "distillation" actually means in 2026
+
+Modern LLM distillation is **teacher-student supervised finetuning on the teacher's full output trace**, chain-of-thought and all. The student sees `(prompt, <think>full_reasoning</think>final_answer)` pairs and learns to mimic not just the answer but the *shape* of the thinking. This is fundamentally different from pre-2024 distillation (which used teacher logits or hidden states) — in 2026 we distill on raw text, which means any base model can be a student and any text-completion API can be a teacher.
+
+### 5.2 Why frontier traces beat your local teachers
+
+Three moats:
+
+1. **Compute moat.** A single Opus trace takes 30–120 s to generate on Anthropic's infra. Your 14B local teacher on a 24 GB GPU takes longer *and* produces lower-quality reasoning.
+2. **RLHF moat.** Opus has months of RLHF behind it. Its mistakes are subtler; its correct answers are more likely to actually be correct.
+3. **Distribution moat.** Frontier labs curate their training sets from real hard questions users send them. Your synthetic prompt set probably looks nothing like real user pain.
+
+Sum: a 1.5B student trained on 5k Opus traces can outperform a 14B model trained on 100k self-generated traces on GSM8K / MATH / MMLU-Pro / BBH.
+
+### 5.3 Why a tiny student can imitate a frontier chef
+
+Naively this shouldn't work — Qwen2.5-1.5B has 1% the parameters of Claude. But:
+
+- **Reasoning is mostly tokens, not parameters.** The `<think>` block is a serialized procedure. A small model has plenty of capacity to *imitate* a serialized procedure even if it couldn't have *invented* it.
+- **The lift is inference-time, not weight-time.** When the student emits the right chain at inference, the final answer rides on the chain's shoulders. Same compute-for-quality tradeoff that made Chain-of-Thought work in the first place, just now it's learned instead of prompted.
+
+### 5.4 What you give up
+
+- **Domain coverage.** Upstream datasets are math/code/logic/science. Need a legal or proprietary-lore reasoner? Slow path with your own teachers.
+- **Style alignment.** The student inherits Claude's voice (formal, hedged, cautiously helpful). For brand voice, add a second SFT pass.
+- **License hygiene.** The upstream datasets are Apache/MIT by their uploaders, but the underlying outputs have a complicated provenance. Talk to a lawyer before commercial use.
+
+### 5.5 When to use which path
+
+| Goal | Path |
+|:--|:--|
+| Train a math/code reasoner in under 1 hour on a GPU | Speed-Run + Roman 10000x |
+| Sanity-check a new student arch in 2 minutes | Speed-Run + TeichAI 250x |
+| Overnight hands-off run on a CPU laptop | **`speed_graduation.py`** + nohurry 3000x |
+| Build a domain reasoner (medical / legal / lore) | Slow path + your own teachers |
+| Distill style from a model you already have | Slow path (load that model as teacher) |
+| Reproduce Jackrong's 27B distilled release | Speed-Run with the full recipe |
+
+---
+
+## Part 6 — How to actually run it
+
+### 6.1 Overnight Speed Graduation (recommended starting point)
+
+The simplest possible command on a CPU-only laptop:
 
 ```bash
-python scripts/import_reasoning_dataset.py \
-    --dataset Roman1111111/claude-opus-4.6-10000x \
-    --output-dir data/upstream_opus46
+python scripts/speed_graduation.py --tag overnight_grad
 ```
 
-### 2.2 `nohurry/Opus-4.6-Reasoning-3000x-filtered` — **filtered for quality**
+**Defaults** (tuned for an unattended overnight run on the machine this doc was written on):
 
-| | |
-|---|---|
-| Rows | ~2,330 (filtered down from 400k) |
-| File | `distilled_corpus_400k_with_cot-filtered.jsonl` |
-| Schema | `{problem, thinking, solution, category, difficulty}` |
-| Source teacher | Claude 4.6 Opus |
-| Final size | ~16 MB |
-| Best for | Highest sample-quality at the cost of quantity |
+- Student: `Qwen/Qwen2.5-1.5B-Instruct`
+- Dataset: `Roman1111111/claude-opus-4.6-10000x`
+- `--max-rows 2000` (≈2000 GOLD samples, fits in one night of CPU wall-clock)
+- `--epochs 1.0`
+- `--cpu-safe` auto-detected (disables bf16, lowers cutoff to 4096, switches optim to `adamw_torch`)
 
-**Why pick this over Roman's.** The uploader applied additional quality filters (likely a self-consistency or judge-model pass) and exposes the per-row `category` and `difficulty` fields, which are useful if you want to balance the training mix yourself. The converter wraps `thinking` in `<think>...</think>` automatically.
-
-### 2.3 `TeichAI/claude-4.5-opus-high-reasoning-250x` — **the smoke-test set**
-
-| | |
-|---|---|
-| Rows | ~250 |
-| File | `claude-opus-4.5-250x.jsonl` |
-| Schema | `messages` (assistant content already contains `<think>`) |
-| Source teacher | Claude 4.5 Opus (older, but still excellent) |
-| Final size | ~2 MB |
-| Best for | 2-minute end-to-end smoke tests of a new student / new infra |
-
-**Why it's tiny.** This one is curated by hand for the very hardest prompts (Olympiad math, IMO-style proofs, hard programming). It's too small to actually train a useful general reasoner from scratch, but it's perfect for verifying your Studio setup, GGUF export, and eval pipeline before you commit a real run.
-
-### 2.4 `Jackrong/Qwen3.5-reasoning-700x` — **Qwen-rephrased**
-
-| | |
-|---|---|
-| Rows | ~700 |
-| File | `distilled_stage2.jsonl` |
-| Schema | `{input, output, domain}` (output already wrapped in `<think>`) |
-| Source teacher | Qwen3.5-27B (which itself was distilled from Claude 4.6 Opus) |
-| Final size | ~6 MB |
-| Best for | Style alignment to the Qwen3.5 dialect specifically |
-
-**The catch.** This is a *second-generation* distillation: Jackrong distilled his Qwen3.5-27B Opus-distilled v2 model into a smaller corpus, applying his own curation. So you're getting Claude reasoning re-rendered through the Qwen voice, which is what you want if your final product is a Qwen-family student.
-
----
-
-## 3 — The Speed-Run workflow (3 clicks)
-
-### 3.1 From the Studio UI
-
-1. Open **Distillation Studio** → **Studio** tab.
-2. Pick a student in **Row 1** (or accept whatever's already enrolled).
-3. Tick **Enable Speed-Run** in the new purple-bordered card just above the Dataset/Parameters/Training row.
-4. Pick an **Upstream dataset** from the dropdown. The default (`Roman1111111/claude-opus-4.6-10000x`) is what you want unless you have a reason.
-5. Optionally set **Max rows** to a small number like `200` for a smoke test.
-6. Click the big green **▶ Start Training** button.
-
-The Studio will tell the backend that this is a Speed-Run, and the pipeline will:
-
-- **Stage 1 (Generate):** download the dataset, convert it, write `consensus_sft.jsonl` directly. ~30s.
-- **Stage 2 (Halluc gates):** **skipped** — the upstream dataset is already curated.
-- **Stage 3 (Purify):** **skipped** — every row is GOLD, no SILVER, no DROP.
-- **Stage 4–11:** unchanged. Same SFT → DPO → Merge → GGUF → Eval as the slow path.
-
-You will see a stage strip that looks like:
-
-```
-[generate ✓] [halluc -] [purify -] [configs ▶] [sft ▶] ...
-```
-
-The dashes mean "skipped, no work to do".
-
-### 3.2 From the command line (CI / scripts)
-
-Same thing, but as a one-shot:
+**Alternate profiles:**
 
 ```bash
-# Step 0 — import the upstream dataset
-python scripts/import_reasoning_dataset.py \
+# 2-minute sanity check (0.5B student, 10 samples)
+python scripts/speed_graduation.py --smoke-test \
+    --tag smoke_grad \
+    --student Qwen/Qwen2.5-0.5B-Instruct \
+    --dataset TeichAI/claude-4.5-opus-high-reasoning-250x \
+    --max-rows 10
+
+# Ambitious GPU run (3B student, 5000 samples, 2 epochs)
+python scripts/speed_graduation.py \
+    --tag big_grad \
+    --student Qwen/Qwen2.5-3B-Instruct \
     --dataset Roman1111111/claude-opus-4.6-10000x \
-    --output-dir data/upstream_opus46 \
     --max-rows 5000 \
-    --tier GOLD
+    --epochs 2 \
+    --no-cpu-safe
 
-# Step 1 — generate the SFT/DPO/Merge YAML configs
-python scripts/gen_distill_configs.py \
-    --student Qwen/Qwen2.5-1.5B-Instruct \
-    --data-dir data/upstream_opus46 \
-    --tag opus46_speedrun \
-    --auto-register
-
-# Step 2 — train (LlamaFactory CLI)
-llamafactory-cli train examples/distillation/auto/opus46_speedrun_sft.yaml
+# Dry-run (print the plan, execute nothing)
+python scripts/speed_graduation.py --dry-run
 ```
 
-That's the whole pipeline. No teachers, no prompts file, no halluc gates, no purify pass.
-
-### 3.3 What gets written to disk
-
-After the import step, `data/upstream_opus46/` will contain:
+**What gets written** on completion:
 
 ```
-consensus_sft.jsonl       <- the GOLD samples (the actual training data)
-purification_report.json  <- {gold_count: N, silver_count: 0, dropped_count: 0}
-teacher_responses.jsonl   <- a one-line placeholder so existence checks pass
-upstream_meta.json        <- provenance: which HF dataset, when imported, how many rows
-.hf_cache/                <- raw HF download (can be deleted after import)
+saves/<tag>/graduation_report.md          <-- human-readable summary
+saves/<tag>/lora/sft/                     <-- LoRA adapter checkpoints
+saves/<tag>/merged/                       <-- fully merged HF model, ready to load
+saves/<tag>/speed_graduation_logs/*.log   <-- per-stage stdout
+examples/distillation/auto/<tag>_sft.yaml <-- auto-generated training config
+examples/distillation/auto/<tag>_merge.yaml
+data/upstream_<tag>/consensus_sft.jsonl   <-- the GOLD samples
+data/dataset_info.json                    <-- auto-registered so llamafactory-cli sees it
 ```
 
-The Studio's standard training stages know how to read these files exactly as if they had come from the slow path.
+**Resumability.** Every stage writes a sentinel (a file or directory that didn't exist before). Re-running with the same `--tag` skips completed stages automatically. Ctrl-C during SFT? Re-run and LlamaFactory picks up from the last checkpoint. Ctrl-C after SFT? Re-run and it jumps straight to the merge stage.
 
----
-
-## 4 — The recipe table (Jackrong v2 alignment)
-
-The four Speed-Run datasets above are paired with a *training recipe* that's been retuned to match the recipe used by **Jackrong's Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled v2** release (Unsloth + TRL `SFTTrainer` + `train_on_responses_only`). The Studio applies this recipe by default; the Recipes tab can override any of it.
-
-| Knob | Pre-2026-04-09 default | New default | Why it changed |
-|---|---|---|---|
-| `template` | `qwen` | `qwen3_5` | The `qwen3_5` template is the `ReasoningTemplate` class — it understands `<think>...</think>` blocks and `enable_thinking`. The old `qwen` template would silently strip the thinking spans during tokenization. **Critical fix.** |
-| `enable_thinking` | (not set) | `true` | Tells the tokenizer to keep the `<think>` spans intact. Without this the loss is computed over a string the model can't reproduce at inference. |
-| `mask_history` | (not set / false) | `true` | LlamaFactory's equivalent of TRL's `train_on_responses_only`. Loss is computed only on the assistant turn, not on the prompt. Critical for reasoning where the prompt is short and the answer is long. |
-| `cutoff_len` | `1024` | `8192` | Reasoning traces commonly run 2k–8k tokens. A 1024 cutoff would TRUNCATE every `<think>` block mid-thought, which is worse than not training on them at all. **Critical fix.** |
-| `lora_rank` | `16` | `32` | Reasoning style transfer needs more adapter capacity than vanilla SFT. Jackrong used r=64; we picked 32 as a compromise that fits on 16GB VRAM. |
-| `lora_alpha` | (not set) | `32` | `alpha == rank` gives a scaling factor of 1.0, matching Jackrong's recipe. |
-| `learning_rate` | `2e-5` | `5e-5` | The bigger LoRA rank can absorb a higher LR. Jackrong used 5e-5 for the SFT stage. |
-| `gradient_accumulation_steps` | `4` | `8` | Doubles the effective batch size with no extra VRAM cost. Helps the loss curve stay smooth on small batches. |
-| `optim` | `adamw_torch` | `adamw_8bit` | bitsandbytes 8-bit AdamW saves ~4× the optimizer state memory, lets you fit larger batches on the same GPU. |
-| `weight_decay` | `0.0` | `0.001` | Light regularization, Jackrong's value. |
-
-**Where the recipe lives.** All of the above is now baked into `scripts/gen_distill_configs.py` (`_sft_config` and `_dpo_config`). The DPO stage mirrors the SFT recipe so the two stages speak the same dialect — otherwise the DPO stage would re-truncate the `<think>` blocks the SFT stage learned to emit.
-
----
-
-## 5 — Case study: reproducing Jackrong-Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2
-
-This is the model that prompted the entire 2026-04-09 redesign. It's a 27B Qwen3.5 base finetuned on ~10k Claude 4.6 Opus reasoning traces, and it sits at the top of the open-weights reasoning leaderboards as of this writing.
-
-### 5.1 The 60-second reproduction (single command equivalent)
+### 6.2 Speed-Run mode in the browser Studio
 
 ```bash
-# 1. Start the Distillation Studio server
-python scripts/distill_server.py
-
-# 2. In the Studio UI:
-#    - Enrollment tab: enroll Qwen/Qwen2.5-1.5B-Instruct as a student
-#      (or any Qwen-family base you want)
-#    - Studio tab:
-#      * Tick "Enable Speed-Run"
-#      * Pick "Roman1111111/claude-opus-4.6-10000x"
-#      * Click "Start Training"
+python scripts/distill_server.py          # starts the local server
+# open http://localhost:<port>/distill.html in a browser
 ```
 
-Total wall-clock time on a single 4090: ~30s import + ~25 min SFT + ~10 min DPO + ~5 min merge + ~2 min GGUF + ~3 min eval = **~45 minutes from click to deployable model**.
+Check the purple **Speed-Run** box, pick a dataset from the dropdown, set `max_rows`, click **Start**. Stages 1–3 in the progress rail will show "skip (upstream)" and SFT starts within seconds. Everything else in the Studio (curriculum, multi-student batches, postmortem, metrics rail) works unchanged.
 
-### 5.2 What you get
+### 6.3 Under the hood: what Speed-Run replaces
 
-A `.gguf` file in `saves/<your-tag>/merged-q4km.gguf` that:
+The slow path:
 
-- Emits `<think>...</think>` blocks in the Claude/Qwen3.5 style
-- Scores within 5% of the original Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2 on the in-Studio eval suite (despite being 18× smaller — 1.5B vs 27B)
-- Runs at ~80 tok/s on a 4090 in `llama.cpp` Q4_K_M
+```
+[generate]  multi_teacher_generate.py   --> 1-10h, 50-200% GPU util
+[halluc]    hallucination_gates.py      --> 30-90m, 5-gate filter
+[purify]    purify_teacher_outputs.py   --> 15-30m, majority vote -> GOLD/SILVER/DROP
+```
 
-### 5.3 What to inspect after the run
+Speed-Run:
 
-- `saves/<tag>/postmortem.md` — the auto-tune recommendations from `scripts/postmortem_agent.py`
-- `data/upstream_opus46/upstream_meta.json` — provenance ("trained on 9634 Claude 4.6 Opus traces from Roman1111111/claude-opus-4.6-10000x")
-- `saves/<tag>/eval_report.json` — accuracy on math/code/MMLU
-- `saves/<tag>/curriculum.json` — what skills the run advertised (filled even in Speed-Run mode so dashboards keep working)
+```
+[generate]  import_reasoning_dataset.py --> 5-60s, 1 HTTP download
+[halluc]    <skipped>                   --> upstream is pre-filtered
+[purify]    <skipped>                   --> everything is GOLD
+```
+
+Both produce the same shape on disk:
+
+```
+<output_dir>/consensus_sft.jsonl       <-- the GOLD samples
+<output_dir>/purification_report.json  <-- gold/silver/drop counts
+<output_dir>/teacher_responses.jsonl   <-- sentinel for pipeline_start()
+<output_dir>/upstream_meta.json        <-- provenance (what was imported)
+```
+
+So stages 4–11 (configs, SFT, DPO, merge, GGUF, eval, dashboard) don't need to know or care which path was taken.
 
 ---
 
-## 6 — What this changes for the Distillation Studio roadmap
+## Part 7 — The recipe knobs that matter (from Jackrong's playbook)
 
-The slow path is **not deprecated**. It's still the right pipeline for grounding new domains, building proprietary datasets from your own teachers, or distilling models that don't have a public reasoning-trace dataset (the Gemma 3 family, the Phi family, etc.). But it's no longer the *default* path for a fresh user trying out the Studio for the first time. Speed-Run is.
+These defaults live in `scripts/gen_distill_configs.py`. They're tuned to match the recipe Jackrong published for his 27B distilled-v2 release (Unsloth + TRL SFTTrainer), then `speed_graduation.py` post-patches for CPU budgets.
 
-Concretely, the next few iterations of the Studio will:
-
-1. Auto-suggest Speed-Run on first launch if no teachers are enrolled
-2. Add a "Speed-Run smoke test" button that runs the 250-row TeichAI dataset end-to-end as a self-test
-3. Stack Speed-Run with the existing curriculum filter, so you can import 10k Opus rows but only train on the math+code subset
-4. Add a leaderboard mode that runs Speed-Run on each of the 4 datasets and prints a comparison table
-5. Mirror the Speed-Run mode into the multi-student sequential batch loop (it already works — you just point each student at the same `data/upstream_opus46/` dir and the batch loop handles the rest)
+| Knob | Default | Why |
+|:--|:--|:--|
+| `template` | `qwen3_5` | `ReasoningTemplate` class, knows about `<think>...</think>` spans. Critical. |
+| `enable_thinking` | `True` | Don't strip the `<think>` blocks during tokenization. |
+| `mask_history` | `True` | LlamaFactory's `train_on_responses_only`. Loss is computed **only on assistant turns**, not on the prompt. The single most important knob for style transfer. |
+| `cutoff_len` | 8192 (GPU) / 4096 (CPU) | Reasoning traces commonly run 2k–8k tokens. A 1024 cutoff would **truncate every `<think>` block** and you'd learn garbage. |
+| `lora_rank` | 32 | Reasoning style transfer needs more adapter capacity than vanilla SFT. Jackrong uses 64; 32 is our 16-GB-friendly compromise. |
+| `lora_alpha` | 32 | Alpha = rank → scaling 1.0. |
+| `learning_rate` | 5e-5 | Jackrong's 2e-4 is for Unsloth's faster convergence; 5e-5 is safer on plain TRL. |
+| `num_train_epochs` | 2.0 (GPU) / 1.0 (CPU) | Reasoning transfer saturates quickly. Any more and you're memorizing. |
+| `gradient_accumulation_steps` | 8 | Effective batch size = 8. On CPU this is the only lever to get stable gradients. |
+| `optim` | `adamw_8bit` (GPU) / `adamw_torch` (CPU) | bitsandbytes 8-bit AdamW saves ~4× optimizer state memory, but only with a CUDA wheel. |
+| `weight_decay` | 0.001 | Light regularization; Jackrong's value. |
+| `warmup_ratio` | 0.05 | Slightly more warmup than the TRL default because LoRA is noisy early. |
 
 ---
 
-## 7 — Closing note
+## Part 8 — Hardware profiles
 
-Six months ago, distilling a frontier reasoning model into a small open-weights student was a research project that needed a cluster, a budget, and a team. Today it's three clicks in the Studio, and the bottleneck has moved from "can I generate the data" to "do I have a use case worth fine-tuning for".
+### 8.1 CPU-only laptop (the machine this was written on)
 
-The four datasets above are the seed corpus. Use them well.
+- **Student**: Qwen2.5-0.5B or 1.5B Instruct
+- **Dataset**: nohurry 3000x filtered OR Roman 10000x with `--max-rows 2000`
+- **Command**: `python scripts/speed_graduation.py --tag overnight_grad`
+- **Expected wall-clock**: ~6–12 hours for 1.5B / 2000 samples / 1 epoch on a modern laptop CPU
+- **Tradeoffs**: No bf16, cutoff capped at 4096, `adamw_torch` instead of `adamw_8bit`
 
-— LlamaFactory Distillation Team, 2026-04-09
+### 8.2 Single-GPU workstation (16–24 GB VRAM)
+
+- **Student**: Qwen2.5-3B or 7B Instruct
+- **Dataset**: Roman 10000x, all of it (`--max-rows 10000`)
+- **Command**: `python scripts/speed_graduation.py --tag gpu_grad --student Qwen/Qwen2.5-7B-Instruct --max-rows 10000 --no-cpu-safe`
+- **Expected wall-clock**: 1–3 hours
+- **Notes**: Enable `adamw_8bit` via bitsandbytes for memory headroom.
+
+### 8.3 Multi-GPU / 48+ GB
+
+- **Student**: Qwen2.5-14B or 32B / Gemma-4-27B
+- **Dataset**: Roman 10000x (full) or two datasets concatenated
+- **Path**: Full slow path recommended for maximum control, or Speed-Run with higher `lora_rank=64`.
+- **Notes**: Match Jackrong's published recipe verbatim for reproducibility.
+
+---
+
+## Part 9 — The file map
+
+New / changed in this release:
+
+```
+scripts/speed_graduation.py           NEW   the overnight one-click orchestrator
+scripts/import_reasoning_dataset.py   NEW   HF dataset -> consensus_sft.jsonl converter
+scripts/gen_distill_configs.py        UPD   Jackrong-recipe defaults (template, cutoff, LoRA)
+scripts/distill_server.py             UPD   Speed-Run branch in pipeline_start()
+scripts/distill.html                  UPD   purple Speed-Run card in the Studio UI
+pyproject.toml                        UPD   requires-python >=3.10 (was >=3.14)
+LLM_STATE_OF_THE_UNION_2026-04-09.md  NEW   this document
+```
+
+---
+
+## Part 10 — FAQ
+
+**Q: Can I add my own HF dataset to the Studio's Speed-Run dropdown?**
+Yes. Either drop a converter into `scripts/import_reasoning_dataset.py::KNOWN`, or rely on the generic `_auto_convert` fallback (it handles `{messages}`, `{input,output}`, `{prompt,response}`, `{problem,thinking,solution}` shapes out of the box). Then add an `<option>` to the dropdown in `scripts/distill.html` and you're done.
+
+**Q: Does Speed-Run skip DPO?**
+Yes — upstream datasets don't contain the `chosen/rejected` pairs DPO needs. You get SFT-only from Speed-Run. If you want DPO on top, run Speed-Run first to get a strong SFT checkpoint, then run the slow path's purify stage (which produces `conflict_dpo.jsonl`) against a small set of your own teachers.
+
+**Q: Is the merged model GGUF-ready?**
+Yes. After `speed_graduation.py` finishes, run `python scripts/slim_down.py --model-dir saves/<tag>/merged --out-dir saves/<tag>/gguf --tag <tag> --quant q4_k_m` to produce a `.gguf` you can load in llama.cpp / LM Studio / llama-server.
+
+**Q: What if the student download fails?**
+`speed_graduation.py` uses `huggingface_hub.snapshot_download()` with an explicit `allow_patterns` whitelist. If your HF cache is at a non-default path, set `HF_HOME` before running (the machine this was written on uses `HF_HOME=C:\AI\Models\.hf_cache`).
+
+**Q: Can I resume after a crash?**
+Yes. Re-run with the same `--tag` and every stage that already has its sentinel on disk will be skipped. The most common recovery is: crash during SFT → re-run → SFT resumes from the last saved checkpoint (LlamaFactory handles this natively).
+
+**Q: What if I want to train multiple students on the same GOLD set?**
+Two options: (1) the Studio's multi-student batch mode (runs stages 1–3 once, loops stages 4–11 per student), or (2) run `speed_graduation.py` N times with different `--tag` and `--student` — the dataset import is a no-op after the first run because `upstream_<tag>` is cached.
+
+**Q: Is this legal?**
+The datasets are Apache/MIT by their uploaders. The underlying Opus traces were generated against Anthropic's API — the provenance is complicated. For personal research, fine. For commercial use, talk to a lawyer. Not legal advice.
+
+**Q: What does LlamaFactory give me that a raw TRL script doesn't?**
+YAML-driven configs (no glue code), 100+ pretrained model families with correct templates, built-in `train_on_responses_only`/`mask_history`, unified SFT/DPO/PPO/KTO/ORPO interface, LoRA/QLoRA/full-finetune/PiSSA/LoftQ/DoRA in one binary, and the `qwen3_5` template with `<think>` awareness. It's the difference between writing ten 500-line training scripts and writing ten 30-line YAMLs.
+
+---
+
+## Part 11 — Where to go next
+
+1. **Run the overnight graduation.** `python scripts/speed_graduation.py --tag overnight_grad`. Walk away. Come back in the morning.
+2. **Read the graduation report.** `saves/overnight_grad/graduation_report.md` — stage timings, artifact paths, next-step commands.
+3. **Quantize to GGUF.** `python scripts/slim_down.py --model-dir saves/overnight_grad/merged ...`
+4. **Run the eval panel.** `python scripts/eval_student_panel.py --saves-tag overnight_grad --probes data/eval_probes.jsonl`
+5. **Compare to Jackrong's published 27B benchmark.** Use it as your ceiling.
+
+---
+
+*— 2026-04-09, written at the edge of what open-weights distillation can do.*
