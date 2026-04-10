@@ -123,14 +123,61 @@ def _build_replay_dataset(
 # YAML builders -- mirror gen_distill_configs.py shape
 # ---------------------------------------------------------------------------
 
-def _branch_sft_yaml(trunk_path: str, dataset_name: str, tag: str, cpu_safe: bool) -> dict:
-    """Build a SMALL-LoRA SFT YAML using the merged trunk as the base.
+# Default ranks per skill family, grounded in "LoRA Learns Less and Forgets
+# Less" (arXiv 2405.09673). Their headline finding: for instruction FT on
+# code/math, LoRA needs a HIGH rank (64-256) to close the gap with full FT.
+# Our earlier default of rank=8 was under-powered for anything beyond toy
+# skills. These numbers are the practical middle ground between "big enough
+# to learn the skill" and "small enough not to catastrophically forget the
+# trunk." Users can override with --rank.
+_SKILL_RANK_DEFAULTS = {
+    "translate": 32,   # translation is easier, 32 is plenty
+    "translation": 32,
+    "code": 64,        # code is hard per the paper; 64 is the minimum
+    "coding": 64,
+    "math": 64,        # same as code
+    "reasoning": 32,   # trunk already knows reasoning; small delta
+    "style": 16,       # style transfer is thin
+    "voice": 16,
+    "domain": 32,      # generic domain adaptation
+    "legal": 32,
+    "medical": 32,
+}
 
-    Differences vs the trunk SFT in gen_distill_configs.py:
-      - lora_rank=8 (was 32) -- branch is a delta, not a fork
-      - lora_dropout=0.05 (was 0.0) -- slight reg to prevent skill overfit
-      - learning_rate=1e-4 (was 5e-5) -- small LoRAs need more juice per step
-      - num_train_epochs=1.0 -- one pass is plenty for a delta
+
+def _rank_for_skill(skill: str, override: int | None) -> int:
+    """Pick a sensible LoRA rank per skill, or use the user's override."""
+    if override is not None and override > 0:
+        return int(override)
+    return _SKILL_RANK_DEFAULTS.get(skill.strip().lower(), 32)
+
+
+def _branch_sft_yaml(
+    trunk_path: str,
+    dataset_name: str,
+    tag: str,
+    cpu_safe: bool,
+    rank: int,
+    epochs: float,
+    learning_rate: float,
+) -> dict:
+    """Build a LoRA SFT YAML using the merged trunk as the base.
+
+    Defaults informed by recent literature:
+      - ``lora_rank``: 32 by default, 64 for code/math (arXiv 2405.09673
+        "LoRA Learns Less and Forgets Less" shows low ranks undertrain code
+        tasks; rank 64+ is needed to close the gap with full FT).
+      - ``lora_alpha = 2 * rank``: the alpha=2r convention from the same
+        paper and Unsloth's recipe. Our earlier alpha=rank (scaling 1.0)
+        was under-scaled.
+      - ``lora_dropout=0.05``: slight reg to prevent skill overfit on a
+        small dataset. Zero is fine if your skill set has 10k+ rows.
+      - ``learning_rate=1e-4``: middle of the 1e-5 — 5e-4 sweep range the
+        paper recommends. Branches need more juice per step than the trunk
+        because the LoRA is learning a narrower distribution.
+      - ``num_train_epochs=2.0``: skill branches benefit from a bit more
+        training than the trunk's single epoch. Bumped from our earlier
+        default of 1.0 after re-reading the scaling-laws paper.
     """
     return {
         "model_name_or_path": trunk_path,
@@ -138,12 +185,12 @@ def _branch_sft_yaml(trunk_path: str, dataset_name: str, tag: str, cpu_safe: boo
         "stage": "sft",
         "do_train": True,
         "finetuning_type": "lora",
-        # ── SMALL adapter — branch is a delta, not a fork ───────────────
-        "lora_rank": 8,
-        "lora_alpha": 8,
+        # ── LoRA sizing — tuned per skill via _rank_for_skill() ───────────
+        "lora_rank": rank,
+        "lora_alpha": rank * 2,  # α = 2r (paper convention)
         "lora_dropout": 0.05,
         "lora_target": "all",
-        # ── Dataset / template -- match trunk template for token alignment ─
+        # ── Dataset / template — match trunk template for token alignment ─
         "dataset_dir": "data",
         "dataset": dataset_name,
         "template": "qwen3_5",
@@ -153,7 +200,7 @@ def _branch_sft_yaml(trunk_path: str, dataset_name: str, tag: str, cpu_safe: boo
         "max_samples": 50000,
         "preprocessing_num_workers": 1,
         "dataloader_num_workers": 0,
-        # ── Output / logging ────────────────────────────────────────────
+        # ── Output / logging ─────────────────────────────────────────────
         "output_dir": f"saves/{tag}/lora/sft",
         "logging_steps": 5,
         "save_steps": 100,
@@ -161,11 +208,11 @@ def _branch_sft_yaml(trunk_path: str, dataset_name: str, tag: str, cpu_safe: boo
         "overwrite_output_dir": False,
         "save_only_model": False,
         "report_to": "none",
-        # ── Optimizer ───────────────────────────────────────────────────
+        # ── Optimizer ────────────────────────────────────────────────────
         "per_device_train_batch_size": 1,
         "gradient_accumulation_steps": 8,
-        "learning_rate": 1.0e-4,
-        "num_train_epochs": 1.0,
+        "learning_rate": learning_rate,
+        "num_train_epochs": epochs,
         "lr_scheduler_type": "cosine",
         "warmup_ratio": 0.05,
         "optim": "adamw_torch" if cpu_safe else "adamw_8bit",
@@ -299,12 +346,19 @@ def cmd_branch(args: argparse.Namespace) -> int:
     dataset_name = f"{args.tag}_branch"
     _register_dataset(dataset_name, mixed_path)
 
+    # Pick a rank that matches the skill family (unless --rank overrides)
+    rank = _rank_for_skill(args.skill, args.rank)
+    _log(f"LoRA rank={rank} (alpha={rank * 2}) for skill={args.skill}")
+
     # Generate SFT YAML
     cfg = _branch_sft_yaml(
         trunk_path=str(trunk).replace("\\", "/"),
         dataset_name=dataset_name,
         tag=args.tag,
         cpu_safe=args.cpu_safe,
+        rank=rank,
+        epochs=args.epochs,
+        learning_rate=args.learning_rate,
     )
     yaml_path = ROOT / "examples" / "distillation" / "auto" / f"{args.tag}_branch_sft.yaml"
     yaml_path.parent.mkdir(parents=True, exist_ok=True)
@@ -426,7 +480,20 @@ examples:
     parser.add_argument("--skill-data", help="Path to skill JSONL (instruction/output rows)")
     parser.add_argument("--replay-data", default="", help="Path to trunk consensus_sft.jsonl for replay buffer")
     parser.add_argument("--replay-fraction", type=float, default=0.15,
-                        help="Fraction of skill-data size to mix in as replay (default 0.15)")
+                        help="Fraction of skill-data size to mix in as replay (default 0.15). "
+                             "NOT optional for continual-learning recipes — research shows LoRA "
+                             "does NOT automatically mitigate catastrophic forgetting in "
+                             "continual SFT. 10-20%% is the documented effective range.")
+    parser.add_argument("--rank", type=int, default=None,
+                        help="LoRA rank override. If omitted, picked per-skill: "
+                             "translate=32, code=64, math=64, style=16, default=32. "
+                             "Grounded in arXiv 2405.09673 'LoRA Learns Less and Forgets Less' "
+                             "which shows code/math need rank 64+ to close the gap with full FT.")
+    parser.add_argument("--epochs", type=float, default=2.0,
+                        help="Training epochs (default 2.0, bumped from 1.0 per paper guidance).")
+    parser.add_argument("--learning-rate", type=float, default=1.0e-4,
+                        help="Learning rate (default 1e-4, middle of the 1e-5 to 5e-4 sweep "
+                             "range from the paper).")
     parser.add_argument("--tag", required=True, help="Output tag (saves/<tag>/)")
     parser.add_argument("--cpu-safe", action="store_true",
                         help="Use CPU-friendly defaults (no bf16, cutoff 4096, adamw_torch)")

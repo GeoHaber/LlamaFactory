@@ -417,41 +417,66 @@ Stop thinking of multi-student training as "two parallel students from one base"
 ```
 
 - **Trunk:** the merged Speed-Run model. Frozen — never trained again. Big LoRA capacity (rank 32) baked in during Phase 1.
-- **Branches:** small LoRAs (rank 8–16) trained on top of the frozen trunk, one per skill, each on **skill-specific data** mixed with a small **replay buffer** of trunk data to prevent catastrophic forgetting.
+- **Branches:** LoRAs sized **per skill** (rank 32 for generic skills, rank 64 for code/math per [arXiv 2405.09673](https://arxiv.org/abs/2405.09673) "LoRA Learns Less and Forgets Less"), trained on top of the frozen trunk, one per skill, each on **skill-specific data mixed with a 10–20 % replay buffer** of trunk data. The replay buffer is **not optional** — research shows LoRA does *not* automatically mitigate catastrophic forgetting in continual-learning settings.
 - **Crown** *(optional)*: merge all branches back into the trunk via DARE-TIES for a single all-in-one artifact. Usually unnecessary — keeping branches separate lets you swap them at inference and saves disk.
 
-### 11.2 The four ways to add skills (ranked low- to high-tech)
+> **Rank guidance (from the paper).** "LoRA Learns Less and Forgets Less" ran sweeps at `r=16/64/256` and found that code instruction FT needs `r=256` to match full fine-tuning, math needs `r=64`, and general instruction FT is fine at 16–64. `scripts/skill_branch.py` defaults to `r=32` for generic skills, `r=64` for code/math, and always uses `α = 2r` (also per the paper). Override with `--rank N`.
 
-| # | Approach | Effort | Quality | When to use |
-|:--|:--|:--|:--|:--|
-| 1 | **Replay-buffer SFT on frozen trunk** | trivial | ★★★★ | **DEFAULT.** Always start here. |
-| 2 | DARE-TIES merge of N skill LoRAs | trivial | ★★★ | When you need a single artifact and have ≤3 skills |
-| 3 | X-LoRA (Mixture of LoRA Experts) | moderate | ★★★★★ | When you have 4+ skills and need per-token routing |
-| 4 | LoRA Soups CAT (learnable concat) | research | ★★★★★ | SOTA, exactly 2 skills, comfortable patching PEFT |
+### 11.2 The five ways to add skills (ranked by simplicity)
 
-**(1) Replay-buffer SFT** is the recommendation. Load the merged Speed-Run model as the new `model_name_or_path`, train a small LoRA on `(skill_data ∪ 15%_of_trunk_data)`. The skill data teaches the new behavior; the 15 % replay anchors the reasoning capability so it doesn't get overwritten. Zero new infrastructure, works with stock LlamaFactory, resumable. This is what `scripts/skill_branch.py` does.
+| # | Approach | Effort | Quality | Modular? | When to use |
+|:--|:--|:--|:--|:--|:--|
+| 0 | **DATA-MIX (single LoRA on mixed data)** | trivial | ★★★★ | ❌ | Fixed skill set, no plans to add more, want one artifact |
+| 1 | **Replay-buffer SFT on frozen trunk** | trivial | ★★★★ | ✅ | **DEFAULT when you want modularity.** Add/swap skills later. |
+| 2 | DARE-TIES merge of N skill LoRAs | trivial | ★★★ | partial | Need a single artifact and have ≤3 skills |
+| 3 | X-LoRA (Mixture of LoRA Experts) | moderate | ★★★★★ | ✅ | 4+ skills and per-token routing matters |
+| 4 | LoRA Soups CAT (learnable concat) | research | ★★★★★ | partial | SOTA, exactly 2 skills, comfortable patching PEFT |
 
-**(2) DARE-TIES** is already supported via `gen_distill_configs.py::_dare_ties_config()`. Train each branch independently with (1), then merge them into the trunk. Watch out: research shows DARE-TIES underperforms learnable concatenation (CAT) by 12–43 % on multi-skill benchmarks, so this is "good enough" not "best".
+**(0) DATA-MIX** is the honest simplest baseline and I under-represented it in an earlier draft of this doc. Take the ORIGINAL base model (not the Speed-Run trunk), train ONE LoRA on `(trunk_reasoning_data ∪ skill1_data ∪ skill2_data)` all mixed in one dataset. One training run. One LoRA. LoRA Soups (arXiv 2410.13025) explicitly shows DATA-MIX is competitive with learnable concatenation on skill composition — *better* than DARE-TIES on most benchmarks. **Downside:** adding a third skill later requires full retraining from scratch, because the mixed LoRA can't be decomposed. If your skill set is fixed and you just want "one model, good at N things", skip straight to this.
 
-**(3) X-LoRA** is PEFT-supported. It trains a tiny gating network on top of frozen LoRAs that decides per-token which adapter to attend to. Best per-skill quality preserved. Worth the extra complexity once you have 4+ branches. See `peft.XLoraModel`.
+**(1) Replay-buffer SFT on frozen trunk** is the recommendation when you want **modularity**: the ability to add a fourth skill months later without retraining, or to swap which branch is loaded at inference. Load the merged Speed-Run model as the new `model_name_or_path`, train a LoRA (rank 32 for generic skills, 64 for code/math) on `(skill_data ∪ 15 %_of_trunk_data)`. The skill data teaches the new behavior; the 15 % replay **is required**, not optional — LoRA does not automatically mitigate catastrophic forgetting in continual learning, despite the name of the paper "LoRA Learns Less and Forgets Less". Works with stock LlamaFactory, resumable. This is what `scripts/skill_branch.py` does.
 
-**(4) LoRA Soups (CAT)** is the published SOTA for 2-skill composition. Beats DARE-TIES by 12–43 % on hard math-word benchmarks. Currently a research artifact; not in PEFT mainline. arXiv: 2410.13025.
+**(2) DARE-TIES** is already supported via `gen_distill_configs.py::_dare_ties_config()` (line 194). Train each branch independently with (1), then merge them into the trunk. Watch out: LoRA Soups shows DARE-TIES underperforms learnable concatenation (CAT) and plain DATA-MIX by 12–43 % on multi-skill benchmarks, so this is "good enough when you need a single artifact" not "best quality".
 
-### 11.3 Catastrophic forgetting in one paragraph
+**(3) X-LoRA** is PEFT-supported (`peft.XLoraModel`). It trains a tiny gating network on top of frozen LoRAs that decides per-token which adapter to attend to. Best per-skill quality preserved. Worth the extra complexity once you have 4+ branches.
 
-Even LoRA forgets. Research from 2024–2026 shows a strong inverse-linear relationship between skill SFT performance and degradation of pretraining knowledge — the better you get at the new skill, the worse you get at everything else, unless you actively fight back. Mitigations, in increasing complexity:
+**(4) LoRA Soups (CAT)** is the published SOTA for 2-skill composition. Beats DARE-TIES by 12–43 % on hard math-word benchmarks. Currently a research artifact; not in PEFT mainline. arXiv 2410.13025.
+
+### 11.2b When to pick which
+
+| Scenario | Pick |
+|:--|:--|
+| 2 fixed skills, want ONE model, never adding more | **DATA-MIX (0)** |
+| 2+ skills, want to swap them at inference, may add more later | **Replay-buffer SFT (1)** |
+| N skills, need single deployable, ≤3 skills | DARE-TIES (2) |
+| 4+ skills, per-token routing matters | X-LoRA (3) |
+| Exactly 2 skills, research workflow OK | LoRA Soups CAT (4) |
+
+### 11.3 Catastrophic forgetting — what the literature actually says
+
+Two findings to hold in mind simultaneously:
+
+1. **"LoRA Learns Less and Forgets Less"** (arXiv 2405.09673) — in *single-task* SFT, LoRA forgets less than full fine-tuning. In their code CPT benchmark: full FT scored 0.545 on source-domain tasks, LoRA (r=256) scored 0.617. ✅ Good news for our approach.
+2. **"LoRA does not automatically mitigate catastrophic forgetting in continual learning"** (arXiv 2603.09684 and others) — once you're doing *continual* SFT (task after task after task), LoRA's implicit constraint isn't enough. You need an explicit mitigation like a replay buffer. ⚠️ This is why `--replay-fraction 0.15` is a default, not an optional extra.
+
+Reconciliation: LoRA is safer than full FT per-task, but the gap compounds across tasks and you need active mitigation. Full mitigation stack, in increasing complexity:
 
 | Mitigation | Effort | Effectiveness | In our default recipe? |
 |:--|:--|:--|:--|
-| Lower LoRA rank (≤16) | trivial | ★★ | ✅ branch rank = 8 |
-| Fewer epochs (1.0) | trivial | ★★ | ✅ |
-| **Replay buffer (mix 15 % trunk data)** | trivial | **★★★★** | ✅ default `--replay-fraction 0.15` |
+| Rank chosen to match skill difficulty | trivial | ★★ | ✅ r=32 generic / r=64 code+math (paper-backed) |
+| α = 2r scaling | trivial | ★★ | ✅ fixed from an earlier α=r mistake |
 | Frozen base via merging trunk first | trivial | ★★★ | ✅ trunk is merged before branches |
-| OFT / BOFT instead of LoRA | small refactor | ★★★★ | ☐ future work — preserves hyperspherical energy |
+| **Replay buffer (mix 10–20 % trunk data)** | trivial | **★★★★★** | ✅ default `--replay-fraction 0.15` — **REQUIRED, not optional** |
+| Moderate epochs (2.0) | trivial | ★★ | ✅ (was 1.0 — bumped after re-reading the paper) |
+| OFT / BOFT instead of LoRA | small refactor | ★★★★ | ☐ preserves hyperspherical energy, arXiv 2311.06243 |
+| CURLoRA (CUR init instead of random) | moderate | ★★★★ | ☐ arXiv 2408.14572 |
 | MoE-LoRA / X-LoRA gating | moderate | ★★★★★ | ☐ documented in 11.2(3) |
-| EWC / LaLoRA regularization | research | ★★★★ | ☐ |
+| MoRAM (rank-1 associative memory) | research | ★★★★★ | ☐ SOTA 2026, arXiv 2506.21035 |
+| EWC / LaLoRA Laplace regularization | research | ★★★★ | ☐ |
 
-`scripts/skill_branch.py` stacks the four trivial mitigations by default. That's enough to eliminate roughly 80 % of the forgetting risk for free.
+**Important subspace-geometry finding** (arXiv 2603.02224 "Subspace Geometry Governs Catastrophic Forgetting"): forgetting is governed by the minimum principal angle between task gradient subspaces, and **at high subspace angles, forgetting becomes largely independent of the adapter rank**. Practical consequence: don't pick a tiny rank "for safety" — that just undertrains the skill without buying you any forgetting protection when the tasks are orthogonal. Pick rank to match skill difficulty; use replay buffer to fight forgetting. This is the main correction we made to an earlier draft of this recipe that defaulted to `r=8`.
+
+`scripts/skill_branch.py` stacks the trivial mitigations by default. Combined, they eliminate most of the forgetting risk for free — but **the replay buffer is doing the heavy lifting**, not the rank choice.
 
 ### 11.4 The recommended recipe (concrete commands)
 
@@ -535,13 +560,26 @@ Two genuinely different specialists, sharing a common reasoning brain, trained f
 
 ### 11.7 Research references (further reading)
 
-- **LoRA Soups: Merging LoRAs for Practical Skill Composition Tasks** (arXiv 2410.13025) — CAT method, 12–43 % over DARE-TIES on math-word
-- **X-LoRA: Mixture of Low-Rank Adapter Experts** (arXiv 2402.07148) — token/layer/sequence-level dynamic gating, PEFT-supported
-- **Mitigating Forgetting in Low Rank Adaptation** (OpenReview `f9M9LgE5kt`) — LoRA-specific forgetting analysis
-- **How to Alleviate Catastrophic Forgetting in LLMs Finetuning** (arXiv 2501.13669) — replay buffer percentage analysis
-- **Med-MoE-LoRA: A Multi-Task MoE-LoRA Framework for Domain-Specific LLMs** (arXiv 2601.07935) — Dual-Path Knowledge Architecture, −0.3 % drop vs huge drops for vanilla LoRA
-- **Orthogonal Finetuning via Butterfly Factorization (BOFT)** (arXiv 2311.06243) — preserves hyperspherical energy, alternative to LoRA for less forgetting
-- **SuRe: Surprise-Driven Prioritised Replay for Continual LLM Learning** (arXiv 2511.22367) — fast/slow LoRA dual-head + EMA, +5pp on LNT
+**Rank & alpha (cited for our defaults):**
+- **LoRA Learns Less and Forgets Less** (arXiv 2405.09673) — THE paper our rank defaults come from. Code FT needs `r=256`, math needs `r=64`, α=2r convention. Also shows LoRA forgets less than full FT.
+
+**Skill composition:**
+- **LoRA Soups: Merging LoRAs for Practical Skill Composition Tasks** (arXiv 2410.13025) — CAT method, 12–43 % over DARE-TIES; ALSO shows DATA-MIX is competitive (which is why it's now option (0) in §11.2).
+- **X-LoRA: Mixture of Low-Rank Adapter Experts** (arXiv 2402.07148) — token/layer/sequence-level dynamic gating, PEFT-supported.
+
+**Catastrophic forgetting:**
+- **Scaling Laws for Forgetting When Fine-Tuning LLMs** (arXiv 2401.05605) — quantifies the forgetting ↔ learning tradeoff.
+- **Subspace Geometry Governs Catastrophic Forgetting in LoRA** (arXiv 2603.02224) — forgetting is rank-invariant at high subspace angles; pick rank for task difficulty, not forgetting safety.
+- **On Catastrophic Forgetting in Low-Rank Decomposition-Based PEFT** (arXiv 2603.09684) — LoRA does NOT automatically mitigate forgetting in continual learning.
+- **How to Alleviate Catastrophic Forgetting in LLMs Finetuning** (arXiv 2501.13669) — replay buffer percentage analysis (our 10–20 % number).
+- **CURLoRA: Stable LLM Continual Fine-Tuning** (arXiv 2408.14572) — CUR decomposition instead of random init.
+- **Mitigating Forgetting in Low Rank Adaptation** (OpenReview `f9M9LgE5kt`) — LoRA-specific analysis.
+
+**Advanced (future work for this repo):**
+- **Orthogonal Finetuning via Butterfly Factorization (BOFT)** (arXiv 2311.06243) — preserves hyperspherical energy.
+- **Med-MoE-LoRA: Dual-Path Knowledge Architecture** (arXiv 2601.07935) — −0.3 % drop vs huge drops for vanilla LoRA.
+- **SuRe: Surprise-Driven Prioritised Replay** (arXiv 2511.22367) — fast/slow LoRA dual-head + EMA.
+- **MoRAM: Mixture of Rank-1 Associative Memory Experts** (arXiv 2506.21035) — 2026 SOTA for continual learning; rank-1 components with activation budget.
 
 ---
 
