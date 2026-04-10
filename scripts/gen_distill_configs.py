@@ -39,21 +39,46 @@ import yaml  # xray: ignore[SEC-015]
 
 
 def _sft_config(student: str, dataset_name: str, tag: str, cpu_safe: bool, early_stopping_patience: int = 0) -> dict:
+    """Build the SFT YAML for LlamaFactory.
+
+    The defaults below were rebalanced in 2026-04 to match the recipe used by
+    Jackrong's Qwen3.5-27B-Claude-4.6-Opus-Reasoning-Distilled-v2 release
+    (Unsloth + TRL SFTTrainer + train_on_responses_only). LlamaFactory has
+    direct equivalents for every knob:
+      - template "qwen3_5"  -> ReasoningTemplate w/ <think> awareness
+      - enable_thinking     -> keeps the <think>...</think> spans intact
+      - mask_history        -> our equivalent of train_on_responses_only:
+                                loss is computed only on assistant turns,
+                                not on the user prompt
+      - cutoff_len 8192     -> reasoning traces commonly run 2k-8k tokens;
+                                a 1024 cutoff would TRUNCATE every <think>
+      - lora_rank 32        -> reasoning style transfer needs more adapter
+                                capacity than vanilla SFT
+      - optim adamw_8bit    -> bnb 8-bit AdamW saves ~4x optimizer state
+                                memory, lets you fit larger batches
+    """
     cfg = {
         "model_name_or_path": student,
         "trust_remote_code": True,
         "stage": "sft",
         "do_train": True,
         "finetuning_type": "lora",
-        "lora_rank": 16,
+        # ── LoRA -- larger rank for reasoning style transfer ────────────
+        "lora_rank": 32,
+        "lora_alpha": 32,            # alpha == rank -> scaling 1.0 (Jackrong)
+        "lora_dropout": 0.0,
         "lora_target": "all",
+        # ── Dataset / template -- reasoning-aware ───────────────────────
         "dataset_dir": "data",
         "dataset": dataset_name,
-        "template": "qwen",
-        "cutoff_len": 1024,
+        "template": "qwen3_5",       # was "qwen"; ReasoningTemplate class
+        "enable_thinking": True,     # keep <think>...</think> spans
+        "mask_history": True,        # === train_on_responses_only
+        "cutoff_len": 8192,          # was 1024 -- room for full <think>
         "max_samples": 10000,
         "preprocessing_num_workers": 1,
         "dataloader_num_workers": 0,
+        # ── Output / logging ────────────────────────────────────────────
         "output_dir": f"saves/{tag}/lora/sft",
         "logging_steps": 5,
         "save_steps": 100,
@@ -61,12 +86,15 @@ def _sft_config(student: str, dataset_name: str, tag: str, cpu_safe: bool, early
         "overwrite_output_dir": False,
         "save_only_model": False,
         "report_to": "none",
+        # ── Optimizer -- 8-bit AdamW + small weight decay ───────────────
         "per_device_train_batch_size": 1,
-        "gradient_accumulation_steps": 4,
-        "learning_rate": 2.0e-5,
+        "gradient_accumulation_steps": 8,   # was 4 -- bigger eff. batch
+        "learning_rate": 5.0e-5,            # was 2e-5 -- bumped for reasoning
         "num_train_epochs": 2.0,
         "lr_scheduler_type": "cosine",
         "warmup_ratio": 0.05,
+        "optim": "adamw_8bit",              # NEW: bitsandbytes 8-bit AdamW
+        "weight_decay": 0.001,              # NEW: light reg, Jackrong's value
         "bf16": not cpu_safe,
         "fp16": False,
     }
@@ -81,6 +109,13 @@ def _sft_config(student: str, dataset_name: str, tag: str, cpu_safe: bool, early
 
 
 def _dpo_config(student: str, dataset_name: str, tag: str, cpu_safe: bool, early_stopping_patience: int = 0) -> dict:
+    """Build the DPO YAML for LlamaFactory.
+
+    Mirrors _sft_config -- same template / cutoff / mask_history / optim --
+    so SFT and DPO speak the same dialect (otherwise the DPO stage would
+    truncate <think> blocks the SFT stage learned to emit). Lower LR than
+    SFT because DPO is the second-pass refinement, not the bulk learning.
+    """
     cfg = {
         "model_name_or_path": student,
         "adapter_name_or_path": f"saves/{tag}/lora/sft",
@@ -88,14 +123,18 @@ def _dpo_config(student: str, dataset_name: str, tag: str, cpu_safe: bool, early
         "stage": "dpo",
         "do_train": True,
         "finetuning_type": "lora",
-        "lora_rank": 16,
+        "lora_rank": 32,
+        "lora_alpha": 32,
+        "lora_dropout": 0.0,
         "lora_target": "all",
         "pref_beta": 0.1,
         "pref_loss": "sigmoid",
         "dataset_dir": "data",
         "dataset": dataset_name,
-        "template": "qwen",
-        "cutoff_len": 1024,
+        "template": "qwen3_5",
+        "enable_thinking": True,
+        "mask_history": True,
+        "cutoff_len": 8192,
         "max_samples": 10000,
         "preprocessing_num_workers": 1,
         "dataloader_num_workers": 0,
@@ -107,11 +146,13 @@ def _dpo_config(student: str, dataset_name: str, tag: str, cpu_safe: bool, early
         "save_only_model": False,
         "report_to": "none",
         "per_device_train_batch_size": 1,
-        "gradient_accumulation_steps": 4,
+        "gradient_accumulation_steps": 8,
         "learning_rate": 1.0e-5,
         "num_train_epochs": 1.0,
         "lr_scheduler_type": "cosine",
         "warmup_ratio": 0.0,
+        "optim": "adamw_8bit",
+        "weight_decay": 0.001,
         "bf16": not cpu_safe,
         "fp16": False,
     }
@@ -141,7 +182,7 @@ def _merge_config(student: str, tag: str, has_dpo: bool = False) -> dict:
     return {
         "model_name_or_path": student,
         "adapter_name_or_path": adapter_path,
-        "template": "qwen",
+        "template": "qwen3_5",          # match SFT/DPO template
         "trust_remote_code": True,
         "export_dir": f"saves/{tag}/merged",
         "export_size": 5,

@@ -1041,6 +1041,16 @@ class PipelineReq(BaseModel):
     # student -- uses student_model / saves_tag / skills / languages from the
     # flat fields above).
     students_batch: list[dict] = []
+    # ── Speed-Run mode: skip teacher generation entirely ──────────────────
+    # When upstream_dataset is set we treat a pre-distilled HF reasoning
+    # dataset (e.g. Roman1111111/claude-opus-4.6-10000x) as a pre-purified
+    # GOLD set. Stages 1-3 (generate / halluc / purify) are short-circuited:
+    # we just download the dataset, write consensus_sft.jsonl in seconds, and
+    # jump straight to config generation + SFT. Goes from "I have nothing"
+    # to "I'm training" in <60s for the small datasets. Set
+    # upstream_max_rows to cap the import size for fast experiments.
+    upstream_dataset: str = ""           # e.g. "Roman1111111/claude-opus-4.6-10000x"
+    upstream_max_rows: int = 0           # 0 = unlimited
 
 
 # Prompt-ID prefix → skill mapping
@@ -1150,16 +1160,100 @@ async def pipeline_start(req: PipelineReq):
         # Fresh run -- clear any cancel flag left over from a previous run
         _reset_cancel_flag()
 
-        if not req.teachers:
-            yield _sse({"type": "error", "msg": "No teachers listed."})
-            return
-        if not req.prompts_path or not Path(req.prompts_path).is_file():
-            yield _sse({"type": "error", "msg": f"Prompts file not found: {req.prompts_path}"})
-            return
+        # ── Speed-Run mode: import a pre-distilled HF dataset and skip
+        # stages 1-3 entirely. Validation rules are different here -- no
+        # teachers or prompts file required, just the upstream id.
+        speed_run = bool(req.upstream_dataset.strip())
+        if not speed_run:
+            if not req.teachers:
+                yield _sse({"type": "error", "msg": "No teachers listed."})
+                return
+            if not req.prompts_path or not Path(req.prompts_path).is_file():
+                yield _sse({"type": "error", "msg": f"Prompts file not found: {req.prompts_path}"})
+                return
+
+        # ── Speed-Run mode (upstream HF dataset) ────────────────────────────
+        # Short-circuit stages 1-3 by running scripts/import_reasoning_dataset.py
+        # to download an already-distilled reasoning dataset (e.g. one of the
+        # Claude 4.6 Opus public traces) and write it directly into
+        # consensus_sft.jsonl. This goes from "click Start" to "training" in
+        # ~30-60 seconds for small datasets, vs 30-300 minutes for the slow
+        # path. The rest of the pipeline (configs -> SFT -> DPO -> merge ->
+        # GGUF -> eval) runs unchanged.
+        if speed_run:
+            yield _ev("generate", "running",
+                      f"Speed-Run: importing {req.upstream_dataset} ...")
+            cmd_imp = [
+                PYTHON, str(SCRIPTS_DIR / "import_reasoning_dataset.py"),
+                "--dataset", req.upstream_dataset,
+                "--output-dir", req.output_dir,
+                "--tier", "GOLD",
+            ]
+            if req.upstream_max_rows and req.upstream_max_rows > 0:
+                cmd_imp.extend(["--max-rows", str(int(req.upstream_max_rows))])
+            proc_imp = _popen(cmd_imp)
+            loop = asyncio.get_event_loop()
+            assert proc_imp.stdout is not None
+            while proc_imp.poll() is None:
+                line = await loop.run_in_executor(None, proc_imp.stdout.readline)
+                if line:
+                    yield _sse({"type": "log", "stage": "generate", "text": line.rstrip()})
+            rc_imp = proc_imp.wait()
+            if rc_imp != 0:
+                yield _ev("generate", "fail",
+                          f"Speed-Run import failed (exit {rc_imp}).")
+                yield _sse({"type": "error",
+                            "msg": "Upstream dataset import failed -- see logs."})
+                return
+
+            # Read back the synthetic purification report so the rest of the
+            # pipeline has the gold/silver/drop counts it expects.
+            purify_rpt = out / "purification_report.json"
+            try:
+                with open(purify_rpt, encoding="utf-8") as f:
+                    upstream_rpt = json.load(f)
+                gold_n = int(upstream_rpt.get("gold_count", 0))
+                silver_n = int(upstream_rpt.get("silver_count", 0))
+                drop_n = int(upstream_rpt.get("dropped_count", 0))
+            except (OSError, json.JSONDecodeError, ValueError) as exc:
+                yield _ev("generate", "fail",
+                          f"Could not read purification_report.json: {exc}")
+                return
+
+            yield _ev("generate", "done",
+                      f"Imported {gold_n} GOLD samples from {req.upstream_dataset}",
+                      gold=gold_n, silver=silver_n, drop=drop_n)
+            yield _ev("halluc", "skip", "Speed-Run: upstream dataset is pre-filtered.")
+            yield _ev("purify", "skip",
+                      f"Speed-Run: GOLD {gold_n} (no SILVER/DROP)",
+                      gold=gold_n, silver=silver_n, drop=drop_n)
+
+            # Persist a curriculum sidecar even in speed-run mode so dashboards
+            # can report what trained on what.
+            if req.skills:
+                (saves_dir / "curriculum.json").write_text(
+                    json.dumps({
+                        "skills": req.skills,
+                        "languages": req.languages,
+                        "code_langs": req.code_langs,
+                        "upstream_dataset": req.upstream_dataset,
+                        "upstream_gold_count": gold_n,
+                    }, indent=2),
+                    encoding="utf-8",
+                )
+
+            # Set the same loop variables the slow-path stages would have set
+            # so the rest of the function (do_train guard, GOLD=0 guard, the
+            # per-student training loop) sees a consistent shape.
+            n_prompts = gold_n
+            n_teachers = 1
+            actual_prompts = ""
+            out_jsonl = str(out / "teacher_responses.jsonl")  # placeholder
 
         # ── Curriculum filter: keep only prompts matching enrolled skills ──
-        actual_prompts = req.prompts_path
-        if req.skills:
+        if not speed_run:
+            actual_prompts = req.prompts_path
+        if req.skills and not speed_run:
             filtered_path = str(out / "curriculum_prompts.jsonl")
             orig_n, kept_n = _filter_prompts_by_curriculum(
                 req.prompts_path, filtered_path, req.skills, req.languages,
@@ -1175,266 +1269,271 @@ async def pipeline_start(req: PipelineReq):
                         "text": f"Curriculum: {kept_n}/{orig_n} prompts match skills "
                                 f"{req.skills}" + (f" langs {req.languages}" if req.languages else "")})
 
-        # ── Stage 1: Generate ──────────────────────────────────────────────
-        n_prompts = _safe_prompt_count(actual_prompts)
-        n_teachers = len(req.teachers)
+        # ── Stages 1-3 (slow path) ─────────────────────────────────────────
+        # Only the traditional teacher-generation flow runs these. Speed-Run
+        # already wrote consensus_sft.jsonl + purification_report.json above
+        # and set gold_n / silver_n / drop_n / n_prompts / n_teachers.
+        if not speed_run:
+            # ── Stage 1: Generate ──────────────────────────────────────────
+            n_prompts = _safe_prompt_count(actual_prompts)
+            n_teachers = len(req.teachers)
 
-        # Persist curriculum so downstream stages and dashboards know what was trained
-        if req.skills:
-            curriculum = {
-                "skills": req.skills,
-                "languages": req.languages,
-                "code_langs": req.code_langs,
-                "filtered_prompts": _safe_prompt_count(actual_prompts),
-                "original_prompts": _safe_prompt_count(req.prompts_path),
-            }
-            (saves_dir / "curriculum.json").write_text(
-                json.dumps(curriculum, indent=2), encoding="utf-8",
-            )
-
-        def _responses_ok() -> bool:
-            if not Path(out_jsonl).is_file():
-                return False
-            try:
-                n_rows = sum(1 for l in open(out_jsonl, encoding="utf-8") if l.strip())
-                return n_rows >= n_teachers * n_prompts * 0.5
-            except OSError:
-                return False
-
-        def _responses_have_content() -> bool:
-            """Check that teacher responses actually contain non-empty answers."""
-            if not Path(out_jsonl).is_file():
-                return False
-            try:
-                non_empty = 0
-                total = 0
-                for raw in open(out_jsonl, encoding="utf-8"):
-                    raw = raw.strip()
-                    if not raw:
-                        continue
-                    row = json.loads(raw)
-                    for tname, tdata in row.get("teachers", {}).items():
-                        total += 1
-                        ans = tdata.get("answer", "").strip()
-                        if ans:
-                            non_empty += 1
-                return total > 0 and (non_empty / total) > 0.05
-            except (OSError, json.JSONDecodeError, KeyError):
-                return False
-
-        if _responses_ok():
-            yield _ev("generate", "skip", "teacher_responses.jsonl exists -- skipping.")
-        else:
-            yield _ev("generate", "running", "Building teacher manifest...")
-            # Write manifest with hardware-aware acceleration settings
-            manifest_path = out / "teacher_manifest.json"
-            teachers_data = [{"name": Path(t).stem, "gguf": t} for t in req.teachers]
-            n_teachers = max(len(teachers_data), 1)
-            # Auto-detect optimal inference config via zen_core_libs
-            try:
-                from zen_core_libs.common.device import auto_configure_inference
-                hw_config = auto_configure_inference(num_concurrent_models=n_teachers)
-                llama_cpp_accel: dict[str, Any] = {
-                    k: v for k, v in hw_config.items() if not k.startswith("_")
+            # Persist curriculum so downstream stages and dashboards know what was trained
+            if req.skills:
+                curriculum = {
+                    "skills": req.skills,
+                    "languages": req.languages,
+                    "code_langs": req.code_langs,
+                    "filtered_prompts": _safe_prompt_count(actual_prompts),
+                    "original_prompts": _safe_prompt_count(req.prompts_path),
                 }
-                gpu_info = hw_config.get("_note", "auto-detected")
-            except ImportError:
-                cpu_count = os.cpu_count() or 8
-                threads_per_model = max(2, (cpu_count - 2) // n_teachers)
-                llama_cpp_accel = {
-                    "n_threads": threads_per_model,
-                    "n_batch": 512,
-                    "n_ubatch": 512,
+                (saves_dir / "curriculum.json").write_text(
+                    json.dumps(curriculum, indent=2), encoding="utf-8",
+                )
+
+            def _responses_ok() -> bool:
+                if not Path(out_jsonl).is_file():
+                    return False
+                try:
+                    n_rows = sum(1 for l in open(out_jsonl, encoding="utf-8") if l.strip())
+                    return n_rows >= n_teachers * n_prompts * 0.5
+                except OSError:
+                    return False
+
+            def _responses_have_content() -> bool:
+                """Check that teacher responses actually contain non-empty answers."""
+                if not Path(out_jsonl).is_file():
+                    return False
+                try:
+                    non_empty = 0
+                    total = 0
+                    for raw in open(out_jsonl, encoding="utf-8"):
+                        raw = raw.strip()
+                        if not raw:
+                            continue
+                        row = json.loads(raw)
+                        for tname, tdata in row.get("teachers", {}).items():
+                            total += 1
+                            ans = tdata.get("answer", "").strip()
+                            if ans:
+                                non_empty += 1
+                    return total > 0 and (non_empty / total) > 0.05
+                except (OSError, json.JSONDecodeError, KeyError):
+                    return False
+
+            if _responses_ok():
+                yield _ev("generate", "skip", "teacher_responses.jsonl exists -- skipping.")
+            else:
+                yield _ev("generate", "running", "Building teacher manifest...")
+                # Write manifest with hardware-aware acceleration settings
+                manifest_path = out / "teacher_manifest.json"
+                teachers_data = [{"name": Path(t).stem, "gguf": t} for t in req.teachers]
+                n_teachers = max(len(teachers_data), 1)
+                # Auto-detect optimal inference config via zen_core_libs
+                try:
+                    from zen_core_libs.common.device import auto_configure_inference
+                    hw_config = auto_configure_inference(num_concurrent_models=n_teachers)
+                    llama_cpp_accel: dict[str, Any] = {
+                        k: v for k, v in hw_config.items() if not k.startswith("_")
+                    }
+                    gpu_info = hw_config.get("_note", "auto-detected")
+                except ImportError:
+                    cpu_count = os.cpu_count() or 8
+                    threads_per_model = max(2, (cpu_count - 2) // n_teachers)
+                    llama_cpp_accel = {
+                        "n_threads": threads_per_model,
+                        "n_batch": 512,
+                        "n_ubatch": 512,
+                    }
+                    gpu_info = f"CPU-only ({cpu_count} cores, {threads_per_model} threads/model)"
+                manifest_data = {
+                    "backend": req.backend,
+                    "teachers": teachers_data,
+                    "max_models": n_teachers,
+                    "n_ctx": 4096,
+                    "llama_cpp": llama_cpp_accel,
                 }
-                gpu_info = f"CPU-only ({cpu_count} cores, {threads_per_model} threads/model)"
-            manifest_data = {
-                "backend": req.backend,
-                "teachers": teachers_data,
-                "max_models": n_teachers,
-                "n_ctx": 4096,
-                "llama_cpp": llama_cpp_accel,
-            }
-            manifest_path.write_text(
-                json.dumps(manifest_data, indent=2),
-                encoding="utf-8",
-            )
-            yield _ev("generate", "running", f"Manifest: {n_teachers} teachers, {gpu_info}")
+                manifest_path.write_text(
+                    json.dumps(manifest_data, indent=2),
+                    encoding="utf-8",
+                )
+                yield _ev("generate", "running", f"Manifest: {n_teachers} teachers, {gpu_info}")
 
-            cmd_gen = [
-                PYTHON, str(SCRIPTS_DIR / "multi_teacher_generate.py"),
-                "--manifest", str(manifest_path),
-                "--prompts", actual_prompts,
-                "--out", out_jsonl,
-                "--max-tokens", str(int(req.max_tokens)),
-                "--temperature", str(req.temperature),
-                "--dispatch-mode", "teacher-fifo",
-                "--fifo-size", "0",
-                "--adaptive-budgets",
-            ]
-            if req.profile_path and Path(req.profile_path).is_file():
-                cmd_gen.extend(["--profile", req.profile_path])
+                cmd_gen = [
+                    PYTHON, str(SCRIPTS_DIR / "multi_teacher_generate.py"),
+                    "--manifest", str(manifest_path),
+                    "--prompts", actual_prompts,
+                    "--out", out_jsonl,
+                    "--max-tokens", str(int(req.max_tokens)),
+                    "--temperature", str(req.temperature),
+                    "--dispatch-mode", "teacher-fifo",
+                    "--fifo-size", "0",
+                    "--adaptive-budgets",
+                ]
+                if req.profile_path and Path(req.profile_path).is_file():
+                    cmd_gen.extend(["--profile", req.profile_path])
 
-            yield _ev("generate", "running", "Expert teachers generating responses...")
-            proc = _popen(cmd_gen)
-            last_eta_check = 0.0
-            gen_start_time = time.time()
-            prev_done = 0
-            # Suppress known-harmless llama_cpp cleanup noise (AttributeError in __del__)
-            _noise = (
-                "object has no attribute 'sampler'",
-                "Exception ignored in:",
-                "in __del__",
-                "self.close()",
-                "if self.sampler is not None",
-                "^^^^^^^^^^",
-            )
-            loop = asyncio.get_event_loop()
-            assert proc.stdout is not None
-            while proc.poll() is None:
-                line = await loop.run_in_executor(None, proc.stdout.readline)
-                if line:
-                    stripped = line.rstrip()
-                    if not any(n in stripped for n in _noise):
-                        yield _sse({"type": "log", "stage": "generate", "text": stripped})
-                now = time.time()
-                if now - last_eta_check > 5:
-                    last_eta_check = now
-                    # Quick ETA from checkpoint progress
-                    ckpt_dir = out / "checkpoints"
-                    done_total = 0
-                    elapsed_samples: list[float] = []
-                    if ckpt_dir.is_dir():
-                        for tp in req.teachers:
-                            ckpt = ckpt_dir / f"{_sanitize(Path(tp).stem)}.jsonl"
-                            if ckpt.is_file():
-                                try:
-                                    for ckline in open(ckpt, encoding="utf-8"):
-                                        ckline = ckline.strip()
-                                        if not ckline:
-                                            continue
-                                        done_total += 1
-                                        try:
-                                            rec = json.loads(ckline)
-                                            es = rec.get("response", {}).get("elapsed_s")
-                                            if isinstance(es, (int, float)) and es > 0:
-                                                elapsed_samples.append(float(es))
-                                        except (json.JSONDecodeError, KeyError, ValueError):
-                                            pass
-                                except OSError:
-                                    pass
-                    tgt = n_teachers * n_prompts
-                    pct = round(100.0 * done_total / tgt, 1) if tgt else 0
-                    wall_elapsed = now - gen_start_time
-                    # ETA from per-response elapsed times (trimmed mean)
-                    eta_s: float | None = None
-                    rate_str = ""
-                    if elapsed_samples and tgt > done_total:
-                        trimmed = sorted(elapsed_samples)[:max(1, int(len(elapsed_samples) * 0.9))]
-                        avg_s = sum(trimmed) / len(trimmed)
-                        eta_s = round((tgt - done_total) * avg_s)
-                    # Fallback: wall-clock rate
-                    if eta_s is None and done_total > 0 and tgt > done_total:
-                        wall_per = wall_elapsed / done_total
-                        eta_s = round((tgt - done_total) * wall_per)
-                    if done_total > 0 and wall_elapsed > 0:
-                        rps = done_total / wall_elapsed
-                        if rps >= 1:
-                            rate_str = f"{rps:.1f} resp/s"
-                        else:
-                            rate_str = f"{1/rps:.1f} s/resp"
-                    # Format elapsed
-                    def _fmt_hms(secs: float) -> str:
-                        h = int(secs) // 3600
-                        m = (int(secs) % 3600) // 60
-                        s = int(secs) % 60
-                        return f"{h}h {m:02d}m {s:02d}s" if h else f"{m}m {s:02d}s"
-                    elapsed_str = _fmt_hms(wall_elapsed)
-                    eta_str = _fmt_hms(eta_s) if eta_s else ""
-                    msg = f"Progress: {done_total}/{tgt} responses ({pct}%)"
-                    yield _ev("generate", "running", msg, pct=pct,
-                              done=done_total, total=tgt,
-                              elapsed=elapsed_str, eta=eta_str,
-                              rate=rate_str)
-            rc = proc.wait()
-            if rc != 0:
-                yield _ev("generate", "fail", f"Generation failed (exit {rc}).")
-                yield _sse({"type": "error", "msg": "Generation failed."})
-                return
-            yield _ev("generate", "done", f"Generation complete -- {n_teachers * n_prompts} responses.")
-
-        # Post-generation validation: check answers aren't empty
-        if not _responses_have_content():
-            yield _ev("generate", "fail",
-                      "Teachers produced EMPTY answers! Check that teacher GGUF models are valid "
-                      "and the inference backend is working. All responses have blank \"answer\" fields.")
-            yield _sse({"type": "error", "msg":
-                        "Generation failed: all teacher answers are empty. "
-                        "The teachers ran but produced no text. Verify your GGUF models work."})
-            return
-
-        # ── Stage 2: Hallucination gates ────────────────────────────────────
-        halluc_rpt = out / "hallucination_report.json"
-        if not req.enable_halluc:
-            yield _ev("halluc", "skip", "Disabled.")
-        elif halluc_rpt.is_file():
-            yield _ev("halluc", "skip", "Report already exists -- skipping.")
-        else:
-            yield _ev("halluc", "running", "Running 5-gate hallucination pipeline...")
-            try:
+                yield _ev("generate", "running", "Expert teachers generating responses...")
+                proc = _popen(cmd_gen)
+                last_eta_check = 0.0
+                gen_start_time = time.time()
+                prev_done = 0
+                # Suppress known-harmless llama_cpp cleanup noise (AttributeError in __del__)
+                _noise = (
+                    "object has no attribute 'sampler'",
+                    "Exception ignored in:",
+                    "in __del__",
+                    "self.close()",
+                    "if self.sampler is not None",
+                    "^^^^^^^^^^",
+                )
                 loop = asyncio.get_event_loop()
-                await loop.run_in_executor(None, lambda: _run_halluc_gates_sync(
-                    out_jsonl, req.zena_gguf, req.output_dir
-                ))
-                yield _ev("halluc", "done", "Gates complete.")
-            except Exception as exc:
-                yield _ev("halluc", "fail", f"Gates error: {exc}")
+                assert proc.stdout is not None
+                while proc.poll() is None:
+                    line = await loop.run_in_executor(None, proc.stdout.readline)
+                    if line:
+                        stripped = line.rstrip()
+                        if not any(n in stripped for n in _noise):
+                            yield _sse({"type": "log", "stage": "generate", "text": stripped})
+                    now = time.time()
+                    if now - last_eta_check > 5:
+                        last_eta_check = now
+                        # Quick ETA from checkpoint progress
+                        ckpt_dir = out / "checkpoints"
+                        done_total = 0
+                        elapsed_samples: list[float] = []
+                        if ckpt_dir.is_dir():
+                            for tp in req.teachers:
+                                ckpt = ckpt_dir / f"{_sanitize(Path(tp).stem)}.jsonl"
+                                if ckpt.is_file():
+                                    try:
+                                        for ckline in open(ckpt, encoding="utf-8"):
+                                            ckline = ckline.strip()
+                                            if not ckline:
+                                                continue
+                                            done_total += 1
+                                            try:
+                                                rec = json.loads(ckline)
+                                                es = rec.get("response", {}).get("elapsed_s")
+                                                if isinstance(es, (int, float)) and es > 0:
+                                                    elapsed_samples.append(float(es))
+                                            except (json.JSONDecodeError, KeyError, ValueError):
+                                                pass
+                                    except OSError:
+                                        pass
+                        tgt = n_teachers * n_prompts
+                        pct = round(100.0 * done_total / tgt, 1) if tgt else 0
+                        wall_elapsed = now - gen_start_time
+                        # ETA from per-response elapsed times (trimmed mean)
+                        eta_s: float | None = None
+                        rate_str = ""
+                        if elapsed_samples and tgt > done_total:
+                            trimmed = sorted(elapsed_samples)[:max(1, int(len(elapsed_samples) * 0.9))]
+                            avg_s = sum(trimmed) / len(trimmed)
+                            eta_s = round((tgt - done_total) * avg_s)
+                        # Fallback: wall-clock rate
+                        if eta_s is None and done_total > 0 and tgt > done_total:
+                            wall_per = wall_elapsed / done_total
+                            eta_s = round((tgt - done_total) * wall_per)
+                        if done_total > 0 and wall_elapsed > 0:
+                            rps = done_total / wall_elapsed
+                            if rps >= 1:
+                                rate_str = f"{rps:.1f} resp/s"
+                            else:
+                                rate_str = f"{1/rps:.1f} s/resp"
+                        # Format elapsed
+                        def _fmt_hms(secs: float) -> str:
+                            h = int(secs) // 3600
+                            m = (int(secs) % 3600) // 60
+                            s = int(secs) % 60
+                            return f"{h}h {m:02d}m {s:02d}s" if h else f"{m}m {s:02d}s"
+                        elapsed_str = _fmt_hms(wall_elapsed)
+                        eta_str = _fmt_hms(eta_s) if eta_s else ""
+                        msg = f"Progress: {done_total}/{tgt} responses ({pct}%)"
+                        yield _ev("generate", "running", msg, pct=pct,
+                                  done=done_total, total=tgt,
+                                  elapsed=elapsed_str, eta=eta_str,
+                                  rate=rate_str)
+                rc = proc.wait()
+                if rc != 0:
+                    yield _ev("generate", "fail", f"Generation failed (exit {rc}).")
+                    yield _sse({"type": "error", "msg": "Generation failed."})
+                    return
+                yield _ev("generate", "done", f"Generation complete -- {n_teachers * n_prompts} responses.")
 
-        # ── Stage 3: Purify ─────────────────────────────────────────────────
-        purify_rpt = out / "purification_report.json"
-        gold_n = silver_n = drop_n = 0
-        if purify_rpt.is_file():
-            try:
-                with open(purify_rpt, encoding="utf-8") as f:
-                    rpt = json.load(f)
-            except (json.JSONDecodeError, OSError) as exc:
-                yield _ev("purify", "fail", f"Corrupt purification report: {exc}")
+            # Post-generation validation: check answers aren't empty
+            if not _responses_have_content():
+                yield _ev("generate", "fail",
+                          "Teachers produced EMPTY answers! Check that teacher GGUF models are valid "
+                          "and the inference backend is working. All responses have blank \"answer\" fields.")
+                yield _sse({"type": "error", "msg":
+                            "Generation failed: all teacher answers are empty. "
+                            "The teachers ran but produced no text. Verify your GGUF models work."})
                 return
-            gold_n = rpt.get("gold_count", 0)
-            silver_n = rpt.get("silver_count", 0)
-            drop_n = rpt.get("dropped_count", 0)
-            yield _ev("purify", "skip", f"Already purified -- GOLD {gold_n} / SILVER {silver_n} / DROP {drop_n}",
-                      gold=gold_n, silver=silver_n, drop=drop_n)
-        else:
-            yield _ev("purify", "running", "Purifying teacher responses...")
-            cmd_p = [
-                PYTHON, str(SCRIPTS_DIR / "purify_teacher_outputs.py"),
-                "--input", out_jsonl,
-                "--out-dir", req.output_dir,
-                "--answer-threshold", str(req.answer_th),
-                "--reason-threshold", str(req.reason_th),
-            ]
-            proc_p = _popen(cmd_p)
-            loop = asyncio.get_event_loop()
-            assert proc_p.stdout is not None
-            while proc_p.poll() is None:
-                line = await loop.run_in_executor(None, proc_p.stdout.readline)
-                if line:
-                    yield _sse({"type": "log", "stage": "purify", "text": line.rstrip()})
-            rc = proc_p.wait()
-            if rc != 0:
-                yield _ev("purify", "fail", "Purification failed.")
-                return
+
+            # ── Stage 2: Hallucination gates ────────────────────────────────────
+            halluc_rpt = out / "hallucination_report.json"
+            if not req.enable_halluc:
+                yield _ev("halluc", "skip", "Disabled.")
+            elif halluc_rpt.is_file():
+                yield _ev("halluc", "skip", "Report already exists -- skipping.")
+            else:
+                yield _ev("halluc", "running", "Running 5-gate hallucination pipeline...")
+                try:
+                    loop = asyncio.get_event_loop()
+                    await loop.run_in_executor(None, lambda: _run_halluc_gates_sync(
+                        out_jsonl, req.zena_gguf, req.output_dir
+                    ))
+                    yield _ev("halluc", "done", "Gates complete.")
+                except Exception as exc:
+                    yield _ev("halluc", "fail", f"Gates error: {exc}")
+
+            # ── Stage 3: Purify ─────────────────────────────────────────────────
+            purify_rpt = out / "purification_report.json"
+            gold_n = silver_n = drop_n = 0
             if purify_rpt.is_file():
                 try:
                     with open(purify_rpt, encoding="utf-8") as f:
                         rpt = json.load(f)
-                except (json.JSONDecodeError, OSError):
-                    rpt = {}
+                except (json.JSONDecodeError, OSError) as exc:
+                    yield _ev("purify", "fail", f"Corrupt purification report: {exc}")
+                    return
                 gold_n = rpt.get("gold_count", 0)
                 silver_n = rpt.get("silver_count", 0)
                 drop_n = rpt.get("dropped_count", 0)
-            yield _ev("purify", "done", f"GOLD {gold_n}  SILVER {silver_n}  DROP {drop_n}",
-                      gold=gold_n, silver=silver_n, drop=drop_n)
+                yield _ev("purify", "skip", f"Already purified -- GOLD {gold_n} / SILVER {silver_n} / DROP {drop_n}",
+                          gold=gold_n, silver=silver_n, drop=drop_n)
+            else:
+                yield _ev("purify", "running", "Purifying teacher responses...")
+                cmd_p = [
+                    PYTHON, str(SCRIPTS_DIR / "purify_teacher_outputs.py"),
+                    "--input", out_jsonl,
+                    "--out-dir", req.output_dir,
+                    "--answer-threshold", str(req.answer_th),
+                    "--reason-threshold", str(req.reason_th),
+                ]
+                proc_p = _popen(cmd_p)
+                loop = asyncio.get_event_loop()
+                assert proc_p.stdout is not None
+                while proc_p.poll() is None:
+                    line = await loop.run_in_executor(None, proc_p.stdout.readline)
+                    if line:
+                        yield _sse({"type": "log", "stage": "purify", "text": line.rstrip()})
+                rc = proc_p.wait()
+                if rc != 0:
+                    yield _ev("purify", "fail", "Purification failed.")
+                    return
+                if purify_rpt.is_file():
+                    try:
+                        with open(purify_rpt, encoding="utf-8") as f:
+                            rpt = json.load(f)
+                    except (json.JSONDecodeError, OSError):
+                        rpt = {}
+                    gold_n = rpt.get("gold_count", 0)
+                    silver_n = rpt.get("silver_count", 0)
+                    drop_n = rpt.get("dropped_count", 0)
+                yield _ev("purify", "done", f"GOLD {gold_n}  SILVER {silver_n}  DROP {drop_n}",
+                          gold=gold_n, silver=silver_n, drop=drop_n)
 
         if not req.do_train:
             yield _ev("configs", "skip", "Training skipped.")

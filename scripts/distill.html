@@ -794,6 +794,42 @@ html[dir="rtl"] #topbar,html[dir="rtl"] #main{direction:rtl}
               </div>
             </div>
 
+            <!-- Row 1.5 — Speed-Run mode (import pre-distilled HF dataset, skip stages 1-3) -->
+            <div class="studio-card" id="studio-speedrun-card" style="border-left:3px solid #8b5cf6">
+              <div class="studio-card-title">
+                <span data-i18n="studio.speedrun.title">Speed-Run</span>
+                <span class="studio-hint" data-i18n="studio.speedrun.hint">&mdash; skip teacher generation, boot training from a pre-distilled HF dataset in &lt;60s</span>
+              </div>
+              <label class="check-lbl" title="Import a pre-distilled reasoning dataset (Claude 4.6 Opus traces, etc.) straight into consensus_sft.jsonl as GOLD. Skips stages 1-3 entirely (generate / halluc / purify). No teachers or prompts file required." data-i18n-title="studio.speedrun.toggle.tooltip">
+                <input type="checkbox" id="studio-speedrun" onchange="updateSpeedRunUI()">
+                <span data-i18n-html="studio.speedrun.toggle"><b>Enable Speed-Run</b> &mdash; replace stages 1-3 with a HuggingFace dataset download</span>
+              </label>
+              <div id="studio-speedrun-body" style="display:none; margin-top:10px">
+                <div class="field">
+                  <label title="Which pre-distilled HuggingFace dataset to import as the GOLD set. Each has a different size / focus -- pick one that matches your student size + domain." data-i18n="studio.speedrun.dataset" data-i18n-title="studio.speedrun.dataset.tooltip">Upstream dataset</label>
+                  <select id="studio-upstream-dataset">
+                    <option value="Roman1111111/claude-opus-4.6-10000x">Roman1111111/claude-opus-4.6-10000x &mdash; 9.6k traces (LARGEST)</option>
+                    <option value="nohurry/Opus-4.6-Reasoning-3000x-filtered">nohurry/Opus-4.6-Reasoning-3000x-filtered &mdash; 2.3k filtered</option>
+                    <option value="TeichAI/claude-4.5-opus-high-reasoning-250x">TeichAI/claude-4.5-opus-high-reasoning-250x &mdash; 250 high-quality</option>
+                    <option value="Jackrong/Qwen3.5-reasoning-700x">Jackrong/Qwen3.5-reasoning-700x &mdash; 700 Qwen-rephrased</option>
+                  </select>
+                </div>
+                <div class="field-row">
+                  <div class="field">
+                    <label title="Hard cap on how many rows to import from the upstream dataset. 0 = unlimited (use the whole dataset)." data-i18n="studio.speedrun.maxrows" data-i18n-title="studio.speedrun.maxrows.tooltip">Max rows (0 = all)</label>
+                    <input type="number" id="studio-upstream-max-rows" value="0" min="0" max="100000"
+                           title="Max rows to import (0 = all). Useful for quick smoke tests before a full run.">
+                  </div>
+                  <div class="field" style="flex:2">
+                    <div style="padding:8px 10px; background:#0a1119; border:1px solid #1e2d3d; border-radius:6px; font-size:11px; color:#8aa0b8; line-height:1.4" data-i18n-html="studio.speedrun.explanation">
+                      <b style="color:#a78bfa">What happens:</b> the pipeline downloads the chosen dataset, converts it to <code>consensus_sft.jsonl</code> as pre-purified GOLD, then jumps straight to SFT training.
+                      <br><b style="color:#a78bfa">No teachers or prompts file required.</b> Training starts in &lt;60 seconds for the small datasets.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <!-- Row 2 — three columns: Dataset / Parameters / Training -->
             <div class="studio-cols">
               <!-- Dataset -->
@@ -2411,6 +2447,40 @@ function _studioStageStrip(stage, status) {
   else if (status === "done") cell.classList.add("done");
   else if (status === "fail") cell.classList.add("fail");
 }
+// Speed-Run toggle: hide/disable the Dataset card's prompts field + relax
+// teacher enrollment warnings when the user wants to boot training from a
+// pre-distilled HF dataset instead of the slow generate path.
+function updateSpeedRunUI() {
+  const on    = !!document.getElementById("studio-speedrun")?.checked;
+  const body  = document.getElementById("studio-speedrun-body");
+  const prom  = document.getElementById("studio-prompts");
+  const halluc= document.getElementById("studio-halluc");
+  const warn  = document.getElementById("sr-warn");
+  if (body) body.style.display = on ? "" : "none";
+  // Visually indicate the Prompts field is not used in Speed-Run mode.
+  if (prom) {
+    prom.disabled    = on;
+    prom.style.opacity = on ? "0.45" : "";
+    prom.title = on
+      ? "Not used in Speed-Run mode -- the upstream HF dataset replaces prompts + teacher responses."
+      : prom.getAttribute("data-i18n-title") || prom.title || "";
+  }
+  // Hallucination filter is a no-op on a pre-filtered upstream dataset.
+  if (halluc) {
+    halluc.disabled = on;
+    if (on) halluc.checked = false;
+  }
+  // Mute any "no teachers enrolled" warning in the roster rail -- Speed-Run
+  // doesn't need teachers.
+  if (warn && on) { warn.style.display = "none"; }
+  // Update the start button hint so users see what mode they're in.
+  const hint = document.querySelector(".studio-start-hint");
+  if (hint) {
+    hint.textContent = on
+      ? "Speed-Run enabled -- Training boots from a pre-distilled HF dataset (no teachers needed)."
+      : "Reuses the full pipeline backend -- same SFT\u2192DPO\u2192Merge as Recipes";
+  }
+}
 async function studioStart() {
   const btn = document.getElementById("studio-start-btn");
   if (!btn) return;
@@ -2456,9 +2526,17 @@ async function studioStart() {
     cpu_safe: cpuSafe,
   }));
   const stagesSel = document.getElementById("studio-stages").value;
+  // Speed-Run: import a pre-distilled HF dataset instead of running teachers.
+  // When enabled, the backend skips stages 1-3 entirely (see pipeline_start
+  // speed_run branch in distill_server.py).
+  const speedRunOn     = !!document.getElementById("studio-speedrun")?.checked;
+  const upstreamDS     = speedRunOn ? (document.getElementById("studio-upstream-dataset")?.value || "").trim() : "";
+  const upstreamMaxRows= speedRunOn ? (parseInt(document.getElementById("studio-upstream-max-rows")?.value) || 0) : 0;
   const body = {
     teachers,
     prompts_path:  document.getElementById("studio-prompts").value.trim(),
+    upstream_dataset: upstreamDS,
+    upstream_max_rows: upstreamMaxRows,
     backend:       document.getElementById("studio-backend").value,
     output_dir:    document.getElementById("studio-out").value.trim(),
     max_tokens:    parseInt(document.getElementById("studio-max-tokens").value) || 512,
