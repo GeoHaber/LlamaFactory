@@ -222,6 +222,84 @@ def _branch_sft_yaml(
     }
 
 
+def _branch_oft_yaml(
+    trunk_path: str,
+    dataset_name: str,
+    tag: str,
+    cpu_safe: bool,
+    oft_rank: int,
+    oft_block_size: int,
+    epochs: float,
+    learning_rate: float,
+) -> dict:
+    """Build an OFT SFT YAML using the merged trunk as the base.
+
+    OFT (Orthogonal Fine-Tuning, arXiv 2311.06243) constrains weight updates
+    to orthogonal rotations, which provably preserves the "hyperspherical
+    energy" of pre-trained representations.  Translation: it literally cannot
+    distort what the trunk already knows, by construction.
+
+    Trade-off vs LoRA:
+      - **Pro**: zero catastrophic forgetting (no replay buffer needed in theory)
+      - **Con**: fewer degrees of freedom → may not reach the same peak quality
+        on complex skills (code, math) that need high-rank updates.
+
+    Parameters:
+      - ``oft_rank``: intrinsic dimension of the orthogonal rotation (NOT the
+        same as LoRA rank — OFT rank is typically smaller: 4-16).
+      - ``oft_block_size``: controls the block-diagonal structure of the
+        orthogonal matrix (default 32, from PEFT default).
+      - ``oft_target="all"``: apply to all linear layers (same as LoRA).
+
+    Note: LlamaFactory supports OFT training natively (``finetuning_type: oft``)
+    but its ``export`` command currently only supports LoRA adapter merging.
+    OFT adapters must be used as-is at inference time (loaded via PEFT), or
+    merged using a custom PEFT script.  The ``--skip-merge`` flag is implied
+    when ``--adapter-type oft`` is used.
+    """
+    return {
+        "model_name_or_path": trunk_path,
+        "trust_remote_code": True,
+        "stage": "sft",
+        "do_train": True,
+        "finetuning_type": "oft",
+        # ── OFT sizing ───────────────────────────────────────────────────
+        "oft_rank": oft_rank,
+        "oft_block_size": oft_block_size,
+        "oft_target": "all",
+        "module_dropout": 0.0,
+        # ── Dataset / template — match trunk template for token alignment ─
+        "dataset_dir": "data",
+        "dataset": dataset_name,
+        "template": "qwen3_5",
+        "enable_thinking": True,
+        "mask_history": True,
+        "cutoff_len": 4096 if cpu_safe else 8192,
+        "max_samples": 50000,
+        "preprocessing_num_workers": 1,
+        "dataloader_num_workers": 0,
+        # ── Output / logging ─────────────────────────────────────────────
+        "output_dir": f"saves/{tag}/oft/sft",
+        "logging_steps": 5,
+        "save_steps": 100,
+        "plot_loss": False,
+        "overwrite_output_dir": False,
+        "save_only_model": False,
+        "report_to": "none",
+        # ── Optimizer ────────────────────────────────────────────────────
+        "per_device_train_batch_size": 1,
+        "gradient_accumulation_steps": 8,
+        "learning_rate": learning_rate,
+        "num_train_epochs": epochs,
+        "lr_scheduler_type": "cosine",
+        "warmup_ratio": 0.05,
+        "optim": "adamw_torch" if cpu_safe else "adamw_8bit",
+        "weight_decay": 0.001,
+        "bf16": not cpu_safe,
+        "fp16": False,
+    }
+
+
 def _branch_merge_yaml(trunk_path: str, branch_adapter: str, tag: str) -> dict:
     """Merge the branch LoRA into the trunk to produce a deployable model."""
     return {
@@ -319,6 +397,8 @@ def _run(cmd: list[str], log_path: Path) -> int:
 # ---------------------------------------------------------------------------
 
 def cmd_branch(args: argparse.Namespace) -> int:
+    adapter_type: str = getattr(args, "adapter_type", "lora")
+
     trunk = Path(args.trunk).resolve()
     if not (trunk / "config.json").exists():
         _log(f"ERROR: trunk {trunk} doesn't look like a merged HF model (no config.json)")
@@ -336,6 +416,10 @@ def cmd_branch(args: argparse.Namespace) -> int:
             _log(f"WARNING: replay data {replay_data} not found — proceeding without replay")
             replay_data = None
 
+    if adapter_type == "oft" and replay_data is None:
+        _log("INFO: OFT preserves trunk representations by construction — "
+             "replay buffer is optional (but still recommended for safety)")
+
     # Build the mixed (skill + replay) dataset
     mixed_path = ROOT / "data" / "branches" / args.tag / "training.jsonl"
     n_skill, n_replay = _build_replay_dataset(
@@ -346,24 +430,66 @@ def cmd_branch(args: argparse.Namespace) -> int:
     dataset_name = f"{args.tag}_branch"
     _register_dataset(dataset_name, mixed_path)
 
-    # Pick a rank that matches the skill family (unless --rank overrides)
-    rank = _rank_for_skill(args.skill, args.rank)
-    _log(f"LoRA rank={rank} (alpha={rank * 2}) for skill={args.skill}")
+    trunk_str = str(trunk).replace("\\", "/")
 
-    # Generate SFT YAML
-    cfg = _branch_sft_yaml(
-        trunk_path=str(trunk).replace("\\", "/"),
-        dataset_name=dataset_name,
-        tag=args.tag,
-        cpu_safe=args.cpu_safe,
-        rank=rank,
-        epochs=args.epochs,
-        learning_rate=args.learning_rate,
-    )
+    # ── Rank selection ───────────────────────────────────────────────────
+    rank_arg = args.rank
+    if adapter_type == "lora":
+        if rank_arg == "auto":
+            # Empirical rank probing — run 50-step sweeps at multiple ranks
+            _log("rank=auto: launching empirical rank probe ...")
+            try:
+                sys.path.insert(0, str(ROOT / "scripts"))
+                from rank_probe import probe_rank
+                rank, probe_details = probe_rank(
+                    trunk_path=trunk_str,
+                    dataset_name=dataset_name,
+                    tag=f"probe_{args.tag}",
+                    cpu_safe=args.cpu_safe,
+                )
+                _log(f"rank probe selected rank={rank}")
+            except Exception as exc:
+                _log(f"WARNING: rank probe failed ({exc}), falling back to per-skill default")
+                rank = _rank_for_skill(args.skill, None)
+        elif rank_arg is not None:
+            rank = int(rank_arg)
+        else:
+            rank = _rank_for_skill(args.skill, None)
+        _log(f"LoRA rank={rank} (alpha={rank * 2}) for skill={args.skill}")
+    else:
+        # OFT mode — use oft_rank and oft_block_size
+        oft_rank = int(rank_arg) if rank_arg and rank_arg != "auto" else args.oft_rank
+        _log(f"OFT rank={oft_rank} block_size={args.oft_block_size} for skill={args.skill}")
+
+    # ── Generate training YAML ───────────────────────────────────────────
+    if adapter_type == "lora":
+        cfg = _branch_sft_yaml(
+            trunk_path=trunk_str,
+            dataset_name=dataset_name,
+            tag=args.tag,
+            cpu_safe=args.cpu_safe,
+            rank=rank,
+            epochs=args.epochs,
+            learning_rate=args.learning_rate,
+        )
+        adapter_subdir = "lora/sft"
+    else:
+        cfg = _branch_oft_yaml(
+            trunk_path=trunk_str,
+            dataset_name=dataset_name,
+            tag=args.tag,
+            cpu_safe=args.cpu_safe,
+            oft_rank=oft_rank,
+            oft_block_size=args.oft_block_size,
+            epochs=args.epochs,
+            learning_rate=args.learning_rate,
+        )
+        adapter_subdir = "oft/sft"
+
     yaml_path = ROOT / "examples" / "distillation" / "auto" / f"{args.tag}_branch_sft.yaml"
     yaml_path.parent.mkdir(parents=True, exist_ok=True)
     with yaml_path.open("w", encoding="utf-8") as f:
-        f.write(f"### Auto-generated branch SFT config (skill={args.skill})\n\n")
+        f.write(f"### Auto-generated branch SFT config (skill={args.skill}, adapter={adapter_type})\n\n")
         yaml.dump(cfg, f, default_flow_style=False, sort_keys=False, allow_unicode=True)
     _log(f"wrote {yaml_path}")
 
@@ -371,26 +497,35 @@ def cmd_branch(args: argparse.Namespace) -> int:
         _log("--dry-run: stopping before training")
         return 0
 
-    # Train
+    # ── Train ────────────────────────────────────────────────────────────
     log_dir = ROOT / "saves" / args.tag / "logs"
     rc = _run(["llamafactory-cli", "train", str(yaml_path)], log_dir / "branch_sft.log")
     if rc != 0:
         _log(f"ERROR: branch SFT failed (rc={rc}). See {log_dir / 'branch_sft.log'}")
         return rc
 
-    # Merge branch into trunk for a deployable artifact
-    if args.skip_merge:
-        _log("--skip-merge: stopping after SFT")
-        _log(f"branch LoRA ready at saves/{args.tag}/lora/sft/")
+    # ── Merge (LoRA only — OFT export not supported by llamafactory-cli) ─
+    if adapter_type == "oft":
+        _log(f"OFT adapter ready at saves/{args.tag}/{adapter_subdir}/")
+        _log("NOTE: OFT merge via 'llamafactory-cli export' is not supported.")
+        _log("      Use the adapter directly with PEFT at inference time, or")
+        _log("      merge manually with: model.merge_and_unload()")
+        _log(f"  - training data:   {mixed_path}")
+        _log(f"  - replay fraction: {args.replay_fraction} ({n_skill} skill + {n_replay} replay)")
         return 0
 
-    branch_adapter = f"saves/{args.tag}/lora/sft"
+    if args.skip_merge:
+        _log("--skip-merge: stopping after SFT")
+        _log(f"branch LoRA ready at saves/{args.tag}/{adapter_subdir}/")
+        return 0
+
+    branch_adapter = f"saves/{args.tag}/{adapter_subdir}"
     if not (ROOT / branch_adapter).exists():
         _log(f"ERROR: expected adapter at {branch_adapter} but it's missing")
         return 1
 
     merge_cfg = _branch_merge_yaml(
-        trunk_path=str(trunk).replace("\\", "/"),
+        trunk_path=trunk_str,
         branch_adapter=branch_adapter,
         tag=args.tag,
     )
@@ -406,7 +541,7 @@ def cmd_branch(args: argparse.Namespace) -> int:
         return rc
 
     _log(f"branch ready: saves/{args.tag}/")
-    _log("  - LoRA adapter:    " + branch_adapter)
+    _log(f"  - adapter ({adapter_type}): {branch_adapter}")
     _log(f"  - merged model:    saves/{args.tag}/merged/")
     _log(f"  - training data:   {mixed_path}")
     _log(f"  - replay fraction: {args.replay_fraction} ({n_skill} skill + {n_replay} replay)")
@@ -461,12 +596,19 @@ def main() -> int:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""\
 examples:
-  # Add a translate branch on top of an overnight-graduated trunk
+  # LoRA branch with auto rank selection (empirical probe)
   %(prog)s --trunk saves/trunk_v1/merged \\
            --skill translate \\
            --skill-data data/skills/translate.jsonl \\
            --replay-data saves/trunk_v1/consensus_sft.jsonl \\
-           --tag trunk_v1_translate
+           --rank auto --tag trunk_v1_translate
+
+  # OFT branch (orthogonal FT — preserves trunk, no replay needed)
+  %(prog)s --trunk saves/trunk_v1/merged \\
+           --skill code \\
+           --skill-data data/skills/code.jsonl \\
+           --adapter-type oft --oft-rank 8 \\
+           --tag trunk_v1_code_oft
 
   # Combine 2 branches into one model via DARE-TIES
   %(prog)s --combine \\
@@ -481,14 +623,32 @@ examples:
     parser.add_argument("--replay-data", default="", help="Path to trunk consensus_sft.jsonl for replay buffer")
     parser.add_argument("--replay-fraction", type=float, default=0.15,
                         help="Fraction of skill-data size to mix in as replay (default 0.15). "
-                             "NOT optional for continual-learning recipes — research shows LoRA "
-                             "does NOT automatically mitigate catastrophic forgetting in "
-                             "continual SFT. 10-20%% is the documented effective range.")
-    parser.add_argument("--rank", type=int, default=None,
-                        help="LoRA rank override. If omitted, picked per-skill: "
-                             "translate=32, code=64, math=64, style=16, default=32. "
-                             "Grounded in arXiv 2405.09673 'LoRA Learns Less and Forgets Less' "
-                             "which shows code/math need rank 64+ to close the gap with full FT.")
+                             "NOT optional for LoRA continual-learning (research shows LoRA "
+                             "does NOT automatically mitigate catastrophic forgetting). "
+                             "10-20%% is the documented effective range. "
+                             "OFT preserves trunk representations by construction — replay "
+                             "is optional but recommended.")
+    # ── Adapter type ─────────────────────────────────────────────────────
+    parser.add_argument("--adapter-type", choices=["lora", "oft"], default="lora",
+                        help="Adapter method: 'lora' (default) or 'oft' (orthogonal FT, "
+                             "arXiv 2311.06243). OFT preserves trunk representations by "
+                             "construction but has fewer degrees of freedom.")
+    # ── Rank (LoRA) ──────────────────────────────────────────────────────
+    parser.add_argument("--rank", default=None,
+                        help="LoRA rank. 'auto' = empirical probe (runs 50-step sweeps "
+                             "at ranks [16,32,64,128] and picks the smallest that learns "
+                             "effectively). Integer = override. Omit = per-skill default "
+                             "(translate=32, code=64, math=64, style=16). "
+                             "Grounded in arXiv 2405.09673.")
+    # ── OFT-specific ─────────────────────────────────────────────────────
+    parser.add_argument("--oft-rank", type=int, default=8,
+                        help="OFT intrinsic dimension (default 8). NOT the same as LoRA "
+                             "rank — OFT rank is typically much smaller (4-16). Only used "
+                             "when --adapter-type oft.")
+    parser.add_argument("--oft-block-size", type=int, default=32,
+                        help="OFT block size (default 32, PEFT default). Controls the "
+                             "block-diagonal structure of the orthogonal matrix.")
+    # ── Training ─────────────────────────────────────────────────────────
     parser.add_argument("--epochs", type=float, default=2.0,
                         help="Training epochs (default 2.0, bumped from 1.0 per paper guidance).")
     parser.add_argument("--learning-rate", type=float, default=1.0e-4,

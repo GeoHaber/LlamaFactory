@@ -583,15 +583,70 @@ Two genuinely different specialists, sharing a common reasoning brain, trained f
 
 ---
 
+### 11.8 Implementation status (2026-04-10)
+
+All three research directions from Part 11 are now implemented as both CLI
+tools and UI-integrated features in the Distill Studio:
+
+#### Direction 1: Adaptive Rank Selection (`scripts/rank_probe.py`)
+
+- **CLI:** `python scripts/rank_probe.py --trunk <model> --dataset <name> --tag <tag>`
+- **UI:** Studio → Parameters → Rank mode → "Auto probe"
+- Runs 50-step training sweeps at ranks [16, 32, 64, 128]
+- Measures loss convergence slope via OLS regression, skipping warmup
+- Picks the **lowest rank** whose |slope| is within 5% of the steepest
+- Writes report to `saves/_probes/{tag}_report.md`
+- Importable: `from rank_probe import probe_rank`
+- **API:** `POST /api/rank-probe` (SSE stream)
+
+#### Direction 2: OFT Head-to-Head (`skill_branch.py --adapter-type oft`)
+
+- **CLI:** `python scripts/skill_branch.py --adapter-type oft --oft-rank 8 ...`
+- **UI:** Studio → Parameters → Adapter → "OFT (orthogonal)"
+- LlamaFactory natively supports `finetuning_type: "oft"` (confirmed in
+  `src/llamafactory/hparams/finetuning_args.py`)
+- OFT constrains updates to orthogonal rotations → zero forgetting by construction
+- OFT adapters skip merge (use via PEFT at inference, or `merge_and_unload()`)
+- Server patches generated YAML: removes LoRA keys, injects OFT config
+
+#### Direction 3: Composition Benchmark (`scripts/composition_bench.py`)
+
+- **CLI:** `python scripts/composition_bench.py --trunk <model> --branches skill:path,... --test-data <jsonl> --tag <tag>`
+- **API:** `POST /api/composition-bench` (SSE stream)
+- Five strategies compared side-by-side:
+  (0) Trunk baseline, (1) Individual branches, (2) DARE-TIES merge,
+  (3) Adapter routing (keyword classifier + PEFT `set_adapter()`),
+  (4) Weighted adapter stack (`add_weighted_adapter()`)
+- Metrics: per-skill perplexity + overall perplexity + tokens/sec latency
+- Reports: Markdown + raw JSON to `saves/benchmarks/`
+
+#### Server + UI integration
+
+- `PipelineReq` now accepts `adapter_type`, `rank_mode`, `oft_rank`,
+  `oft_block_size`, plus all training hyperparams (`lora_rank`, `learning_rate`,
+  `num_train_epochs`, `cutoff_len`, etc.)
+- `_patch_training_yaml()` overlays Studio knobs onto generated YAML configs
+  (runs between config generation and SFT training in the pipeline)
+- Auto rank probe triggers when `rank_mode=auto` — runs, parses result,
+  re-patches YAML with probed rank before SFT starts
+- Studio UI: Adapter dropdown (LoRA/OFT), Rank mode dropdown
+  (Manual/Auto probe/Per-skill), OFT rank/block size fields (toggle visibility)
+- All new elements have rich tooltips with research citations
+
+---
+
 ## Part 12 — Where to go next
 
 1. **Run the overnight graduation.** `python scripts/speed_graduation.py --tag overnight_grad`. Walk away. Come back in the morning.
 2. **Read the graduation report.** `saves/overnight_grad/graduation_report.md` — stage timings, artifact paths, next-step commands.
 3. **Add skill branches.** `python scripts/skill_branch.py --trunk saves/overnight_grad/merged --skill <name> --skill-data <data.jsonl> --tag <name>`. See Part 11.
-4. **Quantize to GGUF.** `python scripts/slim_down.py --model-dir saves/overnight_grad/merged ...`
-5. **Run the eval panel.** `python scripts/eval_student_panel.py --saves-tag overnight_grad --probes data/eval_probes.jsonl`
-6. **Compare to Jackrong's published 27B benchmark.** Use it as your ceiling.
+4. **Try OFT.** Same command with `--adapter-type oft --oft-rank 8`. Compare forgetting vs LoRA.
+5. **Probe the right rank.** `python scripts/rank_probe.py --trunk saves/overnight_grad/merged --dataset <name> --tag probe_v1`. Or just use `--rank auto` in skill_branch.py.
+6. **Benchmark composition.** Train 2+ branches, then: `python scripts/composition_bench.py --trunk ... --branches translate:...,code:... --test-data ... --tag bench_v1`
+7. **Quantize to GGUF.** `python scripts/slim_down.py --model-dir saves/overnight_grad/merged ...`
+8. **Run the eval panel.** `python scripts/eval_student_panel.py --saves-tag overnight_grad --probes data/eval_probes.jsonl`
+9. **Compare to Jackrong's published 27B benchmark.** Use it as your ceiling.
 
 ---
 
-*— 2026-04-09, written at the edge of what open-weights distillation can do.*
+*— 2026-04-10, updated with rank probing, OFT support, and composition benchmark.*

@@ -563,6 +563,67 @@ def _run_script(cmd: list[str], timeout: int = 7200) -> tuple[int, str, str]:
     return result.returncode, result.stdout or "", result.stderr or ""
 
 
+def _patch_training_yaml(yaml_path: Path, req: "PipelineReq") -> None:
+    """Patch a generated SFT/DPO YAML with Studio hyperparameters.
+
+    gen_distill_configs.py writes default configs; this applies the user's
+    Studio knobs (LoRA rank, LR, epochs, adapter type, etc.) on top.
+    """
+    if not yaml_path.is_file():
+        return
+    try:
+        text = yaml_path.read_text(encoding="utf-8")
+        cfg = yaml.safe_load(text) or {}
+    except Exception:
+        return
+
+    # ── Adapter type ─────────────────────────────────────────────────────
+    if req.adapter_type == "oft":
+        cfg["finetuning_type"] = "oft"
+        cfg["oft_rank"] = req.oft_rank
+        cfg["oft_block_size"] = req.oft_block_size
+        cfg["oft_target"] = "all"
+        cfg["module_dropout"] = 0.0
+        # Remove LoRA keys that would confuse the trainer
+        for k in ("lora_rank", "lora_alpha", "lora_dropout", "lora_target",
+                   "use_rslora", "use_dora"):
+            cfg.pop(k, None)
+        # OFT adapter dir
+        cfg["output_dir"] = cfg.get("output_dir", "").replace("/lora/", "/oft/")
+    else:
+        # LoRA mode — patch rank and alpha
+        cfg["finetuning_type"] = "lora"
+        cfg["lora_rank"] = req.lora_rank
+        cfg["lora_alpha"] = req.lora_rank * 2  # alpha = 2r convention
+
+    # ── Common hyperparams ───────────────────────────────────────────────
+    cfg["learning_rate"] = req.learning_rate
+    cfg["num_train_epochs"] = req.num_train_epochs
+    cfg["per_device_train_batch_size"] = req.per_device_train_batch_size
+    cfg["gradient_accumulation_steps"] = req.gradient_accumulation_steps
+    cfg["cutoff_len"] = req.cutoff_len
+
+    # ── Liger Kernel ─────────────────────────────────────────────────────
+    if req.enable_liger_kernel:
+        cfg["enable_liger_kernel"] = True
+    else:
+        cfg.pop("enable_liger_kernel", None)
+
+    # ── Muon optimizer ───────────────────────────────────────────────────
+    if req.use_muon:
+        cfg["optim"] = "muon"
+    # (don't override optim if muon is off — keep what gen_distill_configs set)
+
+    # ── Write back ───────────────────────────────────────────────────────
+    yaml_path.write_text(
+        yaml.dump(cfg, default_flow_style=False, sort_keys=False, allow_unicode=True),
+        encoding="utf-8",
+    )
+    _log(f"patched {yaml_path.name}: adapter={req.adapter_type} "
+         f"rank={req.lora_rank if req.adapter_type == 'lora' else req.oft_rank} "
+         f"lr={req.learning_rate} epochs={req.num_train_epochs}")
+
+
 def _popen(cmd: list[str]) -> subprocess.Popen:
     """Spawn a child process AND register it as the active pipeline proc.
 
@@ -1094,6 +1155,21 @@ class PipelineReq(BaseModel):
     # upstream_max_rows to cap the import size for fast experiments.
     upstream_dataset: str = ""           # e.g. "Roman1111111/claude-opus-4.6-10000x"
     upstream_max_rows: int = 0           # 0 = unlimited
+    # ── Training hyperparams (Studio passes these; patched into YAML after
+    # gen_distill_configs.py generates the base config) ─────────────────────
+    lora_rank: int = 16
+    learning_rate: float = 2e-4
+    num_train_epochs: float = 3.0
+    per_device_train_batch_size: int = 2
+    gradient_accumulation_steps: int = 16
+    cutoff_len: int = 2048
+    enable_liger_kernel: bool = True
+    use_muon: bool = False
+    # ── Adapter type: "lora" (default) or "oft" (orthogonal FT) ────────────
+    adapter_type: str = "lora"           # "lora" | "oft"
+    rank_mode: str = "manual"            # "manual" | "auto" | "per_skill"
+    oft_rank: int = 8                    # OFT intrinsic dimension (4-16 typical)
+    oft_block_size: int = 32             # OFT block diagonal structure
 
 
 # Prompt-ID prefix → skill mapping
@@ -1703,6 +1779,45 @@ async def pipeline_start(req: PipelineReq):
                     break
                 yield _ev("configs", "done", "Configs ready.")
 
+            # ── Stage 4b: Patch configs with Studio hyperparams ────────────
+            # gen_distill_configs.py writes defaults; now overlay the user's
+            # Studio knobs (adapter type, rank, LR, epochs, etc.)
+            _patch_training_yaml(sft_yaml, req)
+            if dpo_yaml.is_file():
+                _patch_training_yaml(dpo_yaml, req)
+
+            # ── Stage 4c: Rank probe (when rank_mode=auto) ─────────────────
+            if req.rank_mode == "auto" and req.adapter_type == "lora" and sft_yaml.is_file():
+                yield _ev("configs", "running", "Running rank probe (50-step sweeps)...")
+                try:
+                    probe_cmd = [
+                        PYTHON, str(SCRIPTS_DIR / "rank_probe.py"),
+                        "--trunk", req.student_model,
+                        "--dataset", f"{s_tag}_consensus_sft",
+                        "--tag", f"probe_{s_tag}",
+                        "--steps", "50",
+                    ]
+                    if req.cpu_safe or _s.get("cpu_safe"):
+                        probe_cmd.append("--cpu-safe")
+                    rc_probe, out_probe, _ = _run_script(probe_cmd, timeout=600)
+                    if rc_probe == 0:
+                        # Parse the selected rank from probe output
+                        import re as _re
+                        m = _re.search(r"selected rank\s*=\s*(\d+)", out_probe)
+                        if m:
+                            probed_rank = int(m.group(1))
+                            yield _ev("configs", "running",
+                                      f"Rank probe selected rank={probed_rank} -- re-patching configs...")
+                            req.lora_rank = probed_rank
+                            _patch_training_yaml(sft_yaml, req)
+                            if dpo_yaml.is_file():
+                                _patch_training_yaml(dpo_yaml, req)
+                    else:
+                        yield _ev("configs", "running",
+                                  f"Rank probe failed (rc={rc_probe}) -- using rank={req.lora_rank}")
+                except Exception as exc:
+                    yield _ev("configs", "running", f"Rank probe error: {exc} -- using rank={req.lora_rank}")
+
             # ── Stage 5: SFT ────────────────────────────────────────────────
             sft_flag = s_saves_dir / "sft_complete.flag"
             if sft_flag.is_file():
@@ -1941,6 +2056,130 @@ async def pipeline_stop() -> JSONResponse:
     """
     summary = _request_cancel()
     return JSONResponse(summary)
+
+
+# ---------------------------------------------------------------------------
+# Rank Probe API
+# ---------------------------------------------------------------------------
+
+class RankProbeReq(BaseModel):
+    trunk: str                    # path to merged trunk model (HF dir)
+    dataset: str                  # dataset name in data/dataset_info.json
+    tag: str = "probe"            # unique tag for this probe session
+    ranks: str = "16,32,64,128"   # comma-separated candidate ranks
+    steps: int = 50               # training steps per probe
+    cpu_safe: bool = False
+
+
+@app.post("/api/rank-probe")
+async def rank_probe_api(req: RankProbeReq) -> StreamingResponse:
+    """Run rank probing sweeps and stream progress via SSE."""
+
+    async def _gen():
+        yield _sse({"type": "probe", "status": "starting",
+                     "msg": f"Probing ranks [{req.ranks}] on {req.dataset}..."})
+        cmd = [
+            PYTHON, str(SCRIPTS_DIR / "rank_probe.py"),
+            "--trunk", req.trunk,
+            "--dataset", req.dataset,
+            "--tag", req.tag,
+            "--ranks", req.ranks,
+            "--steps", str(req.steps),
+        ]
+        if req.cpu_safe:
+            cmd.append("--cpu-safe")
+
+        proc = _popen(cmd)
+        loop = asyncio.get_event_loop()
+        assert proc.stdout is not None
+        while proc.poll() is None:
+            line = await loop.run_in_executor(None, proc.stdout.readline)
+            if line:
+                yield _sse({"type": "probe_log", "text": line.rstrip()})
+        rc = proc.wait()
+
+        # Read the report if it exists
+        report_path = ROOT_DIR / "saves" / "_probes" / f"{req.tag}_report.md"
+        report = ""
+        if report_path.is_file():
+            report = report_path.read_text(encoding="utf-8")
+
+        yield _sse({
+            "type": "probe_done",
+            "rc": rc,
+            "report": report,
+            "msg": "Rank probe complete." if rc == 0 else f"Rank probe failed (rc={rc}).",
+        })
+
+    return StreamingResponse(_gen(), media_type="text/event-stream")
+
+
+# ---------------------------------------------------------------------------
+# Composition Benchmark API
+# ---------------------------------------------------------------------------
+
+class CompBenchReq(BaseModel):
+    trunk: str                    # path to merged trunk model
+    branches: str                 # "skill:adapter_path,skill:adapter_path"
+    test_data: str                # path to mixed-skill test JSONL
+    tag: str = "bench"            # benchmark tag
+    merged_model: str = ""        # optional pre-merged DARE-TIES model
+    device: str = "auto"
+    skip: str = ""                # comma-separated strategies to skip
+
+
+@app.post("/api/composition-bench")
+async def comp_bench_api(req: CompBenchReq) -> StreamingResponse:
+    """Run composition benchmark and stream progress via SSE."""
+
+    async def _gen():
+        yield _sse({"type": "bench", "status": "starting",
+                     "msg": f"Benchmarking composition strategies on {req.tag}..."})
+        cmd = [
+            PYTHON, str(SCRIPTS_DIR / "composition_bench.py"),
+            "--trunk", req.trunk,
+            "--branches", req.branches,
+            "--test-data", req.test_data,
+            "--tag", req.tag,
+        ]
+        if req.merged_model:
+            cmd.extend(["--merged-model", req.merged_model])
+        if req.device != "auto":
+            cmd.extend(["--device", req.device])
+        if req.skip:
+            cmd.extend(["--skip", req.skip])
+
+        proc = _popen(cmd)
+        loop = asyncio.get_event_loop()
+        assert proc.stdout is not None
+        while proc.poll() is None:
+            line = await loop.run_in_executor(None, proc.stdout.readline)
+            if line:
+                yield _sse({"type": "bench_log", "text": line.rstrip()})
+        rc = proc.wait()
+
+        # Read results
+        report_path = ROOT_DIR / "saves" / "benchmarks" / f"{req.tag}_report.md"
+        json_path = report_path.with_suffix(".json")
+        report = ""
+        results = {}
+        if report_path.is_file():
+            report = report_path.read_text(encoding="utf-8")
+        if json_path.is_file():
+            try:
+                results = json.loads(json_path.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                pass
+
+        yield _sse({
+            "type": "bench_done",
+            "rc": rc,
+            "report": report,
+            "results": results,
+            "msg": "Benchmark complete." if rc == 0 else f"Benchmark failed (rc={rc}).",
+        })
+
+    return StreamingResponse(_gen(), media_type="text/event-stream")
 
 
 # ---------------------------------------------------------------------------

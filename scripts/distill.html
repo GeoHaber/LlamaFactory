@@ -892,15 +892,43 @@ html[dir="rtl"] #topbar,html[dir="rtl"] #main{direction:rtl}
               <!-- Parameters -->
               <div class="studio-card">
                 <div class="studio-card-title"><span data-i18n="studio.params">Parameters</span> <span class="studio-hint" data-i18n="studio.params.hint">— how the student learns</span></div>
+                <!-- Adapter type + rank mode -->
                 <div class="field-row">
                   <div class="field">
-                    <label title="LoRA adapter rank. Higher = more capacity but more VRAM. 16 is the sweet spot for most Qwen/Gemma students." data-i18n="studio.lorarank" data-i18n-title="studio.lorarank.tooltip">LoRA rank</label>
-                    <input type="number" id="studio-lora" value="16" min="4" max="256"
-                           title="LoRA adapter rank. 16 is the sweet spot; raise to 32/64 for harder tasks." data-i18n-title="studio.lorarank.tooltip"></div>
+                    <label title="Which adapter method to use for fine-tuning. LoRA (Low-Rank Adaptation) adds small trainable matrices to each layer — well-tested, fast, VRAM-friendly. OFT (Orthogonal Fine-Tuning, arXiv 2311.06243) constrains weight updates to orthogonal rotations, which mathematically guarantees it preserves the trunk model's existing knowledge. OFT has zero catastrophic forgetting but fewer degrees of freedom — best for simple skills (style, translation). LoRA is better for complex skills (code, math) that need high-rank updates." data-i18n="studio.adaptertype" data-i18n-title="studio.adaptertype.tooltip">Adapter</label>
+                    <select id="studio-adapter-type" title="Which adapter method to use for fine-tuning. LoRA = standard (default). OFT = orthogonal (zero forgetting, arXiv 2311.06243)." data-i18n-title="studio.adaptertype.tooltip" onchange="updateAdapterUI()">
+                      <option value="lora" selected>LoRA (standard)</option>
+                      <option value="oft">OFT (orthogonal &mdash; zero forgetting)</option>
+                    </select></div>
                   <div class="field">
-                    <label title="Learning rate for the LoRA adapter. 2e-4 works for most SFT runs." data-i18n="studio.lr" data-i18n-title="studio.lr.tooltip">LR</label>
+                    <label title="How to decide the adapter rank (capacity). MANUAL: you set the exact rank number below. AUTO PROBE: runs 4 quick training sweeps (50 steps each at rank 16/32/64/128), measures which learns fastest, picks the smallest rank that works — takes 5-10 min extra but gives you the empirically optimal rank for YOUR data. PER-SKILL: uses research-backed defaults (translate=32, code=64, math=64, style=16) from arXiv 2405.09673." data-i18n="studio.rankmode" data-i18n-title="studio.rankmode.tooltip">Rank mode</label>
+                    <select id="studio-rank-mode" title="How to pick the adapter rank. Manual = set it yourself. Auto = 50-step probe sweep. Per-skill = paper-backed defaults." data-i18n-title="studio.rankmode.tooltip" onchange="updateAdapterUI()">
+                      <option value="manual" selected>Manual (set rank below)</option>
+                      <option value="auto">Auto probe (50-step sweep)</option>
+                      <option value="per_skill">Per-skill default (paper-backed)</option>
+                    </select></div>
+                </div>
+                <!-- LoRA-specific row -->
+                <div class="field-row" id="studio-lora-row">
+                  <div class="field">
+                    <label title="LoRA adapter rank — the number of trainable dimensions added to each layer. Higher rank = more learning capacity but more VRAM and risk of overfitting. 16 is safe for most tasks. Code and math need 64+ per arXiv 2405.09673. 256 matches full fine-tuning on code tasks. When Rank Mode is 'Auto', this field is filled automatically after probing." data-i18n="studio.lorarank" data-i18n-title="studio.lorarank.tooltip">LoRA rank</label>
+                    <input type="number" id="studio-lora" value="16" min="4" max="256"
+                           title="LoRA adapter rank. 16 = safe default. 64+ for code/math. 256 for max quality. Alpha is auto-set to 2x rank." data-i18n-title="studio.lorarank.tooltip"></div>
+                  <div class="field">
+                    <label title="Learning rate for the adapter. Controls how fast the student learns from training data. 2e-4 (0.0002) is the safe default for LoRA SFT. Lower (1e-5) for fine-grained skills like style transfer. Higher (5e-4) to learn faster on large datasets, but risk of instability. The paper recommends sweeping 1e-5 to 5e-4." data-i18n="studio.lr" data-i18n-title="studio.lr.tooltip">LR</label>
                     <input type="number" id="studio-lr" value="0.0002" min="0" max="0.01" step="0.0001"
-                           title="Learning rate. 2e-4 is safe for LoRA SFT." data-i18n-title="studio.lr.tooltip"></div>
+                           title="Learning rate. 2e-4 is safe for LoRA SFT. Range: 1e-5 (gentle) to 5e-4 (aggressive)." data-i18n-title="studio.lr.tooltip"></div>
+                </div>
+                <!-- OFT-specific row (hidden by default, shown when Adapter = OFT) -->
+                <div class="field-row" id="studio-oft-row" style="display:none">
+                  <div class="field">
+                    <label title="OFT intrinsic dimension — controls how much the orthogonal rotation can change the model. NOT the same as LoRA rank (OFT rank is much smaller, typically 4-16). Higher OFT rank = more expressive rotations but more parameters. 8 is the recommended default. Go to 16 if the skill is complex. Unlike LoRA, OFT rank does NOT affect forgetting (orthogonal by construction)." data-i18n="studio.oftrank" data-i18n-title="studio.oftrank.tooltip">OFT rank</label>
+                    <input type="number" id="studio-oft-rank" value="8" min="1" max="64"
+                           title="OFT intrinsic dimension. 4-16 typical. NOT the same as LoRA rank — OFT rank is much smaller." data-i18n-title="studio.oftrank.tooltip"></div>
+                  <div class="field">
+                    <label title="OFT block size — controls the block-diagonal structure of the orthogonal matrix. Larger blocks = more global rotations but slower training. 32 is the PEFT library default and works well for most cases. You rarely need to change this." data-i18n="studio.oftblock" data-i18n-title="studio.oftblock.tooltip">Block size</label>
+                    <input type="number" id="studio-oft-block" value="32" min="1" max="256"
+                           title="OFT block diagonal size. 32 = PEFT default. Larger = more global rotations but slower." data-i18n-title="studio.oftblock.tooltip"></div>
                 </div>
                 <div class="field-row">
                   <div class="field">
@@ -2498,6 +2526,40 @@ function updateSpeedRunUI() {
   }
 }
 
+// ── Adapter type toggle (LoRA vs OFT) ───────────────────────────────────────
+function updateAdapterUI() {
+  const adapterType = document.getElementById("studio-adapter-type")?.value || "lora";
+  const rankMode    = document.getElementById("studio-rank-mode")?.value || "manual";
+  const loraRow     = document.getElementById("studio-lora-row");
+  const oftRow      = document.getElementById("studio-oft-row");
+  const loraInput   = document.getElementById("studio-lora");
+  const rankModeEl  = document.getElementById("studio-rank-mode");
+
+  if (adapterType === "oft") {
+    // OFT mode: show OFT controls, hide LoRA rank
+    if (loraRow) loraRow.style.display = "none";
+    if (oftRow)  oftRow.style.display  = "";
+    // Rank mode is N/A for OFT — force to manual and disable
+    if (rankModeEl) { rankModeEl.value = "manual"; rankModeEl.disabled = true; }
+  } else {
+    // LoRA mode
+    if (oftRow)  oftRow.style.display  = "none";
+    if (rankModeEl) rankModeEl.disabled = false;
+    if (rankMode === "manual") {
+      if (loraRow) loraRow.style.display = "";
+      if (loraInput) loraInput.disabled = false;
+    } else if (rankMode === "auto") {
+      // Auto probe: show rank field (greyed out) — server will override
+      if (loraRow) loraRow.style.display = "";
+      if (loraInput) { loraInput.disabled = true; loraInput.style.opacity = "0.45"; }
+    } else {
+      // per_skill: hide rank field entirely
+      if (loraRow) loraRow.style.display = "";
+      if (loraInput) { loraInput.disabled = true; loraInput.style.opacity = "0.45"; }
+    }
+  }
+}
+
 // One-Click Overnight preset: the browser-side mirror of
 // scripts/speed_graduation.py. Fills in the overnight CPU-safe defaults for
 // every knob the Studio exposes, then shows a confirmation dialog so the
@@ -2719,7 +2781,7 @@ async function studioStart() {
     // Sequential batch: only sent when 2+ students are enrolled so the
     // backend's backward-compat path still handles single-student runs.
     students_batch: studentsBatch.length > 1 ? studentsBatch : [],
-    // Studio-only knobs (the backend ignores fields it does not use)
+    // Studio training hyperparams — patched into YAML configs on the server
     lora_rank:     parseInt(document.getElementById("studio-lora").value) || 16,
     learning_rate: parseFloat(document.getElementById("studio-lr").value) || 2e-4,
     num_train_epochs: parseFloat(document.getElementById("studio-epochs").value) || 3,
@@ -2728,6 +2790,11 @@ async function studioStart() {
     cutoff_len:    parseInt(document.getElementById("studio-cutoff").value) || 2048,
     enable_liger_kernel: document.getElementById("studio-liger").checked,
     use_muon:      document.getElementById("studio-muon").checked,
+    // Adapter type & rank mode (Direction 1 + 4 from research roadmap)
+    adapter_type:  document.getElementById("studio-adapter-type").value || "lora",
+    rank_mode:     document.getElementById("studio-rank-mode").value || "manual",
+    oft_rank:      parseInt(document.getElementById("studio-oft-rank").value) || 8,
+    oft_block_size: parseInt(document.getElementById("studio-oft-block").value) || 32,
     // Honor the "Run eval after training" / "Postmortem report" toggles
     run_eval:       document.getElementById("studio-eval").checked,
     run_postmortem: document.getElementById("studio-postmortem").checked,
@@ -3317,6 +3384,15 @@ const LANG = {
     "studio.liger.tooltip": "Fused Triton kernels from linkedin/Liger-Kernel. ~+20% throughput and ~−60% VRAM for attention + MLP on supported models.",
     "studio.muon": "Muon optimizer (~52% AdamW FLOPs)",
     "studio.muon.tooltip": "Newton-Schulz orthogonalisation optimiser. Uses ~52% of AdamW FLOPs on 2D weight matrices.",
+    // Adapter type & rank mode
+    "studio.adaptertype": "Adapter",
+    "studio.adaptertype.tooltip": "Which adapter method to use for fine-tuning. LoRA (Low-Rank Adaptation) adds small trainable matrices — well-tested, fast, VRAM-friendly. OFT (Orthogonal Fine-Tuning, arXiv 2311.06243) constrains weight updates to orthogonal rotations — mathematically guarantees zero forgetting of trunk knowledge. LoRA is better for complex skills (code, math); OFT is better for simple skills where preserving the trunk matters most.",
+    "studio.rankmode": "Rank mode",
+    "studio.rankmode.tooltip": "How to decide the adapter rank. MANUAL: you set the exact rank number. AUTO PROBE: runs 4 quick 50-step training sweeps at rank 16/32/64/128, measures loss convergence slope, picks the smallest rank that learns effectively — takes 5-10 min extra. PER-SKILL: uses research-backed defaults from arXiv 2405.09673 (translate=32, code=64, math=64, style=16).",
+    "studio.oftrank": "OFT rank",
+    "studio.oftrank.tooltip": "OFT intrinsic dimension — controls how much the orthogonal rotation can change the model. NOT the same as LoRA rank (OFT is much smaller: 4-16 typical). Higher = more expressive but more parameters. 8 is the recommended default.",
+    "studio.oftblock": "Block size",
+    "studio.oftblock.tooltip": "OFT block size — controls the block-diagonal structure of the orthogonal matrix. Larger blocks = more global rotations but slower training. 32 is the PEFT default and works well for most cases.",
     // Studio training
     "studio.training": "Training",
     "studio.training.hint": "— which stages to run",
